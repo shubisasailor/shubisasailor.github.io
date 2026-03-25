@@ -1,0 +1,384 @@
+/* ================================================================
+   main.css — Francisco Portfolio
+   ================================================================ */
+
+/* --- 1. Global Setup --- */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #000;
+    font-family: 'Inter', sans-serif;
+    color: white;
+    cursor: url('../media/cursor/cursor.webp'), auto;
+}
+
+a, button, input, textarea, select,
+[onclick], [role="button"],
+.control-icon, .email-copy, .submit-btn,
+.progress-bg, .volume-slider, .social-links a,
+.skill-tag, .nav-tabs span, .nav-tab, .enter-button {
+    cursor: url('../media/cursor/cursor.webp'), auto;
+}
+
+/* --- 2. Entry Overlay --- */
+#overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: url('../media/cursor/cursor.webp'), auto;
+    transition: opacity 0.8s ease;
+}
+
+.overlay-blur {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+}
+
+.enter-button {
+    position: relative;
+    z-index: 10;
+    font-size: 1.1rem;
+    letter-spacing: 3px;
+    color: rgba(255, 255, 255, 0.55);
+    animation: pulse 2s infinite ease-in-out;
+}
+
+/* --- 3. Page backgrounds --- */
+/* Images/videos sit at their native brightness — NO ::after overlay tint */
+.index-page {
+    background: url('../media/index.jpg') no-repeat center center / cover fixed;
+    position: relative;
+    width: 100%;
+    height: 100vh;
+}
+
+.about-page {
+    background: url('../media/about.jpg') no-repeat center center / cover fixed;
+    position: relative;
+    width: 100%;
+    height: 100vh;
+}
+
+.contact-page {
+    /* No static bg — videos handle it */
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background: #000;
+}
+
+/* Background layers (index.html SPA) — no tint pseudo-element */
+.bg-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    transition: opacity 0.6s ease;
+    /* REMOVED ::after overlay — images show at original brightness */
+}
+
+/* Contact videos */
+.contact-video {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+}
+
+/* Thin overlay just enough to keep text readable, not darkening */
+#contact-video-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    /* Subtle vignette only — no solid black slab */
+    background: radial-gradient(ellipse at center,
+        transparent 30%,
+        rgba(0,0,0,0.18) 100%);
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+}
+
+/* --- 4. UI Elements --- */
+.top-left-wrapper {
+    position: fixed;
+    top: 25px;
+    left: 25px;
+    z-index: 10;
+}
+
+.volume-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.volume-slider {
+    width: 0;
+    opacity: 0;
+    height: 4px;
+    transition: 0.3s ease;
+    accent-color: #fff;
+}
+
+.volume-container:hover .volume-slider {
+    width: 80px;
+    opacity: 1;
+}
+
+/* --- 5. Main Card Layout --- */
+.card-container {
+    position: relative;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 24px 0;
+    box-sizing: border-box;
+    gap: 16px;
+    overflow-y: auto;
+    max-height: 100vh;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 1.5s cubic-bezier(0.19, 1, 0.22, 1),
+                visibility 1.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.card-container.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.card-container::-webkit-scrollbar { display: none; }
+
+/* --- 6. Glass Card ---
+   Dark mode: very dark translucent
+   Light mode: lightly tinted white — set via CSS var from rope-theme.js
+*/
+.glass-card {
+    width: 450px;
+    background: rgba(0, 0, 0, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 22px;
+    box-sizing: border-box;
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    box-shadow:
+        0 0 0 1px rgba(255,255,255,0.03),
+        0 0 24px rgba(255,255,255,0.03),
+        inset 0 1px 0 rgba(255,255,255,0.07);
+    transition: box-shadow 0.3s, border-color 0.3s, background 0.4s;
+}
+
+.glass-card:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow:
+        0 0 0 1px rgba(255,255,255,0.05),
+        0 0 32px rgba(255,255,255,0.07),
+        inset 0 1px 0 rgba(255,255,255,0.10);
+}
+
+/* --- 7. Social Links --- */
+.social-links {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.social-links a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.social-links svg, .social-links i {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    fill: white;
+    color: white;
+    font-size: 24px;
+    filter: drop-shadow(0 0 8px rgba(255,255,255,0.8));
+}
+
+.social-links a:hover {
+    transform: scale(1.2);
+    filter: drop-shadow(0 0 12px #fff);
+}
+
+/* --- 8. Music Player --- */
+.music-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.progress-bg {
+    flex: 1;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.10);
+    border-radius: 10px;
+    position: relative;
+}
+
+.progress-fill {
+    width: 0%;
+    height: 100%;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #fff;
+}
+
+.control-icon {
+    opacity: 0.7;
+    transition: 0.2s;
+}
+
+.control-icon:hover {
+    opacity: 1;
+    filter: drop-shadow(0 0 5px white);
+}
+
+/* --- 9. Animations --- */
+@keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50%       { opacity: 0.8; }
+}
+
+/* --- 10. About page — two-column layout --- */
+.about-layout {
+    display: flex;
+    gap: 16px;
+    width: 820px;
+    align-items: flex-start;
+}
+
+.about-projects-col {
+    width: 35%;
+    flex-shrink: 0;
+}
+
+.about-info-col {
+    flex: 1;
+}
+
+/* Project cards */
+.project-item {
+    background: var(--skill-bg, rgba(255,255,255,0.04));
+    border: 1px solid var(--skill-border, rgba(255,255,255,0.09));
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    overflow: hidden;
+}
+
+.project-item:hover {
+    background: var(--input-bg, rgba(255,255,255,0.07));
+    border-color: rgba(255,255,255,0.2);
+}
+
+.project-item.expanded {
+    border-color: rgba(255,255,255,0.22);
+    background: rgba(255,255,255,0.06);
+}
+
+.project-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.project-title {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--text, white);
+    letter-spacing: 0.5px;
+}
+
+.project-arrow {
+    font-size: 0.65rem;
+    opacity: 0.4;
+    transition: transform 0.25s ease, opacity 0.2s;
+    color: var(--text, white);
+}
+
+.project-item.expanded .project-arrow {
+    transform: rotate(180deg);
+    opacity: 0.8;
+}
+
+.project-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, padding-top 0.25s ease;
+    padding-top: 0;
+}
+
+.project-item.expanded .project-body {
+    max-height: 200px;
+    padding-top: 10px;
+}
+
+.project-desc {
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: var(--text-muted, rgba(255,255,255,0.55));
+    margin: 0 0 10px 0;
+}
+
+.project-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    background: var(--submit-bg, rgba(255,255,255,0.06));
+    border: 1px solid var(--submit-border, rgba(255,255,255,0.12));
+    color: var(--text, white);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.project-link:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.3);
+}
+
+/* Responsive — stack on small screens */
+@media (max-width: 900px) {
+    .about-layout {
+        width: 450px;
+        flex-direction: column;
+    }
+    .about-projects-col,
+    .about-info-col { width: 100%; }
+}
