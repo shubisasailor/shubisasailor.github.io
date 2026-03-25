@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Francisco | </title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -12,264 +12,192 @@
     <script src="js/player.js" defer></script>
     <script src="js/rope-theme.js" defer></script>
     <style>
+        *, *::before, *::after { box-sizing: border-box; }
 
-        /* ── Background layers ── */
-        .bg-layer {
-            position: fixed; inset: 0; z-index: 0;
-            background-size: cover; background-position: center; background-attachment: fixed;
-            transition: opacity 0.6s ease;
+        /* ── Card container ── */
+        .card-container {
+            display: flex !important;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto !important;
+            overflow-x: hidden;
+            max-height: 100dvh;
+            min-height: 100dvh;
+            padding: 20px 16px 24px !important;
+            gap: 12px;
+            width: 100%;
         }
-        #bg-index   { background-image: url('media/index.jpg');   opacity: 1; }
-        #bg-about   { background-image: url('media/about.jpg');   opacity: 0; }
-        #bg-contact { opacity: 0; background: #000; }
 
-        /* ── Contact videos — two overlapping, crossfade on theme switch ── */
-        .contact-video {
-            position: fixed; inset: 0; z-index: 0;
-            width: 100%; height: 100%;
-            object-fit: cover;
-            transition: opacity 0.6s ease;
-            pointer-events: none;
-        }
-        #contact-video-night { opacity: 0; }
-        #contact-video-day   { opacity: 0; }
-
-        #contact-video-overlay {
-            position: fixed; inset: 0; z-index: 1;
-            /* Vignette only — no solid dark slab */
-            background: radial-gradient(ellipse at center, transparent 20%, rgba(0,0,0,0.22) 100%);
-            opacity: 0; transition: opacity 0.6s ease;
-            pointer-events: none;
+        .glass-card {
+            width: 100% !important;
+            max-width: 480px;
         }
 
         /* ── Tab panels ── */
-        .tab-panel { display: none; }
-        .tab-panel.active { display: block; animation: cardFadeIn 0.3s ease forwards; }
+        .tab-panel { display: none; width: 100%; }
+        .tab-panel.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* fill remaining vertical space so player can pin to bottom */
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+            animation: cardFadeIn 0.28s ease forwards;
+        }
         @keyframes cardFadeIn {
             from { opacity: 0; transform: translateY(8px); }
             to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* ── Card container ── */
-        .card-container {
-            position: relative; z-index: 5;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: flex-start;
-            min-height: 100vh; padding: 24px 0;
-            box-sizing: border-box; gap: 16px;
-            overflow-y: auto; max-height: 100vh;
-            scrollbar-width: none; -ms-overflow-style: none;
-            opacity: 0; visibility: hidden;
-            transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1),
-                        visibility 1.5s cubic-bezier(0.19,1,0.22,1);
+        /* ── Panel content wrapper (everything above the player) ── */
+        .panel-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
         }
-        .card-container.visible { opacity: 1; visibility: visible; }
-        .card-container::-webkit-scrollbar { display: none; }
 
-        /* ── Glass card ── */
-        .glass-card {
-            width: 450px !important;
-            background: rgba(0,0,0,0.38) !important;
-            border: 1px solid rgba(255,255,255,0.10) !important;
-            border-radius: 14px !important;
-            padding: 22px !important;
-            box-sizing: border-box !important;
-            backdrop-filter: blur(20px) !important;
-            -webkit-backdrop-filter: blur(20px) !important;
-            box-shadow:
-                0 0 0 1px rgba(255,255,255,0.03),
-                0 0 24px rgba(255,255,255,0.03),
-                inset 0 1px 0 rgba(255,255,255,0.07) !important;
-            transition: box-shadow 0.3s, border-color 0.3s;
-        }
-        .glass-card:hover {
-            border-color: rgba(255,255,255,0.18) !important;
-            box-shadow:
-                0 0 0 1px rgba(255,255,255,0.05),
-                0 0 32px rgba(255,255,255,0.07),
-                inset 0 1px 0 rgba(255,255,255,0.10) !important;
+        /* ── Player pinned to bottom of each panel ── */
+        .panel-player {
+            width: 100%;
+            max-width: 480px;
+            margin-top: auto;   /* pushes it to the bottom */
+            padding-top: 16px;  /* visible gap between content and player */
         }
 
         /* ── Typewriter cursor ── */
         @keyframes twBlink { 0%,100%{opacity:1} 50%{opacity:0} }
         #tw-cursor {
-            display: inline-block; width: 3px; height: 0.85em;
-            background: white; margin-left: 4px; vertical-align: middle;
-            box-shadow: 0 0 10px white, 0 0 22px rgba(255,255,255,0.35);
-            animation: twBlink 0.8s step-end infinite;
+            display:inline-block; width:2px; height:0.82em;
+            background:white; margin-left:3px; vertical-align:middle;
+            box-shadow:0 0 10px white, 0 0 22px rgba(255,255,255,0.35);
+            animation:twBlink 0.8s step-end infinite;
         }
 
-        /* ── Nav ── */
+        /* ── Nav tabs ── */
         .nav-tab {
-            opacity: 0.38; color: white;
-            transition: opacity 0.2s, text-shadow 0.2s;
-            font-size: 0.7rem; letter-spacing: 2.5px; font-weight: bold; cursor: pointer;
+            opacity:0.40; color:white;
+            transition:opacity 0.2s, text-shadow 0.2s;
+            font-size:clamp(0.6rem,2vw,0.7rem);
+            letter-spacing:2px; font-weight:bold; cursor:pointer;
+            padding:4px 8px; white-space:nowrap;
         }
-        .nav-tab:hover { opacity: 0.72; }
+        .nav-tab:hover  { opacity:0.72; }
         .nav-tab.active {
-            opacity: 1;
-            text-shadow: 0 0 14px rgba(255,255,255,0.55), 0 0 32px rgba(255,255,255,0.18);
+            opacity:1;
+            text-shadow:0 0 14px rgba(255,255,255,0.55), 0 0 32px rgba(255,255,255,0.18);
         }
 
-        /* ── Discord skeleton ── */
-        .discord-skeleton { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.025); border-radius:10px; padding:15px; margin-top:20px; }
-        .skeleton-avatar  { width:45px; height:45px; border-radius:50%; background:rgba(255,255,255,0.06); flex-shrink:0; animation:skPulse 1.6s ease-in-out infinite; }
+        /* ── Typography ── */
+        #display-name {
+            color:white;
+            font-size:clamp(1.8rem,6vw,2.6rem);
+            text-shadow:0 0 22px rgba(255,255,255,0.65), 0 0 50px rgba(255,255,255,0.18) !important;
+        }
+        .subtitle-text  { font-size:clamp(0.7rem,2vw,0.78rem); color:rgba(255,255,255,0.40); margin-top:5px; letter-spacing:1.5px; }
+        .views-row      { display:flex; align-items:center; justify-content:center; gap:5px; margin-top:8px; font-size:clamp(0.62rem,1.8vw,0.7rem); color:rgba(255,255,255,0.35); letter-spacing:1px; }
+        .section-label  { font-size:clamp(0.55rem,1.6vw,0.62rem); letter-spacing:3px; font-weight:bold; margin-bottom:12px; text-transform:uppercase; color:rgba(255,255,255,0.45); }
+        .bio-text       { font-size:clamp(0.78rem,2.2vw,0.85rem); line-height:1.8; color:rgba(255,255,255,0.55); margin:0; }
+        .card-divider   { height:1px; background:rgba(255,255,255,0.06); margin:16px 0; }
+
+        /* ── Discord skeleton / card ── */
+        .discord-skeleton { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.025); border-radius:10px; padding:14px; margin-top:18px; }
+        .skeleton-avatar  { width:42px; height:42px; border-radius:50%; background:rgba(255,255,255,0.06); flex-shrink:0; animation:skPulse 1.6s ease-in-out infinite; }
         .skeleton-lines   { display:flex; flex-direction:column; gap:8px; flex:1; }
-        .skeleton-line    { height:10px; border-radius:5px; background:rgba(255,255,255,0.06); animation:skPulse 1.6s ease-in-out infinite; }
+        .skeleton-line    { height:9px; border-radius:5px; background:rgba(255,255,255,0.06); animation:skPulse 1.6s ease-in-out infinite; }
         .skeleton-line.short { width:55%; animation-delay:0.2s; }
         @keyframes skPulse { 0%,100%{opacity:0.25} 50%{opacity:0.65} }
 
-        .discord-real { display:none; background:rgba(255,255,255,0.025); border-radius:10px; padding:15px; margin-top:20px; align-items:center; gap:12px; text-align:left; }
+        .discord-real { display:none; background:rgba(255,255,255,0.025); border-radius:10px; padding:14px; margin-top:18px; align-items:center; gap:12px; }
         .discord-real.loaded { display:flex; }
-
-        /* ── Discord avatar ── */
-        .discord-avatar-wrap { position:relative; width:45px; height:45px; flex-shrink:0; }
-        .discord-avatar-wrap img {
-            width:45px; height:45px; border-radius:50%; object-fit:cover; display:block;
-            box-shadow: 0 0 0 2px rgba(255,255,255,0.08), 0 0 12px rgba(255,255,255,0.05);
-        }
-        .discord-status-dot {
-            position:absolute; bottom:0; right:0;
-            width:13px; height:13px; border-radius:50%;
-            border:2.5px solid rgba(10,10,10,0.95); box-sizing:border-box;
-        }
+        .discord-avatar-wrap { position:relative; width:42px; height:42px; flex-shrink:0; }
+        .discord-avatar-wrap img { width:42px; height:42px; border-radius:50%; object-fit:cover; display:block; box-shadow:0 0 0 2px rgba(255,255,255,0.08); }
+        .discord-status-dot { position:absolute; bottom:0; right:0; width:12px; height:12px; border-radius:50%; border:2.5px solid rgba(10,10,10,0.95); box-sizing:border-box; }
         .ds-online    { background:#23a55a; box-shadow:0 0 6px rgba(35,165,90,0.8); }
         .ds-idle      { background:#f0b232; box-shadow:0 0 6px rgba(240,178,50,0.8); }
         .ds-dnd       { background:#f23f43; box-shadow:0 0 6px rgba(242,63,67,0.8); }
         .ds-offline   { background:transparent; border:2.5px solid #80848e; box-shadow:none; }
         .ds-streaming { background:#593695; box-shadow:0 0 6px rgba(89,54,149,0.8); }
-        .ds-dnd::after { content:''; display:block; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:55%; height:2.5px; background:#fff; border-radius:2px; }
-        .ds-idle::after { content:''; display:block; position:absolute; top:1px; right:1px; width:55%; height:55%; background:rgba(10,10,10,0.95); border-radius:50%; }
+        #discord-name     { font-weight:bold; font-size:clamp(0.82rem,2.2vw,0.9rem); color:rgba(255,255,255,0.85); }
+        #discord-status, #discord-status a { font-size:clamp(0.65rem,1.8vw,0.72rem); margin-top:3px; color:rgba(255,255,255,0.50) !important; text-decoration:none; }
+        #discord-activity { font-size:clamp(0.60rem,1.6vw,0.68rem); margin-top:2px; color:rgba(255,255,255,0.35); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
 
-        /* ── Views ── */
-        .views-row { display:flex; align-items:center; justify-content:center; gap:6px; margin-top:10px; font-size:0.7rem; opacity:0.22; letter-spacing:1px; color:white; }
+        /* ── Skills ── */
+        .skills-grid { display:flex; flex-wrap:wrap; gap:7px; margin-top:4px; }
+        .skill-tag   { font-size:clamp(0.65rem,1.8vw,0.72rem); letter-spacing:1px; padding:5px 11px; border-radius:6px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.09); color:rgba(255,255,255,0.55); transition:all 0.22s ease; }
+        .skill-tag:hover { background:rgba(255,255,255,0.09); border-color:rgba(255,255,255,0.22); color:rgba(255,255,255,0.85); }
 
-        /* ── Section labels ── */
-        .section-label {
-            font-size: 0.6rem; letter-spacing: 3px; font-weight: bold;
-            margin-bottom: 14px; text-transform: uppercase;
-            color: rgba(255,255,255,0.45);
-            text-shadow: 0 0 10px rgba(255,255,255,0.15);
-        }
+        /* ── Under process ── */
+        .under-process      { display:flex; align-items:center; gap:10px; padding:11px 15px; background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.06); border-radius:9px; }
+        .under-process-dot  { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.30); flex-shrink:0; animation:upDotPulse 2s ease-in-out infinite; }
+        @keyframes upDotPulse { 0%,100%{opacity:0.30;transform:scale(1)} 50%{opacity:0.90;transform:scale(1.35)} }
+        .under-process-text { font-size:clamp(0.62rem,1.8vw,0.7rem); letter-spacing:2px; color:rgba(255,255,255,0.35); }
 
-        .bio-text { font-size:0.85rem; line-height:1.8; color:rgba(255,255,255,0.6); margin:0; }
-        .card-divider { height:1px; background:rgba(255,255,255,0.05); margin:18px 0; }
-        .skills-grid { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
-        .skill-tag {
-            font-size:0.72rem; letter-spacing:1px; padding:5px 12px; border-radius:6px;
-            background:rgba(255,255,255,0.035);
-            border:1px solid rgba(255,255,255,0.09);
-            color:rgba(255,255,255,0.55);
-            transition:all 0.25s ease; cursor:default;
-        }
-        .skill-tag:hover {
-            background:rgba(255,255,255,0.08);
-            border-color:rgba(255,255,255,0.22);
-            color:white;
-            box-shadow:0 0 14px rgba(255,255,255,0.07);
-        }
+        /* ── Socials ── */
+        .social-links     { display:flex; justify-content:center; flex-wrap:wrap; gap:18px; margin-top:18px; }
+        .social-links a   { display:flex; align-items:center; justify-content:center; width:24px; height:24px; text-decoration:none; transition:0.3s; }
+        .social-links i   { color:rgba(255,255,255,0.60); font-size:18px; filter:drop-shadow(0 0 5px rgba(255,255,255,0.4)); transition:0.3s; }
+        .social-links a:hover   { transform:scale(1.2); }
+        .social-links a:hover i { color:white; filter:drop-shadow(0 0 10px #fff); }
 
-        /* ── Subtitle (CS Student) ── */
-        .subtitle-text {
-            font-size:0.78rem; opacity:0.3; margin-top:6px;
-            color: var(--text, white); letter-spacing:1.5px;
-        }
+        /* ── Music player ── */
+        .music-player-card img   { width:42px; height:42px; border-radius:7px; object-fit:cover; flex-shrink:0; box-shadow:0 0 14px rgba(255,255,255,0.07); }
+        #cover-fallback          { display:none; width:42px; height:42px; border-radius:7px; background:rgba(255,255,255,0.05); flex-shrink:0; align-items:center; justify-content:center; font-size:0.9rem; color:rgba(255,255,255,0.25); }
+        .song-title              { font-size:clamp(0.72rem,2vw,0.78rem); font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:rgba(255,255,255,0.60) !important; }
+        #music-time              { font-size:clamp(0.58rem,1.6vw,0.65rem); color:rgba(255,255,255,0.35) !important; white-space:nowrap; min-width:30px; text-align:right; }
+        #music-progress          { background:rgba(255,255,255,0.55) !important; box-shadow:0 0 7px rgba(255,255,255,0.18) !important; }
 
         /* ── Contact form ── */
-        .email-row {
-            display:flex; align-items:center; gap:12px;
-            background:rgba(255,255,255,0.03);
-            border:1px solid rgba(255,255,255,0.09);
-            border-radius:8px; padding:12px 16px;
-            font-size:0.85rem; color:rgba(255,255,255,0.6);
-            transition:border-color 0.2s, box-shadow 0.2s;
-        }
-        .email-row:hover { border-color:rgba(255,255,255,0.18); box-shadow:0 0 14px rgba(255,255,255,0.04); }
-        .email-row i { opacity:0.35; }
-        .email-copy { margin-left:auto; opacity:0.28; transition:opacity 0.2s; font-size:0.8rem; cursor:pointer; }
-        .email-copy:hover { opacity:0.8; }
-
-        .form-group { display:flex; flex-direction:column; gap:10px; }
-        .form-input, .form-textarea {
-            background:rgba(255,255,255,0.03);
-            border:1px solid rgba(255,255,255,0.08);
-            border-radius:8px; padding:11px 14px;
-            font-family:'Inter',sans-serif; font-size:0.82rem;
-            color:rgba(255,255,255,0.9); outline:none;
-            transition:border-color 0.2s, box-shadow 0.2s, background 0.2s;
-            width:100%; box-sizing:border-box;
-        }
-        .form-input::placeholder, .form-textarea::placeholder { color:rgba(255,255,255,0.18); }
-        .form-input:focus, .form-textarea:focus {
-            border-color:rgba(255,255,255,0.28);
-            box-shadow:0 0 0 1px rgba(255,255,255,0.05), 0 0 18px rgba(255,255,255,0.05);
-            background:rgba(255,255,255,0.05);
-        }
-        .form-textarea { resize:none; height:90px; }
-        .form-row { display:flex; gap:10px; }
-        .form-row .form-input { flex:1; }
-
-        .submit-btn {
-            margin-top:4px; width:100%; padding:11px;
-            background:rgba(255,255,255,0.04);
-            border:1px solid rgba(255,255,255,0.10);
-            border-radius:8px; color:rgba(255,255,255,0.55);
-            font-family:'Inter',sans-serif; font-size:0.75rem; letter-spacing:2.5px;
-            transition:all 0.25s ease;
-            display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;
-        }
-        .submit-btn:hover:not(:disabled) {
-            color:white; border-color:rgba(255,255,255,0.28);
-            box-shadow:0 0 22px rgba(255,255,255,0.06);
-            background:rgba(255,255,255,0.07);
-        }
+        .email-row   { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:11px 14px; font-size:clamp(0.78rem,2.2vw,0.85rem); color:rgba(255,255,255,0.55); word-break:break-all; }
+        .email-row i { opacity:0.40; flex-shrink:0; }
+        #email-display  { flex:1; }
+        .email-copy     { margin-left:auto; opacity:0.30; transition:opacity 0.2s; font-size:0.8rem; cursor:pointer; flex-shrink:0; }
+        .email-copy:hover { opacity:0.85; }
+        .form-group     { display:flex; flex-direction:column; gap:10px; }
+        .form-input, .form-textarea { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:11px 14px; font-family:'Inter',sans-serif; font-size:clamp(0.76rem,2vw,0.82rem); color:rgba(255,255,255,0.75); outline:none; transition:border-color 0.2s, background 0.2s; width:100%; }
+        .form-input::placeholder, .form-textarea::placeholder { color:rgba(255,255,255,0.25); }
+        .form-input:focus, .form-textarea:focus { border-color:rgba(255,255,255,0.28); background:rgba(255,255,255,0.06); }
+        .form-textarea  { resize:none; height:88px; }
+        .form-row       { display:flex; gap:10px; }
+        .form-row .form-input { flex:1; min-width:0; }
+        @media (max-width:380px) { .form-row { flex-direction:column; } }
+        .submit-btn { width:100%; padding:11px; margin-top:4px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.10); border-radius:8px; color:rgba(255,255,255,0.55); font-family:'Inter',sans-serif; font-size:clamp(0.68rem,1.8vw,0.75rem); letter-spacing:2px; cursor:pointer; transition:all 0.22s ease; display:flex; align-items:center; justify-content:center; gap:8px; }
+        .submit-btn:hover:not(:disabled) { color:rgba(255,255,255,0.90); border-color:rgba(255,255,255,0.30); background:rgba(255,255,255,0.08); }
         .submit-btn:active:not(:disabled) { transform:scale(0.98); }
-        .submit-btn:disabled { opacity:0.35; cursor:not-allowed; }
-        .btn-spinner { width:12px; height:12px; border:2px solid rgba(255,255,255,0.2); border-top-color:white; border-radius:50%; animation:spin 0.7s linear infinite; display:none; }
+        .submit-btn:disabled { opacity:0.35; }
+        .btn-spinner { width:11px; height:11px; border:2px solid rgba(255,255,255,0.2); border-top-color:white; border-radius:50%; animation:spin 0.7s linear infinite; display:none; }
         .submit-btn.loading .btn-spinner { display:block; }
-        .submit-btn.loading .btn-label { opacity:0.4; }
+        .submit-btn.loading .btn-label  { opacity:0.4; }
         @keyframes spin { to { transform:rotate(360deg); } }
 
         /* ── Toast ── */
-        #toast {
-            position:fixed; bottom:30px; left:25px;
-            background:rgba(0,0,0,0.65); border:1px solid rgba(255,255,255,0.10);
-            backdrop-filter:blur(18px); border-radius:8px; padding:10px 18px;
-            font-size:0.8rem; color:rgba(255,255,255,0.75);
-            opacity:0; transition:opacity 0.4s ease; pointer-events:none; z-index:100;
+        #toast { position:fixed; bottom:24px; left:18px; background:rgba(0,0,0,0.70); border:1px solid rgba(255,255,255,0.12); backdrop-filter:blur(18px); border-radius:8px; padding:9px 16px; font-size:clamp(0.72rem,2vw,0.8rem); color:rgba(255,255,255,0.75); opacity:0; transition:opacity 0.4s ease; pointer-events:none; z-index:500; max-width:calc(100vw - 36px); }
+        #toast.success { border-color:rgba(100,255,150,0.35); color:rgba(150,255,180,0.85); }
+        #toast.error   { border-color:rgba(255,100,100,0.35); color:rgba(255,150,150,0.85); }
+
+        /* ── Safe areas ── */
+        .top-left-wrapper { top:max(18px,env(safe-area-inset-top,18px)); left:max(18px,env(safe-area-inset-left,18px)); }
+        @supports (padding-bottom:env(safe-area-inset-bottom)) {
+            .panel-player { padding-bottom:max(0px,env(safe-area-inset-bottom)); }
         }
-        #toast.success { border-color:rgba(100,255,150,0.3); color:rgba(150,255,180,0.9); box-shadow:0 0 16px rgba(100,255,150,0.07); }
-        #toast.error   { border-color:rgba(255,100,100,0.3); color:rgba(255,150,150,0.9); box-shadow:0 0 16px rgba(255,100,100,0.07); }
+        @media (max-width:319px) { #rope-canvas, #rope-hit { display:none !important; } }
 
-        /* ── Music player ── */
-        #progress-container { background:rgba(255,255,255,0.07); border-radius:10px; }
-        #music-progress { box-shadow:0 0 8px rgba(255,255,255,0.35); }
-
-        /* ── Social glow ── */
-        .social-links a:hover { filter:drop-shadow(0 0 8px rgba(255,255,255,0.65)); }
-
-        /* ── h1 name glow ── */
-        #display-name {
-            color: white;
-            text-shadow: 0 0 22px rgba(255,255,255,0.65), 0 0 50px rgba(255,255,255,0.18) !important;
-        }
-
+        /* ── Secondary music player progress/time shared styles ── */
+        .tab-music-progress { background:rgba(255,255,255,0.55) !important; box-shadow:0 0 7px rgba(255,255,255,0.18) !important; }
+        .tab-music-time     { font-size:clamp(0.58rem,1.6vw,0.65rem); color:rgba(255,255,255,0.35); white-space:nowrap; min-width:30px; text-align:right; }
     </style>
 </head>
 <body class="theme-dark">
 
-    <div class="bg-layer" id="bg-index"></div>
-    <div class="bg-layer" id="bg-about"></div>
-    <div class="bg-layer" id="bg-contact"></div>
-
-    <!-- Dual contact videos: night (dark mode) and day (light mode) — muted, audio handled by bg-audio -->
-    <video id="contact-video-night" class="contact-video" src="media/contact-night.mp4" loop playsinline preload="auto" muted></video>
-    <video id="contact-video-day"   class="contact-video" src="media/contact-day.mp4"   loop playsinline preload="auto" muted></video>
-    <div id="contact-video-overlay"></div>
+    <video id="bg-video-dark"  class="bg-video" src="media/dark.mp4"  loop playsinline preload="auto" muted></video>
+    <video id="bg-video-light" class="bg-video" src="media/light.mp4" loop playsinline preload="auto" muted></video>
+    <div id="bg-video-overlay"></div>
 
     <div id="overlay" style="position:fixed;inset:0;z-index:9999;display:flex;justify-content:center;align-items:center;transition:opacity 0.8s ease;">
         <div style="position:absolute;inset:0;background:rgba(0,0,0,0.78);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);"></div>
-        <div style="position:relative;z-index:10;font-size:1.1rem;letter-spacing:3px;color:rgba(255,255,255,0.45);animation:pulse 2s infinite ease-in-out;">click to enter...</div>
+        <div class="enter-button" style="position:relative;z-index:10;font-size:clamp(0.9rem,3vw,1.1rem);letter-spacing:3px;color:rgba(255,255,255,0.50);animation:pulse 2s infinite ease-in-out;">click to enter...</div>
     </div>
 
     <div class="top-left-wrapper">
@@ -285,133 +213,206 @@
     <div class="card-container" id="main-content">
 
         <!-- NAV -->
-        <div class="glass-card">
-            <div style="display:flex;justify-content:space-around;">
+        <div class="glass-card" style="padding:16px 20px;">
+            <div style="display:flex;justify-content:space-around;align-items:center;">
                 <span class="nav-tab active" id="tab-overview" onclick="switchTab('overview')" role="tab" tabindex="0">OVERVIEW</span>
                 <span class="nav-tab"        id="tab-about"    onclick="switchTab('about')"    role="tab" tabindex="0">ABOUT</span>
                 <span class="nav-tab"        id="tab-contact"  onclick="switchTab('contact')"  role="tab" tabindex="0">CONTACT</span>
             </div>
         </div>
 
-        <!-- ── OVERVIEW ── -->
+        <!-- ════════════ OVERVIEW ════════════ -->
         <div class="tab-panel active" id="panel-overview">
-            <div class="glass-card">
-                <div style="text-align:center;">
-                    <h1 style="font-size:2.5rem;margin:0;display:inline-block;">
-                        <span id="display-name"></span><span id="tw-cursor"></span>
-                    </h1>
-                    <p class="subtitle-text">CS Student</p>
-                    <div class="views-row">
-                        <i class="fas fa-eye"></i>
-                        <span class="visit-count-val">1.1k</span>&nbsp;visitors
-                    </div>
-                    <div class="discord-skeleton" id="discord-skeleton">
-                        <div class="skeleton-avatar"></div>
-                        <div class="skeleton-lines">
-                            <div class="skeleton-line"></div>
-                            <div class="skeleton-line short"></div>
+
+            <div class="panel-content">
+                <!-- Profile card -->
+                <div class="glass-card">
+                    <div style="text-align:center;">
+                        <h1 style="margin:0;display:inline-block;">
+                            <span id="display-name"></span><span id="tw-cursor"></span>
+                        </h1>
+                        <p class="subtitle-text">CS Student</p>
+                        <div class="views-row">
+                            <i class="fas fa-eye"></i>
+                            <span class="visit-count-val">1.1k</span>&nbsp;visitors
                         </div>
-                    </div>
-                    <div class="discord-real" id="discord-card">
-                        <div class="discord-avatar-wrap">
-                            <img id="discord-pfp" src="" alt="">
-                            <div class="discord-status-dot ds-offline" id="discord-dot"></div>
+
+                        <!-- Discord -->
+                        <div class="discord-skeleton" id="discord-skeleton">
+                            <div class="skeleton-avatar"></div>
+                            <div class="skeleton-lines">
+                                <div class="skeleton-line"></div>
+                                <div class="skeleton-line short"></div>
+                            </div>
                         </div>
-                        <div style="text-align:left;">
-                            <div id="discord-name" style="font-weight:bold;font-size:0.9rem;color:white;"></div>
-                            <div id="discord-status" style="font-size:0.72rem;margin-top:3px;opacity:0.45;color:white;"></div>
-                            <div id="discord-activity" style="font-size:0.68rem;margin-top:2px;opacity:0.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px;color:white;"></div>
+                        <div class="discord-real" id="discord-card">
+                            <div class="discord-avatar-wrap">
+                                <img id="discord-pfp" src="" alt="Discord PFP">
+                                <div class="discord-status-dot ds-offline" id="discord-dot"></div>
+                            </div>
+                            <div style="text-align:left;min-width:0;flex:1;">
+                                <div id="discord-name"></div>
+                                <div id="discord-status"></div>
+                                <div id="discord-activity"></div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="social-links">
-                        <a href="https://linkedin.com/in/c3o"             target="_blank" rel="noopener"><i class="fab fa-linkedin"></i></a>
-                        <a href="https://instagram.com/shub.is.a.sailor/" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
-                        <a href="https://pinterest.com/shubflexin"        target="_blank" rel="noopener"><i class="fab fa-pinterest"></i></a>
-                        <a href="https://youtube.com/@Tarnished_Shubh"    target="_blank" rel="noopener"><i class="fab fa-youtube"></i></a>
-                        <a href="https://x.com/ZetsuoNoShub"              target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i></a>
-                        <a href="mailto:shub.professional@gmail.com"><i class="fas fa-envelope"></i></a>
+
+                        <!-- Socials -->
+                        <div class="social-links">
+                            <a href="https://linkedin.com/in/c3o"             target="_blank" rel="noopener"><i class="fab fa-linkedin"></i></a>
+                            <a href="https://instagram.com/shub.is.a.sailor/" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
+                            <a href="https://pinterest.com/shubflexin"        target="_blank" rel="noopener"><i class="fab fa-pinterest"></i></a>
+                            <a href="https://youtube.com/@Tarnished_Shubh"    target="_blank" rel="noopener"><i class="fab fa-youtube"></i></a>
+                            <a href="https://x.com/ZetsuoNoShub"              target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i></a>
+                            <a href="mailto:shub.professional@gmail.com"><i class="fas fa-envelope"></i></a>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
+            </div><!-- /panel-content -->
 
-        <!-- ── ABOUT ── -->
+            <!-- Music player pinned to bottom -->
+            <div class="panel-player">
+                <div class="glass-card music-player-card" style="padding:15px 18px !important;">
+                    <div style="display:flex;align-items:center;gap:13px;">
+                        <img id="music-cover" src="media/music-cover/cry.jpg"
+                             onerror="this.style.display='none';document.getElementById('cover-fallback').style.display='flex';" alt="Cover">
+                        <div id="cover-fallback" style="display:none;width:42px;height:42px;border-radius:7px;background:rgba(255,255,255,0.05);align-items:center;justify-content:center;font-size:0.9rem;color:rgba(255,255,255,0.25);flex-shrink:0;">♪</div>
+                        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;">
+                            <div class="song-title">—</div>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <div id="progress-container" style="flex:1;height:3px;background:rgba(255,255,255,0.10);border-radius:10px;cursor:pointer;position:relative;">
+                                    <div id="music-progress" style="height:100%;width:0%;border-radius:10px;pointer-events:none;transition:width 0.1s linear;"></div>
+                                </div>
+                                <span id="music-time">0:00</span>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:13px;flex-shrink:0;">
+                            <i class="fas fa-backward control-icon" id="prev-btn"      style="font-size:0.83rem;opacity:0.40;"></i>
+                            <i class="fas fa-play    control-icon" id="play-pause-btn" style="font-size:1.05rem;opacity:0.75;"></i>
+                            <i class="fas fa-forward control-icon" id="next-btn"       style="font-size:0.83rem;opacity:0.40;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /panel-player -->
+
+        </div><!-- /panel-overview -->
+
+        <!-- ════════════ ABOUT ════════════ -->
         <div class="tab-panel" id="panel-about">
-            <div class="glass-card">
-                <div class="section-label">who i am</div>
-                <p class="bio-text">
-                    Hey, I'm Francisco — a CS student with a passion for building things that feel
-                    alive. I gravitate toward dark aesthetics, atmospheric design, and code that
-                    has personality. When I'm not writing software, I'm probably listening to music
-                    that nobody else has heard of.
-                </p>
-                <div class="card-divider"></div>
-                <div class="section-label">tech stack</div>
-                <div class="skills-grid">
-                    <span class="skill-tag">HTML / CSS</span>
-                    <span class="skill-tag">JavaScript</span>
-                    <span class="skill-tag">Python</span>
-                    <span class="skill-tag">Java</span>
-                    <span class="skill-tag">React</span>
-                    <span class="skill-tag">Node.js</span>
-                    <span class="skill-tag">Git</span>
-                    <span class="skill-tag">Linux</span>
-                    <span class="skill-tag">SQL</span>
-                    <span class="skill-tag">C++</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- ── CONTACT ── -->
-        <div class="tab-panel" id="panel-contact">
-            <div class="glass-card">
-                <div class="section-label">reach me at</div>
-                <div class="email-row">
-                    <i class="fas fa-envelope"></i>
-                    <span id="email-display">shub.professional@gmail.com</span>
-                    <i class="fas fa-copy email-copy" id="copy-btn" title="Copy email"></i>
-                </div>
-                <div class="card-divider"></div>
-                <div class="section-label">send a message</div>
-                <div class="form-group">
-                    <div class="form-row">
-                        <input class="form-input" id="f-name"  type="text"  placeholder="Name">
-                        <input class="form-input" id="f-email" type="email" placeholder="Email">
+            <div class="panel-content">
+                <div class="glass-card">
+                    <div class="section-label">who i am</div>
+                    <p class="bio-text">
+                        Hey, I'm Francisco — a CS student with a passion for building things that feel
+                        alive. I gravitate toward dark aesthetics, atmospheric design, and code that
+                        has personality. When I'm not writing software, I'm probably listening to music
+                        that nobody else has heard of.
+                    </p>
+                    <div class="card-divider"></div>
+                    <div class="section-label">tech stack</div>
+                    <div class="skills-grid">
+                        <span class="skill-tag">HTML / CSS</span>
+                        <span class="skill-tag">JavaScript</span>
+                        <span class="skill-tag">Python</span>
+                        <span class="skill-tag">Java</span>
+                        <span class="skill-tag">React</span>
+                        <span class="skill-tag">Node.js</span>
+                        <span class="skill-tag">Git</span>
+                        <span class="skill-tag">Linux</span>
+                        <span class="skill-tag">SQL</span>
+                        <span class="skill-tag">C++</span>
                     </div>
-                    <textarea class="form-textarea" id="f-message" placeholder="Message..."></textarea>
-                    <button class="submit-btn" id="send-btn">
-                        <div class="btn-spinner"></div>
-                        <span class="btn-label">SEND MESSAGE</span>
-                    </button>
+                    <div class="card-divider"></div>
+                    <div class="section-label">projects</div>
+                    <div class="under-process">
+                        <div class="under-process-dot"></div>
+                        <span class="under-process-text">UNDER PROCESS</span>
+                    </div>
                 </div>
-            </div>
-        </div>
+            </div><!-- /panel-content -->
 
-        <!-- ── MUSIC PLAYER ── -->
-        <div class="glass-card" style="padding:16px 20px;">
-            <div class="music-row" style="display:flex;align-items:center;gap:14px;">
-                <img src="" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0;box-shadow:0 0 14px rgba(255,255,255,0.07);" alt="Cover">
-                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;">
-                    <div class="song-title" style="font-size:0.78rem;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:0.75;color:white;">—</div>
-                    <div style="display:flex;align-items:center;gap:8px;">
-                        <div class="progress-bg" id="progress-container" style="flex:1;height:3px;position:relative;cursor:pointer;">
-                            <div class="progress-fill" id="music-progress" style="height:100%;width:0%;background:white;border-radius:10px;pointer-events:none;transition:width 0.1s linear;"></div>
+            <!-- Music player pinned to bottom -->
+            <div class="panel-player">
+                <div class="glass-card" style="padding:15px 18px !important;">
+                    <div style="display:flex;align-items:center;gap:13px;">
+                        <img class="tab-music-cover" src="media/music-cover/cry.jpg"
+                             onerror="this.style.display='none';" alt="Cover"
+                             style="width:42px;height:42px;border-radius:7px;object-fit:cover;flex-shrink:0;box-shadow:0 0 14px rgba(255,255,255,0.07);">
+                        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;">
+                            <div class="song-title">—</div>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <div id="progress-container-about" style="flex:1;height:3px;background:rgba(255,255,255,0.10);border-radius:10px;cursor:pointer;position:relative;">
+                                    <div id="music-progress-about" class="tab-music-progress" style="height:100%;width:0%;border-radius:10px;pointer-events:none;transition:width 0.1s linear;"></div>
+                                </div>
+                                <span id="music-time-about" class="tab-music-time">0:00</span>
+                            </div>
                         </div>
-                        <span id="music-time" style="font-size:0.65rem;opacity:0.28;letter-spacing:0.5px;white-space:nowrap;min-width:32px;text-align:right;color:white;">0:00</span>
+                        <div style="display:flex;align-items:center;gap:13px;flex-shrink:0;">
+                            <i class="fas fa-backward control-icon" id="prev-btn-about"      style="font-size:0.83rem;opacity:0.40;"></i>
+                            <i class="fas fa-play    control-icon" id="play-pause-btn-about" style="font-size:1.05rem;opacity:0.75;"></i>
+                            <i class="fas fa-forward control-icon" id="next-btn-about"       style="font-size:0.83rem;opacity:0.40;"></i>
+                        </div>
                     </div>
                 </div>
-                <div style="display:flex;align-items:center;gap:14px;flex-shrink:0;">
-                    <i class="fas fa-backward control-icon" id="prev-btn"      style="font-size:0.85rem;opacity:0.38;"></i>
-                    <i class="fas fa-play    control-icon" id="play-pause-btn" style="font-size:1.1rem;opacity:0.8;"></i>
-                    <i class="fas fa-forward control-icon" id="next-btn"       style="font-size:0.85rem;opacity:0.38;"></i>
-                </div>
-            </div>
-        </div>
+            </div><!-- /panel-player -->
+        </div><!-- /panel-about -->
 
-    </div>
+        <!-- ════════════ CONTACT ════════════ -->
+        <div class="tab-panel" id="panel-contact">
+            <div class="panel-content">
+                <div class="glass-card">
+                    <div class="section-label">reach me at</div>
+                    <div class="email-row">
+                        <i class="fas fa-envelope"></i>
+                        <span id="email-display">shub.professional@gmail.com</span>
+                        <i class="fas fa-copy email-copy" id="copy-btn" title="Copy email"></i>
+                    </div>
+                    <div class="card-divider"></div>
+                    <div class="section-label">send a message</div>
+                    <div class="form-group">
+                        <div class="form-row">
+                            <input class="form-input" id="f-name"  type="text"  placeholder="Name"  autocomplete="name">
+                            <input class="form-input" id="f-email" type="email" placeholder="Email" autocomplete="email">
+                        </div>
+                        <textarea class="form-textarea" id="f-message" placeholder="Message..."></textarea>
+                        <button class="submit-btn" id="send-btn">
+                            <div class="btn-spinner"></div>
+                            <span class="btn-label">SEND MESSAGE</span>
+                        </button>
+                    </div>
+                </div>
+            </div><!-- /panel-content -->
+
+            <!-- Music player pinned to bottom -->
+            <div class="panel-player">
+                <div class="glass-card" style="padding:15px 18px !important;">
+                    <div style="display:flex;align-items:center;gap:13px;">
+                        <img class="tab-music-cover" src="media/music-cover/cry.jpg"
+                             onerror="this.style.display='none';" alt="Cover"
+                             style="width:42px;height:42px;border-radius:7px;object-fit:cover;flex-shrink:0;box-shadow:0 0 14px rgba(255,255,255,0.07);">
+                        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;">
+                            <div class="song-title">—</div>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <div id="progress-container-contact" style="flex:1;height:3px;background:rgba(255,255,255,0.10);border-radius:10px;cursor:pointer;position:relative;">
+                                    <div id="music-progress-contact" class="tab-music-progress" style="height:100%;width:0%;border-radius:10px;pointer-events:none;transition:width 0.1s linear;"></div>
+                                </div>
+                                <span id="music-time-contact" class="tab-music-time">0:00</span>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:13px;flex-shrink:0;">
+                            <i class="fas fa-backward control-icon" id="prev-btn-contact"      style="font-size:0.83rem;opacity:0.40;"></i>
+                            <i class="fas fa-play    control-icon" id="play-pause-btn-contact" style="font-size:1.05rem;opacity:0.75;"></i>
+                            <i class="fas fa-forward control-icon" id="next-btn-contact"       style="font-size:0.83rem;opacity:0.40;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /panel-player -->
+        </div><!-- /panel-contact -->
+
+    </div><!-- /card-container -->
 
     <!-- ── Discord ── -->
-    <script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     (function () {
         var DISCORD_ID = '748831508776878110';
         var USERNAME   = 'shub.is.a.sailor';
@@ -431,7 +432,10 @@
 
         function render(avatarSrc, data) {
             pfpEl.src = avatarSrc;
-            pfpEl.onerror = function () { pfpEl.style.background = 'linear-gradient(135deg,#5865F2,#7289da)'; };
+            pfpEl.onerror = function () {
+                pfpEl.style.background = 'linear-gradient(135deg,#5865F2,#7289da)';
+                pfpEl.removeAttribute('src');
+            };
 
             var status = (data && data.discord_status) || 'offline';
             dotEl.className = 'discord-status-dot ' + (STATUS_CLASS[status] || 'ds-offline');
@@ -439,10 +443,11 @@
             var globalName = (data && data.discord_user && data.discord_user.global_name) || DISPLAY;
             nameEl.textContent = globalName;
 
-            statusEl.innerHTML = '<a href="https://discord.com/users/' + DISCORD_ID + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;" onmouseover="this.style.opacity=\'0.9\'" onmouseout="this.style.opacity=\'0.45\'">' + STATUS_LABEL[status] + ' · @ ' + USERNAME + '</a>';
+            statusEl.innerHTML =
+                '<a href="https://discord.com/users/' + DISCORD_ID + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">' +
+                (STATUS_LABEL[status] || 'Offline') + ' · @' + USERNAME + '</a>';
 
-            var acts = (data && data.activities) || [];
-            var actText = '';
+            var acts = (data && data.activities) || [], actText = '';
             for (var i = 0; i < acts.length; i++) {
                 var a = acts[i];
                 if (a.type === 2 && a.details) { actText = '🎵 ' + a.details + (a.state ? ' — ' + a.state : ''); break; }
@@ -450,111 +455,197 @@
                 if (a.type === 4 && a.state && !actText) actText = a.state;
             }
             if (activityEl) activityEl.textContent = actText;
-
             skeletonEl.style.display = 'none';
             cardEl.classList.add('loaded');
         }
 
-        var defaultIdx    = parseInt(DISCORD_ID.slice(-4)) % 6;
-        var defaultAvatar = 'https://cdn.discordapp.com/embed/avatars/' + defaultIdx + '.png';
+        var defaultAvatar = 'https://cdn.discordapp.com/embed/avatars/' + (parseInt(DISCORD_ID.slice(-4)) % 6) + '.png';
         var done = false;
-        function fallback() { if (done) return; done = true; render(defaultAvatar, null); }
-        var timer = setTimeout(fallback, 3000);
+        var fallbackTimer = setTimeout(function () { if (!done) { done = true; render(defaultAvatar, null); } }, 4000);
 
         fetch('https://api.lanyard.rest/v1/users/' + DISCORD_ID)
             .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
             .then(function (json) {
-                clearTimeout(timer); if (done) return; done = true;
-                var d = json && json.data;
-                var user = d && d.discord_user;
-                var av = defaultAvatar;
+                clearTimeout(fallbackTimer);
+                if (done) return;
+                done = true;
+                var d = json && json.data, user = d && d.discord_user, av = defaultAvatar;
                 if (user && user.avatar) {
                     var ext = user.avatar.startsWith('a_') ? '.gif' : '.webp';
                     av = 'https://cdn.discordapp.com/avatars/' + DISCORD_ID + '/' + user.avatar + ext + '?size=128';
                 }
                 render(av, d);
             })
-            .catch(function () { clearTimeout(timer); fallback(); });
+            .catch(function () { clearTimeout(fallbackTimer); if (!done) { done = true; render(defaultAvatar, null); } });
     })();
     </script>
 
-    <!-- ── Main logic ── -->
+    <!-- ── Main script ── -->
     <script>
     document.addEventListener('DOMContentLoaded', function () {
 
-        emailjs.init({ publicKey: 'ANitUhHu4kV4-js93' });
-
-        // ── Dual contact video management ─────────────────────────
-        var videoNight = document.getElementById('contact-video-night');
-        var videoDay   = document.getElementById('contact-video-day');
-        var contactOverlay = document.getElementById('contact-video-overlay');
-        var contactActive  = false;
-
-        // Determine which video is "active" based on current theme
-        function activeVideo()   { return window.ropeTheme && !window.ropeTheme.isDark() ? videoDay : videoNight; }
-        function inactiveVideo() { return window.ropeTheme && !window.ropeTheme.isDark() ? videoNight : videoDay; }
-
-        function startContactVideos() {
-            if (contactActive) return;
-            contactActive = true;
-            var act = activeVideo();
-            act.style.opacity = '1';
-            act.play().catch(function(){});
-            contactOverlay.style.opacity = '1';
+        // EmailJS init — guard against it not being loaded yet
+        if (typeof emailjs !== 'undefined') {
+            emailjs.init({ publicKey: 'ANitUhHu4kV4-js93' });
+        } else {
+            window.addEventListener('load', function () {
+                if (typeof emailjs !== 'undefined') emailjs.init({ publicKey: 'ANitUhHu4kV4-js93' });
+            });
         }
 
-        function stopContactVideos() {
-            contactActive = false;
-            videoNight.pause();
-            videoDay.pause();
-            videoNight.style.opacity = '0';
-            videoDay.style.opacity   = '0';
-            contactOverlay.style.opacity = '0';
+        var videoDark   = document.getElementById('bg-video-dark');
+        var videoLight  = document.getElementById('bg-video-light');
+        var mainContent = document.getElementById('main-content');
+        var overlay     = document.getElementById('overlay');
+
+        /* ── Video init ── */
+        function initVideos() {
+            videoLight.currentTime = videoDark.currentTime || 0;
+            videoDark.play().catch(function(){});
+            videoLight.play().catch(function(){});
+            var dark = localStorage.getItem('theme') !== 'light';
+            videoDark.style.transition  = 'none';
+            videoLight.style.transition = 'none';
+            videoDark.style.opacity  = dark ? '1' : '0';
+            videoLight.style.opacity = dark ? '0' : '1';
+            requestAnimationFrame(function () { requestAnimationFrame(function () {
+                videoDark.style.transition  = 'opacity 0.55s ease';
+                videoLight.style.transition = 'opacity 0.55s ease';
+            }); });
         }
 
-        // Override _syncContactVideos to also handle overlay state
-        window._syncContactVideos = function (isNowDark) {
-            if (!contactActive) return;
-            var active   = isNowDark ? videoNight : videoDay;
-            var inactive = isNowDark ? videoDay   : videoNight;
-
-            // Sync time
-            active.currentTime = inactive.currentTime;
-
-            // Crossfade
-            active.style.opacity   = '1';
-            inactive.style.opacity = '0';
-
-            active.play().catch(function(){});
-            inactive.pause();
+        window._syncBgVideos = function (isNowDark) {
+            videoDark.style.opacity  = isNowDark ? '1' : '0';
+            videoLight.style.opacity = isNowDark ? '0' : '1';
         };
 
-        // ── Tab switching ──────────────────────────────────────────
-        var BG_MAP    = { overview:'bg-index', about:'bg-about', contact:'bg-contact' };
-        var SUFFIX    = { overview:'Portfolio', about:'Homepage', contact:'Contact' };
-        var TAB_ORDER = ['overview','about','contact'];
+        /* ── Helpers to get audio/playPauseBtn safely (player.js is deferred) ── */
+        function getAudio() { return document.getElementById('bg-audio'); }
+        function getPPBtn()  { return document.getElementById('play-pause-btn'); }
+
+        /* ── Secondary player sync ── */
+        function syncSecondaryPlayers() {
+            var suffixes = ['about', 'contact'];
+
+            // Sync cover and title after a short delay so player.js has loaded
+            setTimeout(function () {
+                var masterCover = document.getElementById('music-cover');
+                var masterTitle = document.querySelector('#panel-overview .song-title');
+                var currentTitle = masterTitle ? masterTitle.textContent : '—';
+                var currentSrc   = masterCover ? masterCover.src : '';
+
+                document.querySelectorAll('.tab-music-cover').forEach(function (el) {
+                    if (currentSrc) el.src = currentSrc;
+                });
+                document.querySelectorAll('.tab-panel:not(#panel-overview) .song-title').forEach(function (el) {
+                    el.textContent = currentTitle;
+                });
+            }, 300);
+
+            suffixes.forEach(function (suffix) {
+                var pp  = document.getElementById('play-pause-btn-' + suffix);
+                var pr  = document.getElementById('music-progress-' + suffix);
+                var ti  = document.getElementById('music-time-' + suffix);
+                var pc  = document.getElementById('progress-container-' + suffix);
+
+                /* Sync play/pause icon with master audio state */
+                function syncIcon() {
+                    var audio = getAudio();
+                    if (!audio || !pp) return;
+                    if (audio.paused) { pp.classList.replace('fa-pause', 'fa-play');  }
+                    else              { pp.classList.replace('fa-play',  'fa-pause'); }
+                }
+                syncIcon();
+
+                /* Progress/time polling */
+                setInterval(function () {
+                    var audio = getAudio();
+                    if (!audio || !audio.duration || !isFinite(audio.duration)) return;
+                    var pct = (audio.currentTime / audio.duration) * 100;
+                    if (pr) pr.style.width = pct + '%';
+                    if (ti) {
+                        var rem = audio.duration - audio.currentTime;
+                        var m = Math.floor(rem / 60), s = Math.floor(rem % 60);
+                        ti.textContent = '-' + m + ':' + (s < 10 ? '0' : '') + s;
+                    }
+                }, 250);
+
+                /* Play/pause button */
+                if (pp) {
+                    pp.addEventListener('click', function () {
+                        var audio = getAudio();
+                        if (!audio) return;
+                        if (audio.paused) audio.play().catch(function(){});
+                        else              audio.pause();
+                    });
+                }
+
+                /* Prev/Next delegate to master buttons */
+                var prev = document.getElementById('prev-btn-' + suffix);
+                var next = document.getElementById('next-btn-' + suffix);
+                if (prev) prev.addEventListener('click', function () {
+                    var btn = document.getElementById('prev-btn');
+                    if (btn) btn.click();
+                });
+                if (next) next.addEventListener('click', function () {
+                    var btn = document.getElementById('next-btn');
+                    if (btn) btn.click();
+                });
+
+                /* Seek via secondary progress bar */
+                if (pc) {
+                    pc.addEventListener('click', function (e) {
+                        var audio = getAudio();
+                        if (!audio || !audio.duration || !isFinite(audio.duration)) return;
+                        var rect  = pc.getBoundingClientRect();
+                        var ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+                        audio.currentTime = ratio * audio.duration;
+                    });
+                }
+            });
+
+            /* Keep secondary players in sync via master audio events */
+            var audio = getAudio();
+            if (audio) {
+                audio.addEventListener('play', function () {
+                    suffixes.forEach(function (s) {
+                        var pp = document.getElementById('play-pause-btn-' + s);
+                        if (pp) pp.classList.replace('fa-play', 'fa-pause');
+                    });
+                    // Sync cover and title when a new song starts
+                    var masterCover = document.getElementById('music-cover');
+                    var masterTitle = document.querySelector('#panel-overview .song-title');
+                    document.querySelectorAll('.tab-music-cover').forEach(function (el) {
+                        if (masterCover) el.src = masterCover.src;
+                    });
+                    document.querySelectorAll('.tab-panel:not(#panel-overview) .song-title').forEach(function (el) {
+                        if (masterTitle) el.textContent = masterTitle.textContent;
+                    });
+                });
+
+                audio.addEventListener('pause', function () {
+                    suffixes.forEach(function (s) {
+                        var pp = document.getElementById('play-pause-btn-' + s);
+                        if (pp) pp.classList.replace('fa-pause', 'fa-play');
+                    });
+                });
+            }
+        }
+
+        /* ── Tab switching ── */
+        var SUFFIX    = { overview:'Portfolio', about:'About', contact:'Contact' };
+        var TAB_ORDER = ['overview', 'about', 'contact'];
         var currentTab = 'overview';
 
         window.switchTab = function (tab) {
-            if (tab === currentTab) return;
-            if (!document.getElementById('panel-' + tab)) return;
-
+            if (tab === currentTab || !document.getElementById('panel-' + tab)) return;
             document.getElementById('tab-' + currentTab).classList.remove('active');
             document.getElementById('tab-' + tab).classList.add('active');
             document.getElementById('panel-' + currentTab).classList.remove('active');
             document.getElementById('panel-' + tab).classList.add('active');
-            document.getElementById(BG_MAP[currentTab]).style.opacity = '0';
-            document.getElementById(BG_MAP[tab]).style.opacity = '1';
-
-            if (tab === 'contact') startContactVideos();
-            else if (currentTab === 'contact') stopContactVideos();
-
-            document.getElementById('main-content').scrollTop = 0;
-            window.startTitleLoop(SUFFIX[tab], 0);
-
-            // Use clean path-based URLs instead of hash
-            var url = tab === 'overview' ? '/' : '/' + tab;
-            history.pushState({ tab: tab }, '', url);
+            mainContent.scrollTop = 0;
+            window.startTitleLoop && window.startTitleLoop(SUFFIX[tab], 0);
+            history.pushState({ tab: tab }, '', tab === 'overview' ? '/' : '/' + tab);
             currentTab = tab;
         };
 
@@ -566,16 +657,25 @@
             var tag = document.activeElement && document.activeElement.tagName;
             if (tag === 'INPUT' || tag === 'TEXTAREA') return;
             var idx = TAB_ORDER.indexOf(currentTab);
-            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); window.switchTab(TAB_ORDER[(idx+1)%TAB_ORDER.length]); }
-            else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); window.switchTab(TAB_ORDER[(idx-1+TAB_ORDER.length)%TAB_ORDER.length]); }
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                window.switchTab(TAB_ORDER[(idx + 1) % TAB_ORDER.length]);
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                window.switchTab(TAB_ORDER[(idx - 1 + TAB_ORDER.length) % TAB_ORDER.length]);
+            }
         });
+
         document.querySelectorAll('.nav-tab').forEach(function (el) {
             el.addEventListener('keydown', function (e) {
-                if (e.key==='Enter'||e.key===' ') { e.preventDefault(); window.switchTab(el.id.replace('tab-','')); }
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    window.switchTab(el.id.replace('tab-', ''));
+                }
             });
         });
 
-        // ── Name typewriter (h1) ───────────────────────────────────
+        /* ── Name typewriter ── */
         var nameEl = document.getElementById('display-name');
         var twName = 'Francisco', twIdx = 0, twErasing = false, twTimer = null;
         function twTick() {
@@ -594,99 +694,115 @@
             nameEl.textContent = ''; setTimeout(twTick, 600);
         };
 
-        // ── Overlay ────────────────────────────────────────────────
-        var overlay     = document.getElementById('overlay');
-        var mainContent = document.getElementById('main-content');
+        /* ── View counter ── */
+        var viewEl = document.querySelector('.visit-count-val');
+        if (viewEl) {
+            var SEED = 1100;
+            function fmt(n) { return n >= 1000 ? (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1) + 'k' : String(n); }
+            if (!localStorage.getItem('unique_views')) localStorage.setItem('unique_views', SEED);
+            var count = parseInt(localStorage.getItem('unique_views'), 10);
+            if (isNaN(count) || count < SEED) { count = SEED; localStorage.setItem('unique_views', SEED); }
+            viewEl.textContent = fmt(count);
+            fetch('https://api.ipify.org?format=json')
+                .then(function (r) { return r.json(); })
+                .then(function (j) {
+                    var today = new Date().toDateString();
+                    if (localStorage.getItem('visitor_ip') !== j.ip || localStorage.getItem('visitor_date') !== today) {
+                        count++;
+                        localStorage.setItem('unique_views', count);
+                        localStorage.setItem('visitor_ip', j.ip);
+                        localStorage.setItem('visitor_date', today);
+                        viewEl.textContent = fmt(count);
+                    }
+                }).catch(function () {});
+        }
 
+        /* ── Enter site ── */
         function enterSite() {
-            sessionStorage.setItem('site_entered','1');
-            audio.play().catch(function () {
-                document.addEventListener('click', function () { audio.play(); }, { once:true });
-            });
-            playPauseBtn.classList.replace('fa-play','fa-pause');
+            sessionStorage.setItem('site_entered', '1');
+            var audio  = getAudio();
+            var ppBtn  = getPPBtn();
+            if (audio) {
+                audio.play().catch(function () {
+                    document.addEventListener('click', function () { getAudio() && getAudio().play(); }, { once: true });
+                });
+            }
+            if (ppBtn) ppBtn.classList.replace('fa-play', 'fa-pause');
             overlay.style.opacity = '0';
             setTimeout(function () {
                 overlay.style.display = 'none';
                 mainContent.classList.add('visible');
+                initVideos();
                 window._startNameTypewriter();
-                window.startTitleLoop('Portfolio', 300);
-                window._ropeInit && window._ropeInit();
+                window.startTitleLoop && window.startTitleLoop('Portfolio', 300);
+                setTimeout(function () { window._ropeInit && window._ropeInit(); }, 80);
+                syncSecondaryPlayers();
             }, 800);
         }
 
         if (sessionStorage.getItem('site_entered')) {
             overlay.style.display = 'none';
             mainContent.classList.add('visible');
-            audio.play().catch(function () {
-                document.addEventListener('click', function () { audio.play(); }, { once:true });
-            });
-            playPauseBtn.classList.replace('fa-play','fa-pause');
+            initVideos();
+            var audio = getAudio();
+            var ppBtn = getPPBtn();
+            if (audio) {
+                audio.play().catch(function () {
+                    document.addEventListener('click', function () { getAudio() && getAudio().play(); }, { once: true });
+                });
+            }
+            if (ppBtn) ppBtn.classList.replace('fa-play', 'fa-pause');
             window._startNameTypewriter();
-            window.startTitleLoop('Portfolio', 400);
-            window._ropeInit && window._ropeInit();
+            window.startTitleLoop && window.startTitleLoop('Portfolio', 400);
+            setTimeout(function () { window._ropeInit && window._ropeInit(); }, 80);
+            syncSecondaryPlayers();
         } else {
-            overlay.addEventListener('click', enterSite, { once:true });
+            videoDark.load(); videoLight.load();
+            overlay.addEventListener('click', enterSite, { once: true });
         }
 
-        // ── View counter ───────────────────────────────────────────
-        var viewEl = document.querySelector('.visit-count-val');
-        if (viewEl) {
-            var SEED = 1100;
-            function fmt(n) { return n>=1000?(n/1000).toFixed(n%1000===0?0:1)+'k':String(n); }
-            if (!localStorage.getItem('unique_views')) localStorage.setItem('unique_views',SEED);
-            var count = parseInt(localStorage.getItem('unique_views'),10);
-            if (isNaN(count)||count<SEED) { count=SEED; localStorage.setItem('unique_views',SEED); }
-            viewEl.textContent = fmt(count);
-            fetch('https://api.ipify.org?format=json')
-                .then(function(r){return r.json();})
-                .then(function(j){
-                    var today=new Date().toDateString();
-                    if (localStorage.getItem('visitor_ip')!==j.ip||localStorage.getItem('visitor_date')!==today) {
-                        count++; localStorage.setItem('unique_views',count);
-                        localStorage.setItem('visitor_ip',j.ip);
-                        localStorage.setItem('visitor_date',today);
-                        viewEl.textContent=fmt(count);
-                    }
-                }).catch(function(){});
-        }
-
-        // ── Contact ────────────────────────────────────────────────
+        /* ── Contact ── */
         document.getElementById('copy-btn').addEventListener('click', function () {
             navigator.clipboard.writeText(document.getElementById('email-display').textContent.trim())
-                .then(function () { showToast('Email copied!','success'); });
+                .then(function () { showToast('Email copied!', 'success'); })
+                .catch(function () { showToast('Could not copy.', 'error'); });
         });
 
         document.getElementById('send-btn').addEventListener('click', function () {
             var name  = document.getElementById('f-name').value.trim();
             var email = document.getElementById('f-email').value.trim();
             var msg   = document.getElementById('f-message').value.trim();
-            if (!name||!email||!msg) { showToast('Please fill in all fields.','error'); return; }
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Please enter a valid email.','error'); return; }
+            if (!name || !email || !msg) { showToast('Please fill in all fields.', 'error'); return; }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Please enter a valid email.', 'error'); return; }
             var btn = document.getElementById('send-btn');
-            btn.classList.add('loading'); btn.disabled=true;
-            emailjs.send('service_wfciems','template_srqhd09',{name:name,email:email,message:msg})
-                .then(function(){
-                    showToast('Message sent!','success');
-                    document.getElementById('f-name').value='';
-                    document.getElementById('f-email').value='';
-                    document.getElementById('f-message').value='';
+            btn.classList.add('loading'); btn.disabled = true;
+            if (typeof emailjs === 'undefined') {
+                fallbackMailto(name, email, msg);
+                btn.classList.remove('loading'); btn.disabled = false;
+                return;
+            }
+            emailjs.send('service_wfciems', 'template_srqhd09', { name: name, email: email, message: msg })
+                .then(function () {
+                    showToast('Message sent!', 'success');
+                    ['f-name', 'f-email', 'f-message'].forEach(function (id) { document.getElementById(id).value = ''; });
                 })
-                .catch(function(){
-                    var s=encodeURIComponent('Message from '+name);
-                    var b=encodeURIComponent('From: '+name+' <'+email+'>\n\n'+msg);
-                    window.open('mailto:shub.professional@gmail.com?subject='+s+'&body='+b);
-                    showToast('Opening mail client as fallback...','');
-                })
-                .finally(function(){ btn.classList.remove('loading'); btn.disabled=false; });
+                .catch(function () { fallbackMailto(name, email, msg); })
+                .finally(function () { btn.classList.remove('loading'); btn.disabled = false; });
         });
 
-        function showToast(msg,type) {
-            var t=document.getElementById('toast');
-            t.textContent=msg; t.className=type||''; t.style.opacity='1';
-            setTimeout(function(){t.style.opacity='0';t.className='';},3000);
+        function fallbackMailto(name, email, msg) {
+            var s = encodeURIComponent('Message from ' + name);
+            var b = encodeURIComponent('From: ' + name + ' <' + email + '>\n\n' + msg);
+            window.open('mailto:shub.professional@gmail.com?subject=' + s + '&body=' + b);
+            showToast('Opening mail client...', '');
         }
-
-    }); // end DOMContentLoaded
+        
+        function showToast(msg, type) {
+            var t = document.getElementById('toast');
+            t.textContent = msg; t.className = type || ''; t.style.opacity = '1';
+            setTimeout(function () { t.style.opacity = '0'; t.className = ''; }, 3000);
+        }
+    });
     </script>
 
 </body>

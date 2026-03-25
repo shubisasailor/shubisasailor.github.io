@@ -6,84 +6,99 @@
     <title>Francisco | </title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- EmailJS loaded before player.js so it's ready when form submits -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <link rel="stylesheet" href="css/main.css">
     <script src="js/title-typer.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            window.startTitleLoop && window.startTitleLoop('Contact', 300);
-        });
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script src="js/player.js" defer></script>
     <script src="js/rope-theme.js" defer></script>
     <style>
-        /* ── Dual contact videos ── */
-        .contact-video {
-            position: fixed; inset: 0; z-index: 0;
-            width: 100%; height: 100%;
-            object-fit: cover;
-            transition: opacity 0.6s ease;
-            pointer-events: none;
-        }
-        /* Night starts visible (dark mode default), day hidden */
-        #contact-video-night { opacity: 1; }
-        #contact-video-day   { opacity: 0; }
-
-        #contact-video-overlay {
-            position: fixed; inset: 0; z-index: 1;
-            background: radial-gradient(ellipse at center, transparent 20%, rgba(0,0,0,0.20) 100%);
-            pointer-events: none;
-        }
-
         .card-container {
             overflow-y: auto !important;
             max-height: 100vh;
-            padding: 20px 0 !important;
+            padding: 20px 16px 32px !important;
             box-sizing: border-box;
             justify-content: flex-start !important;
+            align-items: center;
             scrollbar-width: none;
             -ms-overflow-style: none;
+            gap: 14px;
         }
         .card-container::-webkit-scrollbar { display: none; }
+        .glass-card { width: 100% !important; max-width: 450px; }
 
-        .nav-tabs span { font-size:0.7rem; letter-spacing:2px; font-weight:bold; opacity:0.5; cursor:pointer; transition:opacity 0.2s; color:var(--text,white); }
-        .nav-tabs span.active { opacity:1; }
-        .nav-tabs span:hover  { opacity:0.85; }
-        .section-label { font-size:0.65rem; letter-spacing:2.5px; font-weight:bold; opacity:0.35; margin-bottom:14px; text-transform:uppercase; color:var(--section-label-color, rgba(255,255,255,0.45)); }
-        .email-row { display:flex; align-items:center; gap:12px; background:var(--email-row-bg,rgba(255,255,255,0.04)); border:1px solid var(--email-row-border,rgba(255,255,255,0.08)); border-radius:8px; padding:12px 16px; font-size:0.85rem; color:var(--email-row-text,rgba(255,255,255,0.7)); }
-        .email-row i { opacity:0.5; }
-        .email-copy { margin-left:auto; cursor:pointer; opacity:0.4; transition:opacity 0.2s; font-size:0.8rem; }
-        .email-copy:hover { opacity:0.9; }
-        .card-divider { height:1px; background:var(--divider,rgba(255,255,255,0.07)); margin:18px 0; }
-        .form-group { display:flex; flex-direction:column; gap:10px; }
-        .form-input, .form-textarea { background:var(--input-bg,rgba(255,255,255,0.04)); border:1px solid var(--input-border,rgba(255,255,255,0.08)); border-radius:8px; padding:11px 14px; font-family:'Inter',sans-serif; font-size:0.82rem; color:var(--input-text,white); outline:none; transition:border-color 0.2s,background 0.2s; width:100%; box-sizing:border-box; }
-        .form-input::placeholder, .form-textarea::placeholder { color:var(--input-ph,rgba(255,255,255,0.25)); }
-        .form-input:focus, .form-textarea:focus { border-color:rgba(255,255,255,0.25); background:rgba(255,255,255,0.07); }
-        .form-textarea { resize:none; height:90px; }
-        .form-row { display:flex; gap:10px; }
-        .form-row .form-input { flex:1; }
-        .submit-btn { margin-top:4px; width:100%; padding:11px; background:var(--submit-bg,rgba(255,255,255,0.08)); border:1px solid var(--submit-border,rgba(255,255,255,0.15)); border-radius:8px; color:var(--submit-text,rgba(255,255,255,0.7)); font-family:'Inter',sans-serif; font-size:0.75rem; letter-spacing:2px; cursor:pointer; transition:all 0.2s ease; display:flex; align-items:center; justify-content:center; gap:8px; }
-        .submit-btn:hover:not(:disabled) { background:rgba(255,255,255,0.14); color:var(--text,white); border-color:rgba(255,255,255,0.3); }
-        .submit-btn:active:not(:disabled) { transform:scale(0.98); }
-        .submit-btn:disabled { opacity:0.5; cursor:not-allowed; }
-        .btn-spinner { width:12px; height:12px; border:2px solid rgba(255,255,255,0.3); border-top-color:white; border-radius:50%; animation:spin 0.7s linear infinite; display:none; }
-        .submit-btn.loading .btn-spinner { display:block; }
-        .submit-btn.loading .btn-label   { opacity:0.5; }
-        @keyframes spin { to { transform:rotate(360deg); } }
-        #toast { position:fixed; bottom:30px; left:25px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); backdrop-filter:blur(10px); border-radius:8px; padding:10px 18px; font-size:0.8rem; color:rgba(255,255,255,0.8); opacity:0; transition:opacity 0.4s ease; pointer-events:none; z-index:100; }
-        #toast.success { border-color:rgba(100,255,150,0.3); color:rgba(150,255,180,0.9); }
-        #toast.error   { border-color:rgba(255,100,100,0.3); color:rgba(255,150,150,0.9); }
+        .section-label {
+            font-size: 0.60rem; letter-spacing: 3px; font-weight: bold;
+            margin-bottom: 14px; text-transform: uppercase;
+            color: var(--section-label-color, rgba(255,255,255,0.55));
+        }
+        .email-row {
+            display: flex; align-items: center; gap: 12px;
+            background: var(--email-row-bg, rgba(255,255,255,0.04));
+            border: 1px solid var(--email-row-border, rgba(255,255,255,0.08));
+            border-radius: 8px; padding: 12px 16px;
+            font-size: 0.85rem; color: var(--email-row-text, rgba(255,255,255,0.75));
+            word-break: break-all;
+        }
+        .email-row i { opacity: 0.45; }
+        .email-copy  { margin-left: auto; opacity: 0.35; transition: opacity 0.2s; font-size: 0.8rem; cursor: pointer; flex-shrink: 0; }
+        .email-copy:hover { opacity: 0.90; }
+        .card-divider { height: 1px; background: var(--divider, rgba(255,255,255,0.07)); margin: 18px 0; }
 
-        /* Light mode overlay tint adapts */
-        body.theme-light #contact-video-overlay { background: rgba(255,255,255,0.15); }
+        .form-group { display: flex; flex-direction: column; gap: 10px; }
+        .form-input, .form-textarea {
+            background: var(--input-bg, rgba(255,255,255,0.04));
+            border: 1px solid var(--input-border, rgba(255,255,255,0.08));
+            border-radius: 8px; padding: 11px 14px;
+            font-family: 'Inter', sans-serif; font-size: 0.82rem;
+            color: var(--input-text, white); outline: none;
+            transition: border-color 0.2s, background 0.2s; width: 100%; box-sizing: border-box;
+        }
+        .form-input::placeholder, .form-textarea::placeholder { color: var(--input-ph, rgba(255,255,255,0.28)); }
+        .form-input:focus, .form-textarea:focus { border-color: rgba(255,255,255,0.28); background: rgba(255,255,255,0.07); }
+        .form-textarea { resize: none; height: 90px; }
+        .form-row { display: flex; gap: 10px; }
+        .form-row .form-input { flex: 1; }
+        @media (max-width: 380px) { .form-row { flex-direction: column; } }
+
+        .submit-btn {
+            margin-top: 4px; width: 100%; padding: 11px;
+            background: var(--submit-bg, rgba(255,255,255,0.06));
+            border: 1px solid var(--submit-border, rgba(255,255,255,0.12));
+            border-radius: 8px; color: var(--submit-text, rgba(255,255,255,0.70));
+            font-family: 'Inter', sans-serif; font-size: 0.75rem; letter-spacing: 2px; cursor: pointer;
+            transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .submit-btn:hover:not(:disabled) { background: rgba(255,255,255,0.14); color: white; border-color: rgba(255,255,255,0.32); }
+        .submit-btn:active:not(:disabled) { transform: scale(0.98); }
+        .submit-btn:disabled { opacity: 0.50; }
+        .btn-spinner { width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.30); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+        .submit-btn.loading .btn-spinner { display: block; }
+        .submit-btn.loading .btn-label  { opacity: 0.50; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Music player */
+        .song-title   { font-size: 0.78rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: rgba(255,255,255,0.65) !important; }
+        #music-time   { font-size: 0.65rem; opacity: 0.45; white-space: nowrap; min-width: 32px; text-align: right; color: var(--text, white); }
+        #music-progress { background: rgba(255,255,255,0.55) !important; box-shadow: 0 0 7px rgba(255,255,255,0.18) !important; }
+
+        #toast {
+            position: fixed; bottom: 30px; left: 25px;
+            background: rgba(0,0,0,0.70); border: 1px solid rgba(255,255,255,0.14);
+            backdrop-filter: blur(14px); border-radius: 8px; padding: 10px 18px;
+            font-size: 0.80rem; color: rgba(255,255,255,0.80);
+            opacity: 0; transition: opacity 0.4s ease; pointer-events: none; z-index: 100;
+            max-width: calc(100vw - 50px);
+        }
+        #toast.success { border-color: rgba(100,255,150,0.35); color: rgba(150,255,180,0.90); }
+        #toast.error   { border-color: rgba(255,100,100,0.35); color: rgba(255,150,150,0.90); }
     </style>
 </head>
 <body class="contact-page theme-dark">
 
-    <!-- Dual contact videos — muted, audio from bg-audio only -->
-    <video id="contact-video-night" class="contact-video" src="media/contact-night.mp4" loop playsinline preload="auto" muted></video>
-    <video id="contact-video-day"   class="contact-video" src="media/contact-day.mp4"   loop playsinline preload="auto" muted></video>
-    <div id="contact-video-overlay"></div>
+    <video id="bg-video-dark"  class="bg-video" src="media/dark.mp4"  loop playsinline preload="auto" muted></video>
+    <video id="bg-video-light" class="bg-video" src="media/light.mp4" loop playsinline preload="auto" muted></video>
+    <div id="bg-video-overlay"></div>
 
     <div id="overlay">
         <div class="overlay-blur"></div>
@@ -97,14 +112,12 @@
         </div>
     </div>
 
-    <audio id="bg-audio" loop>
-        <source src="audio/i-walk-this-earth-all-by-myself.mp3" type="audio/mpeg">
-    </audio>
-
+    <audio id="bg-audio" loop><source src="" type="audio/mpeg"></audio>
     <div id="toast"></div>
 
     <div class="card-container" id="main-content">
 
+        <!-- NAV -->
         <div class="glass-card">
             <div class="nav-tabs" style="display:flex;justify-content:space-around;">
                 <span onclick="location.href='/'">OVERVIEW</span>
@@ -113,6 +126,7 @@
             </div>
         </div>
 
+        <!-- CONTACT FORM -->
         <div class="glass-card">
             <div class="section-label">reach me at</div>
             <div class="email-row">
@@ -124,8 +138,8 @@
             <div class="section-label">send a message</div>
             <div class="form-group">
                 <div class="form-row">
-                    <input class="form-input" id="f-name"  type="text"  placeholder="Name">
-                    <input class="form-input" id="f-email" type="email" placeholder="Email">
+                    <input class="form-input" id="f-name"  type="text"  placeholder="Name"  autocomplete="name">
+                    <input class="form-input" id="f-email" type="email" placeholder="Email" autocomplete="email">
                 </div>
                 <textarea class="form-textarea" id="f-message" placeholder="Message..."></textarea>
                 <button class="submit-btn" id="send-btn">
@@ -135,22 +149,25 @@
             </div>
         </div>
 
-        <div class="glass-card" style="padding:16px 20px;">
-            <div class="music-row" style="display:flex;align-items:center;gap:14px;">
-                <img src="" style="width:44px;height:44px;border-radius:6px;object-fit:cover;flex-shrink:0;" alt="Cover">
+        <!-- MUSIC PLAYER -->
+        <div class="glass-card" style="padding:15px 18px !important;">
+            <div style="display:flex;align-items:center;gap:13px;">
+                <img id="music-cover" src="media/music-cover/cry.jpg"
+                     onerror="this.style.display='none';" alt="Cover"
+                     style="width:42px;height:42px;border-radius:7px;object-fit:cover;flex-shrink:0;box-shadow:0 0 14px rgba(255,255,255,0.07);">
                 <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;">
-                    <div class="song-title" style="font-size:0.78rem;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text,white);opacity:0.9;">—</div>
+                    <div class="song-title">—</div>
                     <div style="display:flex;align-items:center;gap:8px;">
-                        <div class="progress-bg" id="progress-container" style="flex:1;height:3px;cursor:pointer;position:relative;background:rgba(255,255,255,0.12);border-radius:10px;">
-                            <div class="progress-fill" id="music-progress" style="height:100%;width:0%;background:white;border-radius:10px;pointer-events:none;transition:width 0.1s linear;"></div>
+                        <div id="progress-container" style="flex:1;height:3px;background:rgba(255,255,255,0.10);border-radius:10px;cursor:pointer;position:relative;">
+                            <div id="music-progress" style="height:100%;width:0%;border-radius:10px;pointer-events:none;transition:width 0.1s linear;"></div>
                         </div>
-                        <span id="music-time" style="font-size:0.65rem;opacity:0.35;letter-spacing:0.5px;white-space:nowrap;min-width:32px;text-align:right;color:var(--text,white);">0:00</span>
+                        <span id="music-time">0:00</span>
                     </div>
                 </div>
-                <div style="display:flex;align-items:center;gap:14px;flex-shrink:0;">
-                    <i class="fas fa-backward control-icon" id="prev-btn" style="font-size:0.85rem;opacity:0.5;"></i>
-                    <i class="fas fa-play control-icon" id="play-pause-btn" style="font-size:1.1rem;"></i>
-                    <i class="fas fa-forward control-icon" id="next-btn" style="font-size:0.85rem;opacity:0.5;"></i>
+                <div style="display:flex;align-items:center;gap:13px;flex-shrink:0;">
+                    <i class="fas fa-backward control-icon" id="prev-btn"      style="font-size:0.83rem;opacity:0.40;"></i>
+                    <i class="fas fa-play    control-icon" id="play-pause-btn" style="font-size:1.05rem;opacity:0.75;"></i>
+                    <i class="fas fa-forward control-icon" id="next-btn"       style="font-size:0.83rem;opacity:0.40;"></i>
                 </div>
             </div>
         </div>
@@ -158,113 +175,114 @@
     </div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    // Wait for everything (including deferred player.js) to be ready
+    window.addEventListener('load', function () {
 
-        emailjs.init({ publicKey: 'ANitUhHu4kV4-js93' });
+        window.startTitleLoop && window.startTitleLoop('Contact', 300);
 
-        var videoNight = document.getElementById('contact-video-night');
-        var videoDay   = document.getElementById('contact-video-day');
-        var overlay    = document.getElementById('overlay');
-        var mainContent = document.getElementById('main-content');
-
-        // Determine which video to show based on current theme
-        function getActiveVideo()   { return (localStorage.getItem('theme') === 'light') ? videoDay   : videoNight; }
-        function getInactiveVideo() { return (localStorage.getItem('theme') === 'light') ? videoNight : videoDay;   }
-
-        function startActiveVideo() {
-            var act = getActiveVideo();
-            act.style.opacity = '1';
-            act.play().catch(function(){});
+        // EmailJS is loaded in <head> (non-deferred), safe to init here
+        if (typeof emailjs !== 'undefined') {
+            emailjs.init({ publicKey: 'ANitUhHu4kV4-js93' });
         }
 
-        // Override _syncContactVideos for standalone contact page
-        window._syncContactVideos = function (isNowDark) {
-            var active   = isNowDark ? videoNight : videoDay;
-            var inactive = isNowDark ? videoDay   : videoNight;
+        var overlay      = document.getElementById('overlay');
+        var mainContent  = document.getElementById('main-content');
+        var videoDark    = document.getElementById('bg-video-dark');
+        var videoLight   = document.getElementById('bg-video-light');
+        // player.js is deferred — these DOM elements exist, but player globals
+        // are set up by player.js. Grab elements directly from the DOM.
+        var audio        = document.getElementById('bg-audio');
+        var playPauseBtn = document.getElementById('play-pause-btn');
 
-            // Sync time from what's currently playing
-            active.currentTime = inactive.currentTime;
+        function startVideos() {
+            var isDark = localStorage.getItem('theme') !== 'light';
+            videoDark.style.opacity  = isDark ? '1' : '0';
+            videoLight.style.opacity = isDark ? '0' : '1';
+            (isDark ? videoDark : videoLight).play().catch(function(){});
+        }
 
-            active.style.opacity   = '1';
-            inactive.style.opacity = '0';
-
-            active.play().catch(function(){});
-            inactive.pause();
+        window._syncBgVideos = function (isNowDark) {
+            videoDark.style.opacity  = isNowDark ? '1' : '0';
+            videoLight.style.opacity = isNowDark ? '0' : '1';
         };
 
         function enterSite() {
             sessionStorage.setItem('site_entered', '1');
             audio.play()
                 .then(function () { window._restoreMusicTime && window._restoreMusicTime(); })
-                .catch(function () {
-                    document.addEventListener('click', function () {
-                        audio.play().then(function () { window._restoreMusicTime && window._restoreMusicTime(); });
-                    }, { once: true });
-                });
+                .catch(function () { document.addEventListener('click', function () { audio.play(); }, { once: true }); });
             playPauseBtn.classList.replace('fa-play', 'fa-pause');
             overlay.style.opacity = '0';
             setTimeout(function () {
                 overlay.style.display = 'none';
                 mainContent.classList.add('visible');
-                startActiveVideo();
+                startVideos();
+                setTimeout(function () { window._ropeInit && window._ropeInit(); }, 80);
             }, 800);
         }
 
         if (sessionStorage.getItem('site_entered')) {
             overlay.style.display = 'none';
             mainContent.classList.add('visible');
-            startActiveVideo();
+            startVideos();
             audio.play()
                 .then(function () { window._restoreMusicTime && window._restoreMusicTime(); })
-                .catch(function () {
-                    document.addEventListener('click', function () {
-                        audio.play().then(function () { window._restoreMusicTime && window._restoreMusicTime(); });
-                    }, { once: true });
-                });
+                .catch(function () { document.addEventListener('click', function () { audio.play(); }, { once: true }); });
             playPauseBtn.classList.replace('fa-play', 'fa-pause');
+            setTimeout(function () { window._ropeInit && window._ropeInit(); }, 80);
         } else {
             overlay.addEventListener('click', enterSite, { once: true });
         }
 
-        // ── Toast ──
+        /* ── Toast helper ── */
         function showToast(msg, type) {
             var t = document.getElementById('toast');
             t.textContent = msg; t.className = type || ''; t.style.opacity = '1';
             setTimeout(function () { t.style.opacity = '0'; t.className = ''; }, 3000);
         }
 
-        // ── Copy email ──
+        /* ── Copy email ── */
         document.getElementById('copy-btn').addEventListener('click', function () {
             navigator.clipboard.writeText(document.getElementById('email-display').textContent.trim())
-                .then(function () { showToast('Email copied!', 'success'); });
+                .then(function () { showToast('Email copied!', 'success'); })
+                .catch(function () { showToast('Could not copy.', 'error'); });
         });
 
-        // ── Send message ──
+        /* ── Send message ── */
         document.getElementById('send-btn').addEventListener('click', function () {
             var name  = document.getElementById('f-name').value.trim();
             var email = document.getElementById('f-email').value.trim();
             var msg   = document.getElementById('f-message').value.trim();
             if (!name || !email || !msg) { showToast('Please fill in all fields.', 'error'); return; }
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Please enter a valid email.', 'error'); return; }
+
             var btn = document.getElementById('send-btn');
             btn.classList.add('loading'); btn.disabled = true;
+
+            function fallbackMailto() {
+                var s = encodeURIComponent('Message from ' + name);
+                var b = encodeURIComponent('From: ' + name + ' <' + email + '>\n\n' + msg);
+                window.open('mailto:shub.professional@gmail.com?subject=' + s + '&body=' + b);
+                showToast('Opening mail client...', '');
+            }
+
+            if (typeof emailjs === 'undefined') {
+                fallbackMailto();
+                btn.classList.remove('loading'); btn.disabled = false;
+                return;
+            }
+
             emailjs.send('service_wfciems', 'template_srqhd09', { name: name, email: email, message: msg })
                 .then(function () {
                     showToast('Message sent!', 'success');
-                    document.getElementById('f-name').value = '';
-                    document.getElementById('f-email').value = '';
+                    document.getElementById('f-name').value    = '';
+                    document.getElementById('f-email').value   = '';
                     document.getElementById('f-message').value = '';
                 })
-                .catch(function () {
-                    var s = encodeURIComponent('Message from ' + name);
-                    var b = encodeURIComponent('From: ' + name + ' <' + email + '>\n\n' + msg);
-                    window.open('mailto:shub.professional@gmail.com?subject=' + s + '&body=' + b);
-                    showToast('Opening mail client as fallback...', '');
-                })
+                .catch(function () { fallbackMailto(); })
                 .finally(function () { btn.classList.remove('loading'); btn.disabled = false; });
         });
-
-    }); // end DOMContentLoaded
+    });
     </script>
 </body>
 </html>

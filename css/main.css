@@ -2,6 +2,12 @@
    main.css — Francisco Portfolio
    ================================================================ */
 
+/* --- 0. Custom Cursor --- */
+*, *::before, *::after {
+    cursor: url('../media/cursor/cursor.webp'), auto !important;
+    box-sizing: border-box;
+}
+
 /* --- 1. Global Setup --- */
 html, body {
     margin: 0;
@@ -12,15 +18,6 @@ html, body {
     background-color: #000;
     font-family: 'Inter', sans-serif;
     color: white;
-    cursor: url('../media/cursor/cursor.webp'), auto;
-}
-
-a, button, input, textarea, select,
-[onclick], [role="button"],
-.control-icon, .email-copy, .submit-btn,
-.progress-bg, .volume-slider, .social-links a,
-.skill-tag, .nav-tabs span, .nav-tab, .enter-button {
-    cursor: url('../media/cursor/cursor.webp'), auto;
 }
 
 /* --- 2. Entry Overlay --- */
@@ -31,7 +28,6 @@ a, button, input, textarea, select,
     display: flex;
     justify-content: center;
     align-items: center;
-    cursor: url('../media/cursor/cursor.webp'), auto;
     transition: opacity 0.8s ease;
 }
 
@@ -52,44 +48,8 @@ a, button, input, textarea, select,
     animation: pulse 2s infinite ease-in-out;
 }
 
-/* --- 3. Page backgrounds --- */
-/* Images/videos sit at their native brightness — NO ::after overlay tint */
-.index-page {
-    background: url('../media/index.jpg') no-repeat center center / cover fixed;
-    position: relative;
-    width: 100%;
-    height: 100vh;
-}
-
-.about-page {
-    background: url('../media/about.jpg') no-repeat center center / cover fixed;
-    position: relative;
-    width: 100%;
-    height: 100vh;
-}
-
-.contact-page {
-    /* No static bg — videos handle it */
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    background: #000;
-}
-
-/* Background layers (index.html SPA) — no tint pseudo-element */
-.bg-layer {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    transition: opacity 0.6s ease;
-    /* REMOVED ::after overlay — images show at original brightness */
-}
-
-/* Contact videos */
-.contact-video {
+/* --- 3. Dual background videos --- */
+.bg-video {
     position: fixed;
     inset: 0;
     z-index: 0;
@@ -100,20 +60,20 @@ a, button, input, textarea, select,
     pointer-events: none;
 }
 
-/* Thin overlay just enough to keep text readable, not darkening */
-#contact-video-overlay {
+#bg-video-dark  { opacity: 1; }
+#bg-video-light { opacity: 0; }
+
+#bg-video-overlay {
     position: fixed;
     inset: 0;
     z-index: 1;
-    /* Subtle vignette only — no solid black slab */
     background: radial-gradient(ellipse at center,
         transparent 30%,
-        rgba(0,0,0,0.18) 100%);
+        rgba(0,0,0,0.20) 100%);
     pointer-events: none;
-    transition: opacity 0.6s ease;
 }
 
-/* --- 4. UI Elements --- */
+/* --- 4. Top-left controls --- */
 .top-left-wrapper {
     position: fixed;
     top: 25px;
@@ -149,9 +109,9 @@ a, button, input, textarea, select,
     align-items: center;
     justify-content: flex-start;
     min-height: 100vh;
-    padding: 24px 0;
+    padding: 24px 0 32px;
     box-sizing: border-box;
-    gap: 16px;
+    gap: 14px;
     overflow-y: auto;
     max-height: 100vh;
     scrollbar-width: none;
@@ -169,10 +129,7 @@ a, button, input, textarea, select,
 
 .card-container::-webkit-scrollbar { display: none; }
 
-/* --- 6. Glass Card ---
-   Dark mode: very dark translucent
-   Light mode: lightly tinted white — set via CSS var from rope-theme.js
-*/
+/* --- 6. Glass Card --- */
 .glass-card {
     width: 450px;
     background: rgba(0, 0, 0, 0.28);
@@ -221,7 +178,7 @@ a, button, input, textarea, select,
     object-fit: contain;
     fill: white;
     color: white;
-    font-size: 24px;
+    font-size: 20px;
     filter: drop-shadow(0 0 8px rgba(255,255,255,0.8));
 }
 
@@ -269,116 +226,16 @@ a, button, input, textarea, select,
     50%       { opacity: 0.8; }
 }
 
-/* --- 10. About page — two-column layout --- */
-.about-layout {
-    display: flex;
-    gap: 16px;
-    width: 820px;
-    align-items: flex-start;
-}
-
-.about-projects-col {
-    width: 35%;
-    flex-shrink: 0;
-}
-
-.about-info-col {
-    flex: 1;
-}
-
-/* Project cards */
-.project-item {
-    background: var(--skill-bg, rgba(255,255,255,0.04));
-    border: 1px solid var(--skill-border, rgba(255,255,255,0.09));
-    border-radius: 10px;
-    padding: 12px 14px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    overflow: hidden;
-}
-
-.project-item:hover {
-    background: var(--input-bg, rgba(255,255,255,0.07));
-    border-color: rgba(255,255,255,0.2);
-}
-
-.project-item.expanded {
-    border-color: rgba(255,255,255,0.22);
-    background: rgba(255,255,255,0.06);
-}
-
-.project-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-}
-
-.project-title {
-    font-size: 0.8rem;
-    font-weight: bold;
-    color: var(--text, white);
-    letter-spacing: 0.5px;
-}
-
-.project-arrow {
-    font-size: 0.65rem;
-    opacity: 0.4;
-    transition: transform 0.25s ease, opacity 0.2s;
-    color: var(--text, white);
-}
-
-.project-item.expanded .project-arrow {
-    transform: rotate(180deg);
-    opacity: 0.8;
-}
-
-.project-body {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.35s ease, padding-top 0.25s ease;
-    padding-top: 0;
-}
-
-.project-item.expanded .project-body {
-    max-height: 200px;
-    padding-top: 10px;
-}
-
-.project-desc {
-    font-size: 0.75rem;
-    line-height: 1.6;
-    color: var(--text-muted, rgba(255,255,255,0.55));
-    margin: 0 0 10px 0;
-}
-
-.project-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+/* --- 10. Nav tabs (sub-pages) --- */
+.nav-tabs span {
     font-size: 0.7rem;
-    letter-spacing: 1px;
-    padding: 5px 12px;
-    border-radius: 6px;
-    background: var(--submit-bg, rgba(255,255,255,0.06));
-    border: 1px solid var(--submit-border, rgba(255,255,255,0.12));
+    letter-spacing: 2px;
+    font-weight: bold;
+    opacity: 0.5;
+    transition: opacity 0.2s;
     color: var(--text, white);
-    text-decoration: none;
-    transition: all 0.2s ease;
+    cursor: pointer;
 }
 
-.project-link:hover {
-    background: rgba(255,255,255,0.12);
-    border-color: rgba(255,255,255,0.3);
-}
-
-/* Responsive — stack on small screens */
-@media (max-width: 900px) {
-    .about-layout {
-        width: 450px;
-        flex-direction: column;
-    }
-    .about-projects-col,
-    .about-info-col { width: 100%; }
-}
+.nav-tabs span.active { opacity: 1; }
+.nav-tabs span:hover  { opacity: 0.85; }

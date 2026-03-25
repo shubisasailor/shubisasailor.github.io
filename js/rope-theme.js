@@ -1,164 +1,183 @@
 // ═══════════════════════════════════════════════════════════════════
 //  rope-theme.js
-//  • Anchor: top-right of viewport
-//  • Pull direction: DOWNWARD — ball travels down, rope stretches
-//  • Destroy: at TUG_THRESHOLD px down → burst at that position,
-//    no snap back up. Respawns from top after burst.
-//  • Speaker icon: always glows white (both themes)
-//  • Light mode: text/inputs/cards adapt, icons go dark EXCEPT speaker
-//  • Contact page: two videos (contact-night.mp4 / contact-day.mp4)
-//    that sync playback position on theme switch
+//  • Auto-detects OS/browser preferred color scheme on first visit
+//  • Dark mode  → white rope + white ball
+//  • Light mode → dark rope + dark ball (readable on bright video)
+//  • Pull rope down to toggle theme
+//  • Speaker icon always glows white
 // ═══════════════════════════════════════════════════════════════════
 
 (function () {
 
+    // ── Rope physics constants ─────────────────────────────────────
     var ROPE_SEGMENTS = 12;
     var SEGMENT_LEN   = 13;
     var BALL_RADIUS   = 9;
     var GRAVITY       = 0.55;
     var DAMPING       = 0.80;
     var STIFFNESS     = 0.85;
-    var TUG_THRESHOLD = 60;   // px pulled DOWN before toggle fires
-    var MAX_PULL      = 120;  // max stretch from rest position
+    var TUG_THRESHOLD = 60;
+    var MAX_PULL      = 120;
 
-    var BALL_COLORS = ['#ffffff', '#a78bfa', '#67e8f9', '#f9a8d4', '#86efac', '#fde68a'];
-    var colorIdx    = 0;
+    // ── Theme detection ───────────────────────────────────────────
+    // Use stored preference; if none, auto-detect from OS
+    var stored = localStorage.getItem('theme');
+    var isDark;
+    if (stored === 'dark') {
+        isDark = true;
+    } else if (stored === 'light') {
+        isDark = false;
+    } else {
+        // Auto-detect: match OS/browser preference
+        isDark = !(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
 
-    // ── Themes ────────────────────────────────────────────────────
+    // ── Theme CSS variables ───────────────────────────────────────
     var THEMES = {
         dark: {
-            '--card-bg':          'rgba(0,0,0,0.25)',
-            '--card-border':      'rgba(255,255,255,0.08)',
-            '--text':             '#ffffff',
-            '--text-muted':       'rgba(255,255,255,0.75)',
-            '--skill-bg':         'rgba(255,255,255,0.06)',
-            '--skill-border':     'rgba(255,255,255,0.10)',
-            '--skill-text':       'rgba(255,255,255,0.70)',
-            '--divider':          'rgba(255,255,255,0.07)',
-            '--input-bg':         'rgba(255,255,255,0.04)',
-            '--input-border':     'rgba(255,255,255,0.08)',
-            '--input-text':       '#ffffff',
-            '--input-ph':         'rgba(255,255,255,0.25)',
-            '--email-row-bg':     'rgba(255,255,255,0.04)',
-            '--email-row-border': 'rgba(255,255,255,0.08)',
-            '--email-row-text':   'rgba(255,255,255,0.70)',
-            '--submit-bg':        'rgba(255,255,255,0.08)',
-            '--submit-border':    'rgba(255,255,255,0.15)',
-            '--submit-text':      'rgba(255,255,255,0.70)',
-            '--nav-opacity':      '0.38',
-            '--nav-active-opacity': '1',
-            '--section-label-color': 'rgba(255,255,255,0.45)',
-            '--bio-text-color':   'rgba(255,255,255,0.6)',
-            '--views-color':      'rgba(255,255,255,0.22)',
-            '--discord-name':     '#ffffff',
-            '--discord-status':   'rgba(255,255,255,0.45)',
-            '--discord-activity': 'rgba(255,255,255,0.3)'
+            // Cards
+            '--card-bg':               'rgba(0,0,0,0.30)',
+            '--card-border':           'rgba(255,255,255,0.09)',
+            // Text
+            '--text':                  '#ffffff',
+            '--text-muted':            'rgba(255,255,255,0.80)',
+            '--section-label-color':   'rgba(255,255,255,0.55)',
+            '--bio-text-color':        'rgba(255,255,255,0.75)',
+            '--views-color':           'rgba(255,255,255,0.45)',
+            '--subtitle-color':        'rgba(255,255,255,0.45)',
+            // Divider
+            '--divider':               'rgba(255,255,255,0.08)',
+            // Skill tags
+            '--skill-bg':              'rgba(255,255,255,0.06)',
+            '--skill-border':          'rgba(255,255,255,0.11)',
+            '--skill-text':            'rgba(255,255,255,0.75)',
+            // Inputs
+            '--input-bg':              'rgba(255,255,255,0.05)',
+            '--input-border':          'rgba(255,255,255,0.10)',
+            '--input-text':            '#ffffff',
+            '--input-ph':              'rgba(255,255,255,0.30)',
+            // Email row
+            '--email-row-bg':          'rgba(255,255,255,0.05)',
+            '--email-row-border':      'rgba(255,255,255,0.10)',
+            '--email-row-text':        'rgba(255,255,255,0.75)',
+            // Submit button
+            '--submit-bg':             'rgba(255,255,255,0.07)',
+            '--submit-border':         'rgba(255,255,255,0.14)',
+            '--submit-text':           'rgba(255,255,255,0.75)',
+            // Nav
+            '--nav-opacity':           '0.40',
+            '--nav-active-opacity':    '1',
+            // Discord
+            '--discord-name':          '#ffffff',
+            '--discord-status':        'rgba(255,255,255,0.55)',
+            '--discord-activity':      'rgba(255,255,255,0.38)',
+            // Under-process badge
+            '--under-process-bg':      'rgba(255,255,255,0.04)',
+            '--under-process-border':  'rgba(255,255,255,0.08)',
+            '--under-process-text':    'rgba(255,255,255,0.45)',
+            '--under-process-dot':     'rgba(255,255,255,0.45)'
         },
         light: {
-            '--card-bg':          'rgba(255,255,255,0.28)',   /* more transparent in light */
-            '--card-border':      'rgba(255,255,255,0.35)',
-            '--text':             '#ffffff',                   /* white text stays readable on photos */
-            '--text-muted':       'rgba(255,255,255,0.75)',
-            '--skill-bg':         'rgba(255,255,255,0.12)',
-            '--skill-border':     'rgba(255,255,255,0.28)',
-            '--skill-text':       'rgba(255,255,255,0.85)',
-            '--divider':          'rgba(255,255,255,0.18)',
-            '--input-bg':         'rgba(255,255,255,0.12)',
-            '--input-border':     'rgba(255,255,255,0.28)',
-            '--input-text':       '#ffffff',
-            '--input-ph':         'rgba(255,255,255,0.40)',
-            '--email-row-bg':     'rgba(255,255,255,0.12)',
-            '--email-row-border': 'rgba(255,255,255,0.28)',
-            '--email-row-text':   'rgba(255,255,255,0.85)',
-            '--submit-bg':        'rgba(255,255,255,0.14)',
-            '--submit-border':    'rgba(255,255,255,0.35)',
-            '--submit-text':      'rgba(255,255,255,0.85)',
-            '--nav-opacity':      '0.55',
-            '--nav-active-opacity': '1',
-            '--section-label-color': 'rgba(255,255,255,0.60)',
-            '--bio-text-color':   'rgba(255,255,255,0.78)',
-            '--views-color':      'rgba(255,255,255,0.55)',
-            '--discord-name':     '#ffffff',
-            '--discord-status':   'rgba(255,255,255,0.60)',
-            '--discord-activity': 'rgba(255,255,255,0.45)'
+            // Cards — semi-transparent white so bright video shows through
+            '--card-bg':               'rgba(255,255,255,0.18)',
+            '--card-border':           'rgba(255,255,255,0.35)',
+            // Text — pure white works on most light videos; use text-shadow for contrast
+            '--text':                  '#ffffff',
+            '--text-muted':            '#ffffff',
+            '--section-label-color':   '#ffffff',
+            '--bio-text-color':        '#ffffff',
+            '--views-color':           '#ffffff',
+            '--subtitle-color':        'rgba(255,255,255,0.85)',
+            // Divider
+            '--divider':               'rgba(255,255,255,0.30)',
+            // Skill tags
+            '--skill-bg':              'rgba(255,255,255,0.20)',
+            '--skill-border':          'rgba(255,255,255,0.40)',
+            '--skill-text':            '#ffffff',
+            // Inputs
+            '--input-bg':              'rgba(255,255,255,0.20)',
+            '--input-border':          'rgba(255,255,255,0.40)',
+            '--input-text':            '#ffffff',
+            '--input-ph':              'rgba(255,255,255,0.60)',
+            // Email row
+            '--email-row-bg':          'rgba(255,255,255,0.20)',
+            '--email-row-border':      'rgba(255,255,255,0.40)',
+            '--email-row-text':        '#ffffff',
+            // Submit button
+            '--submit-bg':             'rgba(255,255,255,0.20)',
+            '--submit-border':         'rgba(255,255,255,0.45)',
+            '--submit-text':           '#ffffff',
+            // Nav
+            '--nav-opacity':           '0.70',
+            '--nav-active-opacity':    '1',
+            // Discord
+            '--discord-name':          '#ffffff',
+            '--discord-status':        '#ffffff',
+            '--discord-activity':      'rgba(255,255,255,0.85)',
+            // Under-process badge
+            '--under-process-bg':      'rgba(255,255,255,0.20)',
+            '--under-process-border':  'rgba(255,255,255,0.40)',
+            '--under-process-text':    '#ffffff',
+            '--under-process-dot':     '#ffffff'
         }
     };
 
-    var isDark = localStorage.getItem('theme') !== 'light';
-
-    // ── CSS injection ─────────────────────────────────────────────
+    // ── Inject CSS overrides ──────────────────────────────────────
     var styleEl = document.createElement('style');
     styleEl.textContent = [
-        // Cards
+        /* Cards */
         '.glass-card{background:var(--card-bg)!important;border-color:var(--card-border)!important;transition:background 0.4s,border-color 0.4s;}',
-
-        // Section labels
+        /* Light mode: add text-shadow to all card text for contrast against bright backgrounds */
+        'body.theme-light .glass-card *{text-shadow:0 1px 4px rgba(0,0,0,0.45),0 0 12px rgba(0,0,0,0.25)!important;}',
+        /* But don't shadow canvas/rope elements */
+        'body.theme-light #rope-canvas,body.theme-light #rope-hit{filter:none!important;}',
+        /* Labels / text */
         '.section-label{color:var(--section-label-color)!important;}',
-
-        // Bio text
         '.bio-text{color:var(--bio-text-color)!important;}',
-
-        // Skill tags
+        '.subtitle-text{color:var(--subtitle-color)!important;}',
+        /* Skill tags */
         '.skill-tag{background:var(--skill-bg)!important;border-color:var(--skill-border)!important;color:var(--skill-text)!important;}',
-
-        // Divider
+        /* Divider */
         '.card-divider{background:var(--divider)!important;}',
-
-        // Nav tabs — color AND opacity adapt
-        '.nav-tab,.nav-tabs span{color:var(--text)!important;opacity:var(--nav-opacity);}',
+        /* Nav */
+        '.nav-tab,.nav-tabs span{color:var(--text)!important;opacity:var(--nav-opacity)!important;}',
         '.nav-tab.active,.nav-tabs span.active{opacity:var(--nav-active-opacity)!important;}',
-        '.nav-tab:hover,.nav-tabs span:hover{opacity:0.8!important;}',
-
-        // Music player
-        '.song-title,#music-time{color:var(--text)!important;}',
-
-        // Views row — all children use views-color
-        '.views-row{opacity:1!important;}',
+        '.nav-tab:hover,.nav-tabs span:hover{opacity:0.88!important;}',
+        /* Music */
+        '.song-title{color:var(--text)!important;}',
+        '#music-time{color:var(--text)!important;opacity:0.55!important;}',
+        /* Views */
         '.views-row,.views-row *{color:var(--views-color)!important;}',
-
-        // Subtitle (CS Student)
-        '.subtitle-text{color:var(--text)!important;opacity:0.38!important;}',
-
-        // Display name + cursor — always white glow
+        /* Display name — always bright */
         '#display-name{color:#fff!important;text-shadow:0 0 22px rgba(255,255,255,0.65),0 0 50px rgba(255,255,255,0.18)!important;}',
         '#tw-cursor{background:#fff!important;box-shadow:0 0 10px white,0 0 22px rgba(255,255,255,0.35)!important;}',
-
-        // Discord skeleton
+        /* Discord */
         '.discord-skeleton,.discord-real{background:var(--input-bg)!important;}',
         '.skeleton-avatar,.skeleton-line{background:var(--skill-bg)!important;}',
         '#discord-name{color:var(--discord-name)!important;}',
         '#discord-status,#discord-status a{color:var(--discord-status)!important;}',
         '#discord-activity{color:var(--discord-activity)!important;}',
-
-        // Email row
+        /* Email row */
         '.email-row{background:var(--email-row-bg)!important;border-color:var(--email-row-border)!important;color:var(--email-row-text)!important;}',
         '#email-display{color:var(--email-row-text)!important;}',
-        '.email-row i{color:var(--email-row-text)!important;}',
-        '.email-copy{color:var(--email-row-text)!important;}',
-
-        // Form inputs
+        '.email-row i,.email-copy{color:var(--email-row-text)!important;}',
+        /* Inputs */
         '.form-input,.form-textarea{background:var(--input-bg)!important;border-color:var(--input-border)!important;color:var(--input-text)!important;}',
         '.form-input::placeholder,.form-textarea::placeholder{color:var(--input-ph)!important;}',
-
-        // Submit button
+        /* Submit */
         '.submit-btn{background:var(--submit-bg)!important;border-color:var(--submit-border)!important;color:var(--submit-text)!important;}',
-        '.submit-btn:hover:not(:disabled){background:rgba(255,255,255,0.18)!important;color:#fff!important;}',
+        '.submit-btn:hover:not(:disabled){background:rgba(255,255,255,0.30)!important;color:#fff!important;}',
         '.btn-label{color:inherit!important;}',
-
-        // Project items in about page
-        '.project-item{background:var(--skill-bg)!important;border-color:var(--skill-border)!important;}',
-        '.project-title,.project-arrow{color:var(--text)!important;}',
-        '.project-desc{color:var(--text-muted)!important;}',
-        '.project-link{background:var(--submit-bg)!important;border-color:var(--submit-border)!important;color:var(--text)!important;}',
-
-        /* ── Speaker: ALWAYS white + glowing ── */
+        /* Under-process */
+        '.under-process{background:var(--under-process-bg)!important;border-color:var(--under-process-border)!important;}',
+        '.under-process-text{color:var(--under-process-text)!important;}',
+        '.under-process-dot{background:var(--under-process-dot)!important;}',
+        /* Speaker — ALWAYS white glowing */
         '#mute-btn{color:#ffffff!important;text-shadow:0 0 8px rgba(255,255,255,0.9),0 0 18px rgba(255,255,255,0.4)!important;transition:text-shadow 0.3s;}',
         '#mute-btn:hover{text-shadow:0 0 12px rgba(255,255,255,1),0 0 28px rgba(255,255,255,0.65)!important;}',
-
-        /* All other control icons adapt to theme text color */
         '.control-icon:not(#mute-btn){color:var(--text)!important;}',
-
-        /* Toast adapts */
+        /* Toast */
         '#toast{color:var(--text)!important;}'
     ].join('\n');
     document.head.appendChild(styleEl);
@@ -173,41 +192,8 @@
 
     applyTheme(isDark);
 
-    // ── Dual contact video management ─────────────────────────────
-    // Expects: #contact-video-night and #contact-video-day in the DOM
-    // (or a single #contact-video that we manage by src swap)
-    // We use two <video> elements, crossfade on theme switch, sync time.
-
-    function getContactVideos() {
-        return {
-            night: document.getElementById('contact-video-night'),
-            day:   document.getElementById('contact-video-day')
-        };
-    }
-
-    // Called by index.html when entering contact tab, or on contact.html load
-    window._syncContactVideos = function (isNowDark) {
-        var vids = getContactVideos();
-        if (!vids.night || !vids.day) return;
-
-        var active   = isNowDark ? vids.night : vids.day;
-        var inactive = isNowDark ? vids.day   : vids.night;
-
-        // Sync time from inactive → active before switching
-        var t = inactive.currentTime;
-        active.currentTime = t;
-
-        // Crossfade
-        active.style.opacity   = '1';
-        inactive.style.opacity = '0';
-
-        // Play active, pause inactive
-        active.play().catch(function () {});
-        inactive.pause();
-    };
-
     // ══════════════════════════════════════════════════════════════
-    //  ROPE
+    //  ROPE PHYSICS
     // ══════════════════════════════════════════════════════════════
 
     var ANCHOR_RIGHT = 38;
@@ -215,15 +201,23 @@
 
     var canvas, ctx, hitDiv;
     var W, H, anchorX, anchorY;
-    var nodes        = [];
+    var nodes = [];
     var ballX = 0, ballY = 0, ballVx = 0, ballVy = 0;
-    var dragging     = false;
-    var didToggle    = false;
-    var tuggedDown   = 0;
-    var currentColor = BALL_COLORS[0];
-    var broken       = false;
-    var particles    = [];
-    var ropeBuilt    = false;
+    var dragging   = false;
+    var didToggle  = false;
+    var tuggedDown = 0;
+    var broken     = false;
+    var particles  = [];
+    var ropeBuilt  = false;
+
+    function getBallColor() {
+        // Dark mode → white ball; Light mode → dark ball
+        return isDark ? '#ffffff' : '#1a1a1a';
+    }
+
+    function getRopeColor() {
+        return isDark ? 'rgba(210,210,210,0.65)' : 'rgba(30,30,30,0.70)';
+    }
 
     function getAnchor() {
         return { x: window.innerWidth - ANCHOR_RIGHT, y: ANCHOR_TOP };
@@ -262,11 +256,10 @@
         var hs = BALL_RADIUS * 4;
         hitDiv.style.cssText = [
             'position:fixed',
-            'width:' + hs + 'px',
+            'width:'  + hs + 'px',
             'height:' + hs + 'px',
             'border-radius:50%',
             'z-index:201',
-            'cursor:grab',
             'transform:translate(-50%,-50%)',
             'touch-action:none'
         ].join(';');
@@ -287,7 +280,6 @@
             dragging   = true;
             didToggle  = false;
             tuggedDown = 0;
-            hitDiv.style.cursor = 'grabbing';
         }
 
         function onMove(e) {
@@ -308,7 +300,6 @@
 
             ballX = anchorX + dx;
             ballY = rest.y  + pullDown;
-
             nodes[ROPE_SEGMENTS].x = ballX;
             nodes[ROPE_SEGMENTS].y = ballY;
 
@@ -322,15 +313,13 @@
             if (!dragging) return;
             dragging   = false;
             tuggedDown = 0;
-            hitDiv.style.cursor = 'grab';
             ballVy = -3;
             ballVx = 0;
         }
 
-        hitDiv.addEventListener('mousedown', onStart);
-        window.addEventListener('mousemove', onMove);
-        window.addEventListener('mouseup',   onEnd);
-
+        hitDiv.addEventListener('mousedown',  onStart);
+        window.addEventListener('mousemove',  onMove);
+        window.addEventListener('mouseup',    onEnd);
         hitDiv.addEventListener('touchstart', onStart, { passive: false });
         window.addEventListener('touchmove',  onMove,  { passive: false });
         window.addEventListener('touchend',   onEnd);
@@ -350,13 +339,10 @@
         isDark = !isDark;
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
         applyTheme(isDark);
+        if (window._syncBgVideos) window._syncBgVideos(isDark);
 
-        // Sync dual contact videos on theme switch
-        window._syncContactVideos && window._syncContactVideos(isDark);
-
-        colorIdx = (colorIdx + 1) % BALL_COLORS.length;
-        var nextColor = BALL_COLORS[colorIdx];
-
+        // Burst with current ball color before switching
+        var burstColor = getBallColor();
         broken   = true;
         dragging = false;
         particles = [];
@@ -370,14 +356,13 @@
                 life: 1.0,
                 decay: 0.022 + Math.random() * 0.02,
                 r: 2.5 + Math.random() * 4,
-                color: currentColor
+                color: burstColor
             });
         }
 
         setTimeout(function () {
-            currentColor = nextColor;
-            broken       = false;
-            particles    = [];
+            broken    = false;
+            particles = [];
             var a = getAnchor();
             anchorX = a.x; anchorY = a.y;
             resetNodes(anchorX, anchorY);
@@ -418,13 +403,6 @@
         }
     }
 
-    function hexToRgba(hex, a) {
-        var r = parseInt(hex.slice(1,3),16);
-        var g = parseInt(hex.slice(3,5),16);
-        var b = parseInt(hex.slice(5,7),16);
-        return 'rgba('+r+','+g+','+b+','+a+')';
-    }
-
     function draw() {
         ctx.clearRect(0, 0, W, H);
 
@@ -433,9 +411,9 @@
                 var p = particles[i];
                 p.x += p.vx; p.y += p.vy; p.vy += 0.28;
                 p.life -= p.decay;
-                if (p.life <= 0) { particles.splice(i,1); continue; }
+                if (p.life <= 0) { particles.splice(i, 1); continue; }
                 ctx.beginPath();
-                ctx.arc(p.x, p.y, p.r * p.life, 0, Math.PI*2);
+                ctx.arc(p.x, p.y, p.r * p.life, 0, Math.PI * 2);
                 ctx.fillStyle   = p.color;
                 ctx.globalAlpha = p.life;
                 ctx.shadowColor = p.color;
@@ -449,44 +427,50 @@
             return;
         }
 
-        var ropeColor = isDark ? 'rgba(200,200,200,0.60)' : 'rgba(60,60,60,0.55)';
+        var ropeColor = getRopeColor();
+        var ballColor = getBallColor();
 
+        // Rope line
         ctx.beginPath();
         ctx.moveTo(nodes[0].x, nodes[0].y);
         for (var i = 1; i < nodes.length; i++) ctx.lineTo(nodes[i].x, nodes[i].y);
         ctx.lineTo(ballX, ballY);
         ctx.strokeStyle = ropeColor;
-        ctx.lineWidth   = 1.5;
+        ctx.lineWidth   = 1.8;
         ctx.stroke();
 
+        // Tension glow when pulled
         if (tuggedDown > 8) {
             var t = Math.min(tuggedDown / MAX_PULL, 1);
             ctx.beginPath();
             ctx.moveTo(nodes[0].x, nodes[0].y);
             for (var i = 1; i < nodes.length; i++) ctx.lineTo(nodes[i].x, nodes[i].y);
             ctx.lineTo(ballX, ballY);
-            ctx.strokeStyle = 'rgba(255,' + Math.round(60*(1-t)) + ',' + Math.round(60*(1-t)) + ',' + (t * 0.65) + ')';
-            ctx.lineWidth   = 1.5;
+            ctx.strokeStyle = 'rgba(255,' + Math.round(80 * (1 - t)) + ',' + Math.round(80 * (1 - t)) + ',' + (t * 0.6) + ')';
+            ctx.lineWidth   = 1.8;
             ctx.stroke();
         }
 
-        var glowA = currentColor.startsWith('#') ? hexToRgba(currentColor, 0.18) : 'rgba(255,255,255,0.1)';
-        var grd   = ctx.createRadialGradient(ballX, ballY, 0, ballX, ballY, BALL_RADIUS * 2.8);
-        grd.addColorStop(0, glowA);
+        // Ball glow halo
+        var glowRgb = isDark ? '255,255,255' : '0,0,0';
+        var grd = ctx.createRadialGradient(ballX, ballY, 0, ballX, ballY, BALL_RADIUS * 2.8);
+        grd.addColorStop(0, 'rgba(' + glowRgb + ',0.20)');
         grd.addColorStop(1, 'transparent');
         ctx.beginPath();
         ctx.arc(ballX, ballY, BALL_RADIUS * 2.8, 0, Math.PI * 2);
         ctx.fillStyle = grd;
         ctx.fill();
 
+        // Ball
         ctx.beginPath();
         ctx.arc(ballX, ballY, BALL_RADIUS, 0, Math.PI * 2);
-        ctx.fillStyle   = currentColor;
-        ctx.shadowColor = currentColor;
-        ctx.shadowBlur  = 16;
+        ctx.fillStyle   = ballColor;
+        ctx.shadowColor = ballColor;
+        ctx.shadowBlur  = isDark ? 16 : 8;
         ctx.fill();
         ctx.shadowBlur  = 0;
 
+        // Anchor dot
         ctx.beginPath();
         ctx.arc(anchorX, anchorY, 3, 0, Math.PI * 2);
         ctx.fillStyle = ropeColor;
@@ -511,8 +495,8 @@
     }
 
     window.ropeTheme = {
-        toggle: function () { isDark=!isDark; localStorage.setItem('theme',isDark?'dark':'light'); applyTheme(isDark); },
-        isDark: function () { return isDark; }
+        toggle:  function () { isDark = !isDark; localStorage.setItem('theme', isDark ? 'dark' : 'light'); applyTheme(isDark); },
+        isDark:  function () { return isDark; }
     };
 
 })();
