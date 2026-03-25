@@ -11,6 +11,22 @@
     <script src="js/player.js" defer></script>
     <script src="js/rope-theme.js" defer></script>
     <style>
+        /* ── YouTube background ── */
+        .yt-bg-wrap {
+            position: fixed; inset: 0; z-index: 0;
+            pointer-events: none; overflow: hidden; transition: opacity 0.6s ease;
+        }
+        .yt-bg-wrap iframe {
+            position: absolute;
+            width: 100vw; height: 56.25vw;
+            min-height: 100vh; min-width: 177.78vh;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            border: none;
+        }
+        #yt-dark  { opacity: 1; }
+        #yt-light { opacity: 0; }
+
         .card-container {
             overflow-y: auto !important;
             max-height: 100vh;
@@ -64,7 +80,6 @@
             color: var(--under-process-text, rgba(255,255,255,0.40));
         }
 
-        /* Music player */
         .song-title   { font-size: 0.78rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: rgba(255,255,255,0.65) !important; }
         #music-time   { font-size: 0.65rem; opacity: 0.45; white-space: nowrap; min-width: 32px; text-align: right; color: var(--text, white); }
         #music-progress { background: rgba(255,255,255,0.55) !important; box-shadow: 0 0 7px rgba(255,255,255,0.18) !important; }
@@ -72,8 +87,15 @@
 </head>
 <body class="about-page theme-dark">
 
-    <video id="bg-video-dark"  class="bg-video" src="media/dark.mp4"  loop playsinline preload="auto" muted></video>
-    <video id="bg-video-light" class="bg-video" src="media/light.mp4" loop playsinline preload="auto" muted></video>
+    <!-- YouTube backgrounds -->
+    <div class="yt-bg-wrap" id="yt-dark">
+        <iframe src="https://www.youtube.com/embed/Kt5llcrBaPs?autoplay=1&mute=1&loop=1&playlist=Kt5llcrBaPs&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1"
+            allow="autoplay; encrypted-media" allowfullscreen title="background"></iframe>
+    </div>
+    <div class="yt-bg-wrap" id="yt-light">
+        <iframe src="https://www.youtube.com/embed/t9h226JE3UA?autoplay=1&mute=1&loop=1&playlist=t9h226JE3UA&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1"
+            allow="autoplay; encrypted-media" allowfullscreen title="background"></iframe>
+    </div>
     <div id="bg-video-overlay"></div>
 
     <div id="overlay">
@@ -158,29 +180,25 @@
     </div>
 
     <script>
-    // Wait for everything (including deferred player.js) to be ready
     window.addEventListener('load', function () {
-
         window.startTitleLoop && window.startTitleLoop('About', 300);
 
-        var overlay     = document.getElementById('overlay');
-        var mainContent = document.getElementById('main-content');
-        var videoDark   = document.getElementById('bg-video-dark');
-        var videoLight  = document.getElementById('bg-video-light');
-        // player.js sets these globals — safe to reference after 'load'
-        var audio       = document.getElementById('bg-audio');
+        var overlay      = document.getElementById('overlay');
+        var mainContent  = document.getElementById('main-content');
+        var ytDark       = document.getElementById('yt-dark');
+        var ytLight      = document.getElementById('yt-light');
+        var audio        = document.getElementById('bg-audio');
         var playPauseBtn = document.getElementById('play-pause-btn');
 
         function startVideos() {
             var isDark = localStorage.getItem('theme') !== 'light';
-            videoDark.style.opacity  = isDark ? '1' : '0';
-            videoLight.style.opacity = isDark ? '0' : '1';
-            (isDark ? videoDark : videoLight).play().catch(function(){});
+            ytDark.style.opacity  = isDark ? '1' : '0';
+            ytLight.style.opacity = isDark ? '0' : '1';
         }
 
         window._syncBgVideos = function (isNowDark) {
-            videoDark.style.opacity  = isNowDark ? '1' : '0';
-            videoLight.style.opacity = isNowDark ? '0' : '1';
+            ytDark.style.opacity  = isNowDark ? '1' : '0';
+            ytLight.style.opacity = isNowDark ? '0' : '1';
         };
 
         function enterSite() {

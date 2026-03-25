@@ -14,6 +14,38 @@
     <style>
         *, *::before, *::after { box-sizing: border-box; }
 
+        /* ── YouTube background ── */
+        .yt-bg-wrap {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+            transition: opacity 0.6s ease;
+        }
+        .yt-bg-wrap iframe {
+            position: absolute;
+            /* Oversized so it covers all aspect ratios */
+            width: 100vw;
+            height: 56.25vw; /* 16:9 */
+            min-height: 100vh;
+            min-width: 177.78vh; /* 16:9 inverted */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: none;
+        }
+        #yt-dark  { opacity: 1; }
+        #yt-light { opacity: 0; }
+
+        #bg-video-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.20) 100%);
+            pointer-events: none;
+        }
+
         /* ── Card container ── */
         .card-container {
             display: flex !important;
@@ -39,7 +71,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* fill remaining vertical space so player can pin to bottom */
             flex: 1;
             min-height: 0;
             width: 100%;
@@ -50,7 +81,6 @@
             to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* ── Panel content wrapper (everything above the player) ── */
         .panel-content {
             display: flex;
             flex-direction: column;
@@ -59,12 +89,11 @@
             width: 100%;
         }
 
-        /* ── Player pinned to bottom of each panel ── */
         .panel-player {
             width: 100%;
             max-width: 480px;
-            margin-top: auto;   /* pushes it to the bottom */
-            padding-top: 16px;  /* visible gap between content and player */
+            margin-top: auto;
+            padding-top: 16px;
         }
 
         /* ── Typewriter cursor ── */
@@ -184,15 +213,29 @@
         }
         @media (max-width:319px) { #rope-canvas, #rope-hit { display:none !important; } }
 
-        /* ── Secondary music player progress/time shared styles ── */
+        /* ── Secondary music player ── */
         .tab-music-progress { background:rgba(255,255,255,0.55) !important; box-shadow:0 0 7px rgba(255,255,255,0.18) !important; }
         .tab-music-time     { font-size:clamp(0.58rem,1.6vw,0.65rem); color:rgba(255,255,255,0.35); white-space:nowrap; min-width:30px; text-align:right; }
     </style>
 </head>
 <body class="theme-dark">
 
-    <video id="bg-video-dark"  class="bg-video" src="media/dark.mp4"  loop playsinline preload="auto" muted></video>
-    <video id="bg-video-light" class="bg-video" src="media/light.mp4" loop playsinline preload="auto" muted></video>
+    <!-- ── YouTube background videos (replaces 200MB local files) ── -->
+    <!-- Dark mode: Kt5llcrBaPs | Light mode: t9h226JE3UA -->
+    <div class="yt-bg-wrap" id="yt-dark">
+        <iframe id="yt-iframe-dark"
+            src="https://www.youtube.com/embed/Kt5llcrBaPs?autoplay=1&mute=1&loop=1&playlist=Kt5llcrBaPs&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1"
+            allow="autoplay; encrypted-media"
+            allowfullscreen
+            title="background"></iframe>
+    </div>
+    <div class="yt-bg-wrap" id="yt-light" style="opacity:0;">
+        <iframe id="yt-iframe-light"
+            src="https://www.youtube.com/embed/t9h226JE3UA?autoplay=1&mute=1&loop=1&playlist=t9h226JE3UA&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1"
+            allow="autoplay; encrypted-media"
+            allowfullscreen
+            title="background"></iframe>
+    </div>
     <div id="bg-video-overlay"></div>
 
     <div id="overlay" style="position:fixed;inset:0;z-index:9999;display:flex;justify-content:center;align-items:center;transition:opacity 0.8s ease;">
@@ -223,7 +266,6 @@
 
         <!-- ════════════ OVERVIEW ════════════ -->
         <div class="tab-panel active" id="panel-overview">
-
             <div class="panel-content">
                 <!-- Profile card -->
                 <div class="glass-card">
@@ -294,7 +336,6 @@
                     </div>
                 </div>
             </div><!-- /panel-player -->
-
         </div><!-- /panel-overview -->
 
         <!-- ════════════ ABOUT ════════════ -->
@@ -412,7 +453,7 @@
     </div><!-- /card-container -->
 
     <!-- ── Discord ── -->
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    <script>
     (function () {
         var DISCORD_ID = '748831508776878110';
         var USERNAME   = 'shub.is.a.sailor';
@@ -484,7 +525,7 @@
     <script>
     document.addEventListener('DOMContentLoaded', function () {
 
-        // EmailJS init — guard against it not being loaded yet
+        // EmailJS init
         if (typeof emailjs !== 'undefined') {
             emailjs.init({ publicKey: 'ANitUhHu4kV4-js93' });
         } else {
@@ -493,33 +534,31 @@
             });
         }
 
-        var videoDark   = document.getElementById('bg-video-dark');
-        var videoLight  = document.getElementById('bg-video-light');
+        var ytDark      = document.getElementById('yt-dark');
+        var ytLight     = document.getElementById('yt-light');
         var mainContent = document.getElementById('main-content');
         var overlay     = document.getElementById('overlay');
 
-        /* ── Video init ── */
+        /* ── YouTube video crossfade (replaces _syncBgVideos for video tags) ── */
         function initVideos() {
-            videoLight.currentTime = videoDark.currentTime || 0;
-            videoDark.play().catch(function(){});
-            videoLight.play().catch(function(){});
             var dark = localStorage.getItem('theme') !== 'light';
-            videoDark.style.transition  = 'none';
-            videoLight.style.transition = 'none';
-            videoDark.style.opacity  = dark ? '1' : '0';
-            videoLight.style.opacity = dark ? '0' : '1';
+            ytDark.style.transition  = 'none';
+            ytLight.style.transition = 'none';
+            ytDark.style.opacity  = dark ? '1' : '0';
+            ytLight.style.opacity = dark ? '0' : '1';
             requestAnimationFrame(function () { requestAnimationFrame(function () {
-                videoDark.style.transition  = 'opacity 0.55s ease';
-                videoLight.style.transition = 'opacity 0.55s ease';
+                ytDark.style.transition  = 'opacity 0.55s ease';
+                ytLight.style.transition = 'opacity 0.55s ease';
             }); });
         }
 
+        /* rope-theme.js calls this to crossfade on toggle */
         window._syncBgVideos = function (isNowDark) {
-            videoDark.style.opacity  = isNowDark ? '1' : '0';
-            videoLight.style.opacity = isNowDark ? '0' : '1';
+            ytDark.style.opacity  = isNowDark ? '1' : '0';
+            ytLight.style.opacity = isNowDark ? '0' : '1';
         };
 
-        /* ── Helpers to get audio/playPauseBtn safely (player.js is deferred) ── */
+        /* ── Helpers (player.js is deferred) ── */
         function getAudio() { return document.getElementById('bg-audio'); }
         function getPPBtn()  { return document.getElementById('play-pause-btn'); }
 
@@ -527,7 +566,6 @@
         function syncSecondaryPlayers() {
             var suffixes = ['about', 'contact'];
 
-            // Sync cover and title after a short delay so player.js has loaded
             setTimeout(function () {
                 var masterCover = document.getElementById('music-cover');
                 var masterTitle = document.querySelector('#panel-overview .song-title');
@@ -548,7 +586,6 @@
                 var ti  = document.getElementById('music-time-' + suffix);
                 var pc  = document.getElementById('progress-container-' + suffix);
 
-                /* Sync play/pause icon with master audio state */
                 function syncIcon() {
                     var audio = getAudio();
                     if (!audio || !pp) return;
@@ -557,7 +594,6 @@
                 }
                 syncIcon();
 
-                /* Progress/time polling */
                 setInterval(function () {
                     var audio = getAudio();
                     if (!audio || !audio.duration || !isFinite(audio.duration)) return;
@@ -570,7 +606,6 @@
                     }
                 }, 250);
 
-                /* Play/pause button */
                 if (pp) {
                     pp.addEventListener('click', function () {
                         var audio = getAudio();
@@ -580,7 +615,6 @@
                     });
                 }
 
-                /* Prev/Next delegate to master buttons */
                 var prev = document.getElementById('prev-btn-' + suffix);
                 var next = document.getElementById('next-btn-' + suffix);
                 if (prev) prev.addEventListener('click', function () {
@@ -592,7 +626,6 @@
                     if (btn) btn.click();
                 });
 
-                /* Seek via secondary progress bar */
                 if (pc) {
                     pc.addEventListener('click', function (e) {
                         var audio = getAudio();
@@ -604,7 +637,6 @@
                 }
             });
 
-            /* Keep secondary players in sync via master audio events */
             var audio = getAudio();
             if (audio) {
                 audio.addEventListener('play', function () {
@@ -612,7 +644,6 @@
                         var pp = document.getElementById('play-pause-btn-' + s);
                         if (pp) pp.classList.replace('fa-play', 'fa-pause');
                     });
-                    // Sync cover and title when a new song starts
                     var masterCover = document.getElementById('music-cover');
                     var masterTitle = document.querySelector('#panel-overview .song-title');
                     document.querySelectorAll('.tab-music-cover').forEach(function (el) {
@@ -666,15 +697,6 @@
             }
         });
 
-        document.querySelectorAll('.nav-tab').forEach(function (el) {
-            el.addEventListener('keydown', function (e) {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    window.switchTab(el.id.replace('tab-', ''));
-                }
-            });
-        });
-
         /* ── Name typewriter ── */
         var nameEl = document.getElementById('display-name');
         var twName = 'Francisco', twIdx = 0, twErasing = false, twTimer = null;
@@ -720,8 +742,8 @@
         /* ── Enter site ── */
         function enterSite() {
             sessionStorage.setItem('site_entered', '1');
-            var audio  = getAudio();
-            var ppBtn  = getPPBtn();
+            var audio = getAudio();
+            var ppBtn = getPPBtn();
             if (audio) {
                 audio.play().catch(function () {
                     document.addEventListener('click', function () { getAudio() && getAudio().play(); }, { once: true });
@@ -757,17 +779,24 @@
             setTimeout(function () { window._ropeInit && window._ropeInit(); }, 80);
             syncSecondaryPlayers();
         } else {
-            videoDark.load(); videoLight.load();
             overlay.addEventListener('click', enterSite, { once: true });
         }
 
-        /* ── Contact ── */
+        /* ── Toast helper ── */
+        function showToast(msg, type) {
+            var t = document.getElementById('toast');
+            t.textContent = msg; t.className = type || ''; t.style.opacity = '1';
+            setTimeout(function () { t.style.opacity = '0'; t.className = ''; }, 3000);
+        }
+
+        /* ── Copy email ── */
         document.getElementById('copy-btn').addEventListener('click', function () {
-            navigator.clipboard.writeText(document.getElementById('email-display').textContent.trim())
+            navigator.clipboard.writeText('shub.professional@gmail.com')
                 .then(function () { showToast('Email copied!', 'success'); })
                 .catch(function () { showToast('Could not copy.', 'error'); });
         });
 
+        /* ── Send message ── */
         document.getElementById('send-btn').addEventListener('click', function () {
             var name  = document.getElementById('f-name').value.trim();
             var email = document.getElementById('f-email').value.trim();
@@ -776,6 +805,14 @@
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Please enter a valid email.', 'error'); return; }
             var btn = document.getElementById('send-btn');
             btn.classList.add('loading'); btn.disabled = true;
+
+            function fallbackMailto(n, e, m) {
+                var s = encodeURIComponent('Message from ' + n);
+                var b = encodeURIComponent('From: ' + n + ' <' + e + '>\n\n' + m);
+                window.open('mailto:shub.professional@gmail.com?subject=' + s + '&body=' + b);
+                showToast('Opening mail client...', '');
+            }
+
             if (typeof emailjs === 'undefined') {
                 fallbackMailto(name, email, msg);
                 btn.classList.remove('loading'); btn.disabled = false;
@@ -790,20 +827,7 @@
                 .finally(function () { btn.classList.remove('loading'); btn.disabled = false; });
         });
 
-        function fallbackMailto(name, email, msg) {
-            var s = encodeURIComponent('Message from ' + name);
-            var b = encodeURIComponent('From: ' + name + ' <' + email + '>\n\n' + msg);
-            window.open('mailto:shub.professional@gmail.com?subject=' + s + '&body=' + b);
-            showToast('Opening mail client...', '');
-        }
-        
-        function showToast(msg, type) {
-            var t = document.getElementById('toast');
-            t.textContent = msg; t.className = type || ''; t.style.opacity = '1';
-            setTimeout(function () { t.style.opacity = '0'; t.className = ''; }, 3000);
-        }
     });
     </script>
-
 </body>
 </html>

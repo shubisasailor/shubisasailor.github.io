@@ -6,13 +6,28 @@
     <title>Francisco | </title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- EmailJS loaded before player.js so it's ready when form submits -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <link rel="stylesheet" href="css/main.css">
     <script src="js/title-typer.js"></script>
     <script src="js/player.js" defer></script>
     <script src="js/rope-theme.js" defer></script>
     <style>
+        /* ── YouTube background ── */
+        .yt-bg-wrap {
+            position: fixed; inset: 0; z-index: 0;
+            pointer-events: none; overflow: hidden; transition: opacity 0.6s ease;
+        }
+        .yt-bg-wrap iframe {
+            position: absolute;
+            width: 100vw; height: 56.25vw;
+            min-height: 100vh; min-width: 177.78vh;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            border: none;
+        }
+        #yt-dark  { opacity: 1; }
+        #yt-light { opacity: 0; }
+
         .card-container {
             overflow-y: auto !important;
             max-height: 100vh;
@@ -77,7 +92,6 @@
         .submit-btn.loading .btn-label  { opacity: 0.50; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Music player */
         .song-title   { font-size: 0.78rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: rgba(255,255,255,0.65) !important; }
         #music-time   { font-size: 0.65rem; opacity: 0.45; white-space: nowrap; min-width: 32px; text-align: right; color: var(--text, white); }
         #music-progress { background: rgba(255,255,255,0.55) !important; box-shadow: 0 0 7px rgba(255,255,255,0.18) !important; }
@@ -96,8 +110,15 @@
 </head>
 <body class="contact-page theme-dark">
 
-    <video id="bg-video-dark"  class="bg-video" src="media/dark.mp4"  loop playsinline preload="auto" muted></video>
-    <video id="bg-video-light" class="bg-video" src="media/light.mp4" loop playsinline preload="auto" muted></video>
+    <!-- YouTube backgrounds -->
+    <div class="yt-bg-wrap" id="yt-dark">
+        <iframe src="https://www.youtube.com/embed/Kt5llcrBaPs?autoplay=1&mute=1&loop=1&playlist=Kt5llcrBaPs&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1"
+            allow="autoplay; encrypted-media" allowfullscreen title="background"></iframe>
+    </div>
+    <div class="yt-bg-wrap" id="yt-light">
+        <iframe src="https://www.youtube.com/embed/t9h226JE3UA?autoplay=1&mute=1&loop=1&playlist=t9h226JE3UA&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1"
+            allow="autoplay; encrypted-media" allowfullscreen title="background"></iframe>
+    </div>
     <div id="bg-video-overlay"></div>
 
     <div id="overlay">
@@ -175,35 +196,29 @@
     </div>
 
     <script>
-    // Wait for everything (including deferred player.js) to be ready
     window.addEventListener('load', function () {
-
         window.startTitleLoop && window.startTitleLoop('Contact', 300);
 
-        // EmailJS is loaded in <head> (non-deferred), safe to init here
         if (typeof emailjs !== 'undefined') {
             emailjs.init({ publicKey: 'ANitUhHu4kV4-js93' });
         }
 
         var overlay      = document.getElementById('overlay');
         var mainContent  = document.getElementById('main-content');
-        var videoDark    = document.getElementById('bg-video-dark');
-        var videoLight   = document.getElementById('bg-video-light');
-        // player.js is deferred — these DOM elements exist, but player globals
-        // are set up by player.js. Grab elements directly from the DOM.
+        var ytDark       = document.getElementById('yt-dark');
+        var ytLight      = document.getElementById('yt-light');
         var audio        = document.getElementById('bg-audio');
         var playPauseBtn = document.getElementById('play-pause-btn');
 
         function startVideos() {
             var isDark = localStorage.getItem('theme') !== 'light';
-            videoDark.style.opacity  = isDark ? '1' : '0';
-            videoLight.style.opacity = isDark ? '0' : '1';
-            (isDark ? videoDark : videoLight).play().catch(function(){});
+            ytDark.style.opacity  = isDark ? '1' : '0';
+            ytLight.style.opacity = isDark ? '0' : '1';
         }
 
         window._syncBgVideos = function (isNowDark) {
-            videoDark.style.opacity  = isNowDark ? '1' : '0';
-            videoLight.style.opacity = isNowDark ? '0' : '1';
+            ytDark.style.opacity  = isNowDark ? '1' : '0';
+            ytLight.style.opacity = isNowDark ? '0' : '1';
         };
 
         function enterSite() {
@@ -234,21 +249,18 @@
             overlay.addEventListener('click', enterSite, { once: true });
         }
 
-        /* ── Toast helper ── */
         function showToast(msg, type) {
             var t = document.getElementById('toast');
             t.textContent = msg; t.className = type || ''; t.style.opacity = '1';
             setTimeout(function () { t.style.opacity = '0'; t.className = ''; }, 3000);
         }
 
-        /* ── Copy email ── */
         document.getElementById('copy-btn').addEventListener('click', function () {
-            navigator.clipboard.writeText(document.getElementById('email-display').textContent.trim())
+            navigator.clipboard.writeText('shub.professional@gmail.com')
                 .then(function () { showToast('Email copied!', 'success'); })
                 .catch(function () { showToast('Could not copy.', 'error'); });
         });
 
-        /* ── Send message ── */
         document.getElementById('send-btn').addEventListener('click', function () {
             var name  = document.getElementById('f-name').value.trim();
             var email = document.getElementById('f-email').value.trim();
