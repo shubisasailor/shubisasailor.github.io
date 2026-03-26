@@ -354,6 +354,11 @@
         <div id="loader-card">
             <div id="loader-mono">F</div>
             <div id="enter-prompt">click to enter...</div>
+            <script>
+            if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+                document.currentScript.previousElementSibling.textContent = 'tap to enter...';
+            }
+            </script>
         </div>
     </div>
 
@@ -776,6 +781,10 @@
             setTimeout(function(){if(window._ropeInit)window._ropeInit();},80);
         } else {
             overlay.addEventListener('click', enterSite);
+            overlay.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                enterSite();
+            }, { passive: false });
         }
 
         /* Toast */
@@ -805,4 +814,119 @@
             function mailto(){window.open('mailto:shub.professional@gmail.com?subject='+encodeURIComponent('Message from '+n)+'&body='+encodeURIComponent('From: '+n+' <'+e+'>\n\n'+m));showToast('Opening mail client...','');}
             function done(){sb.classList.remove('loading');sb.disabled=false;}
             if(typeof emailjs==='undefined'){mailto();done();return;}
-            emailjs.send('service_wfciems','template_srqhd09',{name:n,email:e,messag
+            emailjs.send('service_wfciems','template_srqhd09',{name:n,email:e,message:m,message:m}).then(function(){showToast('Message sent!','success');done();}).catch(function(){mailto();done();});
+        });
+
+    }); // DOMContentLoaded
+    </script>
+
+    <!-- Touch ripple cursor (mobile only) -->
+    <script>
+    (function () {
+        // Only run on touch devices — desktop has the custom CSS cursor
+        if (!('ontouchstart' in window) && navigator.maxTouchPoints < 1) return;
+
+        var canvas = document.createElement('canvas');
+        canvas.id = 'touch-ripple-canvas';
+        canvas.style.cssText = [
+            'position:fixed', 'inset:0', 'width:100%', 'height:100%',
+            'pointer-events:none', 'z-index:9998',
+            'touch-action:none'
+        ].join(';');
+        document.body.appendChild(canvas);
+        var ctx = canvas.getContext('2d');
+
+        function resize() {
+            canvas.width  = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // Active touches: map of identifier → { x, y, pressure }
+        var touches = {};
+        // Ripple bursts on lift: array of { x, y, r, maxR, alpha }
+        var ripples = [];
+
+        function updateTouches(e) {
+            touches = {};
+            for (var i = 0; i < e.touches.length; i++) {
+                var t = e.touches[i];
+                touches[t.identifier] = { x: t.clientX, y: t.clientY };
+            }
+        }
+
+        document.addEventListener('touchstart', function(e) {
+            // Spawn a burst ripple at each new touch
+            for (var i = 0; i < e.changedTouches.length; i++) {
+                var t = e.changedTouches[i];
+                ripples.push({ x: t.clientX, y: t.clientY, r: 0, maxR: 38, alpha: 0.55, expanding: true });
+            }
+            updateTouches(e);
+        }, { passive: true });
+
+        document.addEventListener('touchmove', function(e) {
+            updateTouches(e);
+        }, { passive: true });
+
+        document.addEventListener('touchend', function(e) {
+            // Spawn a release ripple
+            for (var i = 0; i < e.changedTouches.length; i++) {
+                var t = e.changedTouches[i];
+                ripples.push({ x: t.clientX, y: t.clientY, r: 12, maxR: 52, alpha: 0.45, expanding: true });
+            }
+            updateTouches(e);
+        }, { passive: true });
+
+        document.addEventListener('touchcancel', function(e) {
+            updateTouches(e);
+        }, { passive: true });
+
+        var RAFId;
+        function loop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw live touch circles
+            var ids = Object.keys(touches);
+            for (var i = 0; i < ids.length; i++) {
+                var pt = touches[ids[i]];
+                // Outer ring
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, 18, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+                ctx.lineWidth   = 1.5;
+                ctx.shadowColor = 'rgba(255,255,255,0.7)';
+                ctx.shadowBlur  = 8;
+                ctx.stroke();
+                ctx.shadowBlur  = 0;
+                // Inner dot
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.75)';
+                ctx.fill();
+            }
+
+            // Animate ripples
+            for (var j = ripples.length - 1; j >= 0; j--) {
+                var rp = ripples[j];
+                rp.r     += (rp.maxR - rp.r) * 0.14;
+                rp.alpha -= 0.028;
+                if (rp.alpha <= 0) { ripples.splice(j, 1); continue; }
+                ctx.beginPath();
+                ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255,255,255,' + rp.alpha.toFixed(3) + ')';
+                ctx.lineWidth   = 1.2;
+                ctx.shadowColor = 'rgba(255,255,255,' + (rp.alpha * 0.6).toFixed(3) + ')';
+                ctx.shadowBlur  = 6;
+                ctx.stroke();
+                ctx.shadowBlur  = 0;
+            }
+
+            RAFId = requestAnimationFrame(loop);
+        }
+        loop();
+    })();
+    </script>
+
+</body>
+</html>
