@@ -31,7 +31,6 @@
     </script>
 
     <script src="js/rope-theme.js" defer></script>
-    <script src="js/player.js" defer></script>
 
     <style>
         *, *::before, *::after { box-sizing: border-box; }
@@ -145,6 +144,7 @@
     </div>
 
     <audio id="bg-audio" loop><source src="" type="audio/mpeg"></audio>
+    <script src="js/player.js"></script>
     <div id="toast"></div>
 
     <div id="fixed-nav">
@@ -185,7 +185,7 @@
             <div class="section-label">reach me at</div>
             <div class="email-row">
                 <i class="fas fa-envelope"></i>
-                <span id="email-display">shub.professional@gmail.com</span>
+                <span id="email-display"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e5968d9087cb95978a838096968c8a8b8489a58288848c89cb868a88">[email&#160;protected]</a></span>
                 <i class="fas fa-copy email-copy" id="copy-btn" title="Copy email"></i>
             </div>
             <div class="card-divider"></div>
@@ -204,7 +204,7 @@
         </div>
     </div>
 
-    <script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     document.addEventListener('DOMContentLoaded', function () {
         window.startTitleLoop && window.startTitleLoop('Contact', 300);
         if (typeof emailjs !== 'undefined') emailjs.init({ publicKey: 'ANitUhHu4kV4-js93' });
@@ -284,9 +284,10 @@
             function done(){sb.classList.remove('loading');sb.disabled=false;}
             if(typeof emailjs==='undefined'){mailto();done();return;}
             emailjs.send('service_wfciems','template_srqhd09',{name:n,email:e,message:m})
-                .then(function(){showToast('Message sent!','success');['f-name','f-email','f-message'].forEach(function(id){document.getElementById(id).value='';});done();})
+                .then(function(){showToast('Message sent!','success');document.getElementById('f-name').value='';document.getElementById('f-email').value='';document.getElementById('f-message').value='';done();})
                 .catch(function(){mailto();done();});
         });
+
     });
     </script>
 </body>

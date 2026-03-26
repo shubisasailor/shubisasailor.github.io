@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="css/main.css">
     <script src="js/title-typer.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-    <script src="js/player.js" defer></script>
+
 
     <!-- Instant overlay kill for returning visitors — runs before first paint -->
     <script>
@@ -365,6 +365,7 @@
     </div>
 
     <audio id="bg-audio" loop><source src="" type="audio/mpeg"></audio>
+    <script src="js/player.js"></script>
     <div id="toast"></div>
 
     <!-- Projects panel backdrop (mobile) -->
@@ -457,7 +458,7 @@
                             <a href="https://pinterest.com/shubflexin"        target="_blank" rel="noopener"><i class="fab fa-pinterest"></i></a>
                             <a href="https://youtube.com/@Tarnished_Shubh"    target="_blank" rel="noopener"><i class="fab fa-youtube"></i></a>
                             <a href="https://x.com/ZetsuoNoShub"              target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i></a>
-                            <a href="mailto:shub.professional@gmail.com"      rel="noopener"><i class="fas fa-envelope"></i></a>
+                            <a href="/cdn-cgi/l/email-protection#e99a819c8bc7999b868f8c9a9a8086878885a98e84888085c78a8684" rel="noopener"><i class="fas fa-envelope"></i></a>
                         </div>
                     </div>
                 </div>
@@ -507,7 +508,7 @@
                     <div class="section-label">reach me at</div>
                     <div class="email-row">
                         <i class="fas fa-envelope"></i>
-                        <span id="email-display">shub.professional@gmail.com</span>
+                        <span id="email-display"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1a69726f78346a68757c7f69697375747b765a7d777b737634797577">[email&#160;protected]</a></span>
                         <i class="fas fa-copy email-copy" id="copy-btn" title="Copy email"></i>
                     </div>
                     <div class="card-divider"></div>
@@ -530,7 +531,7 @@
     </div>
 
     <!-- Discord -->
-    <script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     (function () {
         var DISCORD_ID = '748831508776878110';
         var USERNAME   = 'shub.is.a.sailor';
@@ -788,11 +789,4 @@
             function mailto(){window.open('mailto:shub.professional@gmail.com?subject='+encodeURIComponent('Message from '+n)+'&body='+encodeURIComponent('From: '+n+' <'+e+'>\n\n'+m));showToast('Opening mail client...','');}
             function done(){sb.classList.remove('loading');sb.disabled=false;}
             if(typeof emailjs==='undefined'){mailto();done();return;}
-            emailjs.send('service_wfciems','template_srqhd09',{name:n,email:e,message:m})
-                .then(function(){showToast('Message sent!','success');['f-name','f-email','f-message'].forEach(function(id){document.getElementById(id).value='';});done();})
-                .catch(function(){mailto();done();});
-        });
-    });
-    </script>
-</body>
-</html>
+            emailjs.send('service_wfciems','template_srqhd09',{name:n,email:e,messag

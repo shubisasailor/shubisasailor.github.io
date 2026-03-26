@@ -69,7 +69,7 @@ function loadSong(idx, autoplay) {
 
     // Reset progress
     if (progressBar) progressBar.style.width = '0%';
-    if (timeEl) timeEl.textContent = '0:00';
+    if (timeEl) timeEl.textContent = '-0:00';
 
     if (autoplay) audio.play().catch(function () {});
 }
@@ -83,6 +83,14 @@ if (nextBtn) nextBtn.addEventListener('click', function () { loadSong(_idx + 1, 
 audio.addEventListener('ended', function () { loadSong(_idx + 1, true); });
 
 // ── Volume ────────────────────────────────────────────────────────
+function _updateMuteIcon() {
+    if (!muteBtn) return;
+    var muted = audio.muted || audio.volume === 0;
+    muteBtn.className = muted
+        ? 'fas fa-volume-mute control-icon'
+        : (audio.volume < 0.5 ? 'fas fa-volume-down control-icon' : 'fas fa-volume-up control-icon');
+}
+
 var _savedVol = parseFloat(localStorage.getItem('music_volume') || '1');
 audio.volume  = _savedVol;
 if (volumeBar) volumeBar.value = _savedVol;
@@ -110,13 +118,6 @@ if (muteBtn) {
     });
 }
 
-function _updateMuteIcon() {
-    if (!muteBtn) return;
-    var muted = audio.muted || audio.volume === 0;
-    muteBtn.className = muted
-        ? 'fas fa-volume-mute control-icon'
-        : (audio.volume < 0.5 ? 'fas fa-volume-down control-icon' : 'fas fa-volume-up control-icon');
-}
 
 // ── Play / Pause ──────────────────────────────────────────────────
 if (playPauseBtn) {

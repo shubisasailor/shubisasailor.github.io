@@ -337,13 +337,13 @@
     }
 
     function triggerToggle() {
+        // Capture ball color BEFORE toggling so burst uses the color you're leaving
+        var burstColor = getBallColor();
+
         isDark = !isDark;
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
         applyTheme(isDark);
         if (window._syncBgVideos) window._syncBgVideos(isDark);
-
-        // Burst with current ball color before switching
-        var burstColor = getBallColor();
         broken   = true;
         dragging = false;
         particles = [];
