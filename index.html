@@ -10,6 +10,20 @@
     <script src="js/title-typer.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script src="js/player.js" defer></script>
+    <script>
+    // Define _syncBgVideos before rope-theme.js so theme is applied to videos immediately
+    (function() {
+        function syncVid(isDark) {
+            var d = document.getElementById('yt-dark');
+            var l = document.getElementById('yt-light');
+            if (d) d.style.opacity = isDark ? '1' : '0';
+            if (l) l.style.opacity = isDark ? '0' : '1';
+        }
+        window._syncBgVideos = syncVid;
+        // Apply immediately from stored theme so video is correct before any click
+        syncVid(localStorage.getItem('theme') !== 'light');
+    })();
+    </script>
     <script src="js/rope-theme.js" defer></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
@@ -515,8 +529,7 @@
 
     <!-- ══════════════════════════════════════════════════
          DISCORD
-    ══════════════════════════════════════════════════ -->
-    <script>
+    ══════════════════════════════════════════════════ --><script>
     (function () {
         var DISCORD_ID = '748831508776878110';
         var USERNAME   = 'shub.is.a.sailor';
@@ -785,7 +798,6 @@
            ENTER SITE
         ══════════════════════════════════════════════ */
         var _entered = false;
-
         function enterSite() {
             if (_entered) return;
             _entered = true;

@@ -10,6 +10,20 @@
     <link rel="stylesheet" href="css/main.css">
     <script src="js/title-typer.js"></script>
     <script src="js/player.js" defer></script>
+    <script>
+    // Define _syncBgVideos before rope-theme.js so theme is applied to videos immediately
+    (function() {
+        function syncVid(isDark) {
+            var d = document.getElementById('yt-dark');
+            var l = document.getElementById('yt-light');
+            if (d) d.style.opacity = isDark ? '1' : '0';
+            if (l) l.style.opacity = isDark ? '0' : '1';
+        }
+        window._syncBgVideos = syncVid;
+        // Apply immediately from stored theme so video is correct before any click
+        syncVid(localStorage.getItem('theme') !== 'light');
+    })();
+    </script>
     <script src="js/rope-theme.js" defer></script>
     <style>
         /* ── YouTube background ── */
@@ -196,9 +210,7 @@
             </div>
         </div>
 
-    </div>
-
-    <script>
+    </div><script>
     window.addEventListener('load', function () {
         window.startTitleLoop && window.startTitleLoop('Contact', 300);
 
@@ -225,8 +237,6 @@
         };
 
         var _entered = false;
-
-
         function enterSite() {
             if (_entered) return;
             _entered = true;
@@ -243,8 +253,8 @@
                 setTimeout(function () { window._ropeInit && window._ropeInit(); }, 80);
             }, 800);
         }
-        window._enterSite = enterSite;
 
+        window._enterSite = enterSite;
         if (sessionStorage.getItem('site_entered')) {
             overlay.style.display = 'none';
             mainContent.classList.add('visible');
