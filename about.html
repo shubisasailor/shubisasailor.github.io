@@ -10,7 +10,6 @@
     <script src="js/title-typer.js"></script>
     <script src="js/player.js" defer></script>
     <script>
-    // Define _syncBgVideos before rope-theme.js so theme is applied to videos immediately
     (function() {
         function syncVid(isDark) {
             var d = document.getElementById('yt-dark');
@@ -19,16 +18,16 @@
             if (l) l.style.opacity = isDark ? '0' : '1';
         }
         window._syncBgVideos = syncVid;
-        // Apply immediately from stored theme so video is correct before any click
-        syncVid(localStorage.getItem('theme') !== 'light');
+        document.addEventListener('DOMContentLoaded', function () {
+            syncVid(localStorage.getItem('theme') !== 'light');
+        });
     })();
     </script>
     <script src="js/rope-theme.js" defer></script>
     <style>
-        /* ── Local webm background videos ── */
         #yt-dark, #yt-light {
             position: fixed; inset: 0; z-index: 0;
-            pointer-events: none; overflow: hidden; transition: opacity 0.6s ease;
+            pointer-events: none; overflow: hidden; transition: opacity 0.65s ease;
         }
         #yt-dark video, #yt-light video {
             position: absolute;
@@ -41,18 +40,56 @@
         #yt-dark  { opacity: 1; }
         #yt-light { opacity: 0; }
 
+        /* ── Fixed nav (top) ── */
+        #fixed-nav {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 32px);
+            max-width: 450px;
+            z-index: 200;
+            opacity: 0; visibility: hidden;
+            transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1),
+                        visibility 1.5s cubic-bezier(0.19,1,0.22,1);
+        }
+        #fixed-nav.visible { opacity: 1; visibility: visible; }
+
+        /* ── Fixed player (bottom) ── */
+        #fixed-player {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 32px);
+            max-width: 450px;
+            z-index: 200;
+            opacity: 0; visibility: hidden;
+            transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1),
+                        visibility 1.5s cubic-bezier(0.19,1,0.22,1);
+        }
+        #fixed-player.visible { opacity: 1; visibility: visible; }
+
+        /* ── Scrollable middle ── */
         .card-container {
-            overflow-y: auto !important;
-            max-height: 100vh;
-            padding: 20px 16px 32px !important;
-            box-sizing: border-box;
-            justify-content: flex-start !important;
+            position: fixed;
+            inset: 0;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
             align-items: center;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 88px 16px 100px !important;
+            width: 100%;
+            opacity: 0; visibility: hidden;
+            transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1),
+                        visibility 1.5s cubic-bezier(0.19,1,0.22,1);
             scrollbar-width: none;
             -ms-overflow-style: none;
-            gap: 14px;
         }
         .card-container::-webkit-scrollbar { display: none; }
+        .card-container.visible { opacity: 1; visibility: visible; }
         .glass-card { width: 100% !important; max-width: 450px; }
 
         .section-label {
@@ -101,24 +138,22 @@
 </head>
 <body class="about-page theme-dark">
 
-    <!-- Local webm backgrounds -->
+    <!-- Background videos -->
     <div id="yt-dark">
-        <video autoplay muted loop playsinline>
-            <source src="media/dark.webm" type="video/webm">
-        </video>
+        <video autoplay muted loop playsinline><source src="media/dark.webm" type="video/webm"></video>
     </div>
     <div id="yt-light">
-        <video autoplay muted loop playsinline>
-            <source src="media/light.webm" type="video/webm">
-        </video>
+        <video autoplay muted loop playsinline><source src="media/light.webm" type="video/webm"></video>
     </div>
     <div id="bg-video-overlay"></div>
 
-    <div id="overlay" onclick="if(window._enterSite)window._enterSite()">
+    <!-- Overlay -->
+    <div id="overlay">
         <div class="overlay-blur"></div>
         <div class="enter-button">click to enter...</div>
     </div>
 
+    <!-- Volume control -->
     <div class="top-left-wrapper">
         <div class="volume-container">
             <i class="fas fa-volume-up control-icon" id="mute-btn"></i>
@@ -128,18 +163,44 @@
 
     <audio id="bg-audio" loop><source src="" type="audio/mpeg"></audio>
 
-    <div class="card-container" id="main-content">
-
-        <!-- NAV -->
-        <div class="glass-card">
+    <!-- Fixed nav (top) -->
+    <div id="fixed-nav">
+        <div class="glass-card" style="padding:16px 20px;">
             <div class="nav-tabs" style="display:flex;justify-content:space-around;">
                 <span onclick="location.href='/'">OVERVIEW</span>
                 <span class="active">ABOUT</span>
                 <span onclick="location.href='/contact'">CONTACT</span>
             </div>
         </div>
+    </div>
 
-        <!-- ABOUT -->
+    <!-- Fixed player (bottom) -->
+    <div id="fixed-player">
+        <div class="glass-card" style="padding:15px 18px !important;">
+            <div style="display:flex;align-items:center;gap:13px;">
+                <img id="music-cover" src="media/music-cover/cry.jpg"
+                     onerror="this.style.display='none';" alt="Cover"
+                     style="width:42px;height:42px;border-radius:7px;object-fit:cover;flex-shrink:0;box-shadow:0 0 14px rgba(255,255,255,0.07);">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;">
+                    <div class="song-title">&#8212;</div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <div id="progress-container" style="flex:1;height:3px;background:rgba(255,255,255,0.10);border-radius:10px;cursor:pointer;position:relative;">
+                            <div id="music-progress" style="height:100%;width:0%;border-radius:10px;pointer-events:none;transition:width 0.1s linear;"></div>
+                        </div>
+                        <span id="music-time">0:00</span>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:13px;flex-shrink:0;">
+                    <i class="fas fa-backward control-icon" id="prev-btn"      style="font-size:0.83rem;opacity:0.40;"></i>
+                    <i class="fas fa-play    control-icon" id="play-pause-btn" style="font-size:1.05rem;opacity:0.75;"></i>
+                    <i class="fas fa-forward control-icon" id="next-btn"       style="font-size:0.83rem;opacity:0.40;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scrollable middle content -->
+    <div class="card-container" id="main-content">
         <div class="glass-card">
             <div class="section-label">who i am</div>
             <p class="bio-text">
@@ -169,30 +230,6 @@
                 <span class="under-process-text">UNDER PROCESS</span>
             </div>
         </div>
-
-        <!-- MUSIC PLAYER -->
-        <div class="glass-card" style="padding:15px 18px !important;">
-            <div style="display:flex;align-items:center;gap:13px;">
-                <img id="music-cover" src="media/music-cover/cry.jpg"
-                     onerror="this.style.display='none';" alt="Cover"
-                     style="width:42px;height:42px;border-radius:7px;object-fit:cover;flex-shrink:0;box-shadow:0 0 14px rgba(255,255,255,0.07);">
-                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;">
-                    <div class="song-title">—</div>
-                    <div style="display:flex;align-items:center;gap:8px;">
-                        <div id="progress-container" style="flex:1;height:3px;background:rgba(255,255,255,0.10);border-radius:10px;cursor:pointer;position:relative;">
-                            <div id="music-progress" style="height:100%;width:0%;border-radius:10px;pointer-events:none;transition:width 0.1s linear;"></div>
-                        </div>
-                        <span id="music-time">0:00</span>
-                    </div>
-                </div>
-                <div style="display:flex;align-items:center;gap:13px;flex-shrink:0;">
-                    <i class="fas fa-backward control-icon" id="prev-btn"      style="font-size:0.83rem;opacity:0.40;"></i>
-                    <i class="fas fa-play    control-icon" id="play-pause-btn" style="font-size:1.05rem;opacity:0.75;"></i>
-                    <i class="fas fa-forward control-icon" id="next-btn"       style="font-size:0.83rem;opacity:0.40;"></i>
-                </div>
-            </div>
-        </div>
-
     </div>
 
     <script>
@@ -201,21 +238,33 @@
 
         var overlay      = document.getElementById('overlay');
         var mainContent  = document.getElementById('main-content');
+        var fixedNav     = document.getElementById('fixed-nav');
+        var fixedPlayer  = document.getElementById('fixed-player');
         var ytDark       = document.getElementById('yt-dark');
         var ytLight      = document.getElementById('yt-light');
         var audio        = document.getElementById('bg-audio');
         var playPauseBtn = document.getElementById('play-pause-btn');
 
-        function startVideos() {
+        function initVideos() {
             var isDark = localStorage.getItem('theme') !== 'light';
+            ytDark.style.transition  = 'none';
+            ytLight.style.transition = 'none';
             ytDark.style.opacity  = isDark ? '1' : '0';
             ytLight.style.opacity = isDark ? '0' : '1';
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                    ytDark.style.transition  = 'opacity 0.65s ease';
+                    ytLight.style.transition = 'opacity 0.65s ease';
+                });
+            });
         }
 
         window._syncBgVideos = function (isNowDark) {
             ytDark.style.opacity  = isNowDark ? '1' : '0';
             ytLight.style.opacity = isNowDark ? '0' : '1';
         };
+
+        initVideos();
 
         var _entered = false;
         function enterSite() {
@@ -230,16 +279,19 @@
             setTimeout(function () {
                 overlay.style.display = 'none';
                 mainContent.classList.add('visible');
-                startVideos();
+                fixedNav.classList.add('visible');
+                fixedPlayer.classList.add('visible');
                 setTimeout(function () { window._ropeInit && window._ropeInit(); }, 80);
             }, 800);
         }
 
         window._enterSite = enterSite;
+
         if (sessionStorage.getItem('site_entered')) {
             overlay.style.display = 'none';
             mainContent.classList.add('visible');
-            startVideos();
+            fixedNav.classList.add('visible');
+            fixedPlayer.classList.add('visible');
             audio.play()
                 .then(function () { window._restoreMusicTime && window._restoreMusicTime(); })
                 .catch(function () { document.addEventListener('click', function () { audio.play(); }, { once: true }); });

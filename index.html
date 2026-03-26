@@ -11,7 +11,12 @@
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script src="js/player.js" defer></script>
     <script>
-    // Define _syncBgVideos before rope-theme.js so theme is applied to videos immediately
+    // _syncBgVideos is registered here so rope-theme.js (deferred) can call it.
+    // The INITIAL sync is deferred to DOMContentLoaded — the video elements
+    // don't exist yet when <head> scripts execute, so calling getElementById
+    // here returns null and the opacity never gets set (causing the visible
+    // "video swap" flash on enter). DOMContentLoaded fires after DOM is parsed
+    // but before images/media load, so the elements are guaranteed to exist.
     (function() {
         function syncVid(isDark) {
             var d = document.getElementById('yt-dark');
@@ -20,8 +25,9 @@
             if (l) l.style.opacity = isDark ? '0' : '1';
         }
         window._syncBgVideos = syncVid;
-        // Apply immediately from stored theme so video is correct before any click
-        syncVid(localStorage.getItem('theme') !== 'light');
+        document.addEventListener('DOMContentLoaded', function () {
+            syncVid(localStorage.getItem('theme') !== 'light');
+        });
     })();
     </script>
     <script src="js/rope-theme.js" defer></script>
@@ -125,20 +131,54 @@
         }
 
         /* ══════════════════════════════════════════════════
-           MAIN LAYOUT
+           FIXED NAV + FIXED PLAYER LAYOUT
+           Nav pinned top, player pinned bottom.
+           .card-container scrolls only the middle content.
         ══════════════════════════════════════════════════ */
+
+        /* Fixed top nav */
+        #fixed-nav {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 32px);
+            max-width: 480px;
+            z-index: 200;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1),
+                        visibility 1.5s cubic-bezier(0.19,1,0.22,1);
+        }
+        #fixed-nav.visible { opacity: 1; visibility: visible; }
+
+        /* Fixed bottom player */
+        #fixed-player {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 32px);
+            max-width: 480px;
+            z-index: 200;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1),
+                        visibility 1.5s cubic-bezier(0.19,1,0.22,1);
+        }
+        #fixed-player.visible { opacity: 1; visibility: visible; }
+
+        /* Scrollable middle */
         .card-container {
-            position: relative;
+            position: fixed;
+            inset: 0;
             z-index: 5;
-            display: flex !important;
+            display: flex;
             flex-direction: column;
             align-items: center;
-            overflow-y: auto !important;
+            overflow-y: auto;
             overflow-x: hidden;
-            max-height: 100dvh;
-            min-height: 100dvh;
-            padding: 20px 16px 24px !important;
-            gap: 12px;
+            padding: 88px 16px 100px !important;
             width: 100%;
             opacity: 0;
             visibility: hidden;
@@ -152,11 +192,11 @@
         .glass-card { width: 100% !important; max-width: 480px; }
 
         /* Tab panels */
-        .tab-panel { display: none; width: 100%; }
+        .tab-panel { display: none; width: 100%; max-width: 480px; }
         .tab-panel.active {
             display: flex; flex-direction: column;
-            align-items: center; flex: 1;
-            min-height: 0; width: 100%;
+            align-items: center;
+            width: 100%; max-width: 480px;
             animation: cardFadeIn 0.28s ease forwards;
         }
         @keyframes cardFadeIn {
@@ -167,10 +207,8 @@
             display: flex; flex-direction: column;
             align-items: center; gap: 12px; width: 100%;
         }
-        .panel-player {
-            width: 100%; max-width: 480px;
-            margin-top: auto; padding-top: 16px;
-        }
+        /* panel-player inside panels is superseded by #fixed-player */
+        .panel-player { display: none !important; }
 
         /* Typewriter cursor */
         @keyframes twBlink { 0%,100%{opacity:1} 50%{opacity:0} }
@@ -314,7 +352,7 @@
     <!-- ══════════════════════════════════════════════════
          LOADING / ENTRY OVERLAY
     ══════════════════════════════════════════════════ -->
-    <div id="overlay" onclick="if(window._enterSite)window._enterSite()">
+    <div id="overlay">
         <div id="overlay-bg"></div>
         <div id="loader-card">
             <div id="loader-mono">F</div>
@@ -334,11 +372,9 @@
     <div id="toast"></div>
 
     <!-- ══════════════════════════════════════════════════
-         MAIN CONTENT
+         FIXED NAV (top)
     ══════════════════════════════════════════════════ -->
-    <div class="card-container" id="main-content">
-
-        <!-- NAV -->
+    <div id="fixed-nav">
         <div class="glass-card" style="padding:16px 20px;">
             <div style="display:flex;justify-content:space-around;align-items:center;">
                 <span class="nav-tab active" id="tab-overview" onclick="switchTab('overview')" role="tab" tabindex="0">OVERVIEW</span>
@@ -346,6 +382,39 @@
                 <span class="nav-tab"        id="tab-contact"  onclick="switchTab('contact')"  role="tab" tabindex="0">CONTACT</span>
             </div>
         </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
+         FIXED PLAYER (bottom)
+    ══════════════════════════════════════════════════ -->
+    <div id="fixed-player">
+        <div class="glass-card music-player-card" style="padding:15px 18px !important;">
+            <div style="display:flex;align-items:center;gap:13px;">
+                <img id="music-cover" src="media/music-cover/cry.jpg"
+                     onerror="this.style.display='none';document.getElementById('cover-fallback').style.display='flex';" alt="Cover">
+                <div id="cover-fallback" style="display:none;width:42px;height:42px;border-radius:7px;background:rgba(255,255,255,0.05);align-items:center;justify-content:center;font-size:0.9rem;color:rgba(255,255,255,0.25);flex-shrink:0;">&#9834;</div>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;">
+                    <div class="song-title">&#8212;</div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <div id="progress-container" style="flex:1;height:3px;background:rgba(255,255,255,0.10);border-radius:10px;cursor:pointer;position:relative;">
+                            <div id="music-progress" style="height:100%;width:0%;border-radius:10px;pointer-events:none;transition:width 0.1s linear;"></div>
+                        </div>
+                        <span id="music-time">0:00</span>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:13px;flex-shrink:0;">
+                    <i class="fas fa-backward control-icon" id="prev-btn"      style="font-size:0.83rem;opacity:0.40;"></i>
+                    <i class="fas fa-play    control-icon" id="play-pause-btn" style="font-size:1.05rem;opacity:0.75;"></i>
+                    <i class="fas fa-forward control-icon" id="next-btn"       style="font-size:0.83rem;opacity:0.40;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════
+         SCROLLABLE MIDDLE CONTENT
+    ══════════════════════════════════════════════════ -->
+    <div class="card-container" id="main-content">
 
         <!-- ════════ OVERVIEW ════════ -->
         <div class="tab-panel active" id="panel-overview">
@@ -386,31 +455,7 @@
                             <a href="https://pinterest.com/shubflexin"        target="_blank" rel="noopener"><i class="fab fa-pinterest"></i></a>
                             <a href="https://youtube.com/@Tarnished_Shubh"    target="_blank" rel="noopener"><i class="fab fa-youtube"></i></a>
                             <a href="https://x.com/ZetsuoNoShub"              target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i></a>
-                            <a href="mailto:shub.professional@gmail.com" rel="noopener"><i class="fas fa-envelope"></i></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Music player -->
-            <div class="panel-player">
-                <div class="glass-card music-player-card" style="padding:15px 18px !important;">
-                    <div style="display:flex;align-items:center;gap:13px;">
-                        <img id="music-cover" src="media/music-cover/cry.jpg"
-                             onerror="this.style.display='none';document.getElementById('cover-fallback').style.display='flex';" alt="Cover">
-                        <div id="cover-fallback" style="display:none;width:42px;height:42px;border-radius:7px;background:rgba(255,255,255,0.05);align-items:center;justify-content:center;font-size:0.9rem;color:rgba(255,255,255,0.25);flex-shrink:0;">&#9834;</div>
-                        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;">
-                            <div class="song-title">&#8212;</div>
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <div id="progress-container" style="flex:1;height:3px;background:rgba(255,255,255,0.10);border-radius:10px;cursor:pointer;position:relative;">
-                                    <div id="music-progress" style="height:100%;width:0%;border-radius:10px;pointer-events:none;transition:width 0.1s linear;"></div>
-                                </div>
-                                <span id="music-time">0:00</span>
-                            </div>
-                        </div>
-                        <div style="display:flex;align-items:center;gap:13px;flex-shrink:0;">
-                            <i class="fas fa-backward control-icon" id="prev-btn"      style="font-size:0.83rem;opacity:0.40;"></i>
-                            <i class="fas fa-play    control-icon" id="play-pause-btn" style="font-size:1.05rem;opacity:0.75;"></i>
-                            <i class="fas fa-forward control-icon" id="next-btn"       style="font-size:0.83rem;opacity:0.40;"></i>
+                            <a href="mailto:shub.professional@gmail.com"      rel="noopener"><i class="fas fa-envelope"></i></a>
                         </div>
                     </div>
                 </div>
@@ -450,29 +495,6 @@
                     </div>
                 </div>
             </div>
-            <div class="panel-player">
-                <div class="glass-card" style="padding:15px 18px !important;">
-                    <div style="display:flex;align-items:center;gap:13px;">
-                        <img class="tab-music-cover" src="media/music-cover/cry.jpg"
-                             onerror="this.style.display='none';" alt="Cover"
-                             style="width:42px;height:42px;border-radius:7px;object-fit:cover;flex-shrink:0;box-shadow:0 0 14px rgba(255,255,255,0.07);">
-                        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;">
-                            <div class="song-title">&#8212;</div>
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <div id="progress-container-about" style="flex:1;height:3px;background:rgba(255,255,255,0.10);border-radius:10px;cursor:pointer;position:relative;">
-                                    <div id="music-progress-about" class="tab-music-progress" style="height:100%;width:0%;border-radius:10px;pointer-events:none;transition:width 0.1s linear;"></div>
-                                </div>
-                                <span id="music-time-about" class="tab-music-time">0:00</span>
-                            </div>
-                        </div>
-                        <div style="display:flex;align-items:center;gap:13px;flex-shrink:0;">
-                            <i class="fas fa-backward control-icon" id="prev-btn-about"      style="font-size:0.83rem;opacity:0.40;"></i>
-                            <i class="fas fa-play    control-icon" id="play-pause-btn-about" style="font-size:1.05rem;opacity:0.75;"></i>
-                            <i class="fas fa-forward control-icon" id="next-btn-about"       style="font-size:0.83rem;opacity:0.40;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div><!-- /panel-about -->
 
         <!-- ════════ CONTACT ════════ -->
@@ -500,36 +522,13 @@
                     </div>
                 </div>
             </div>
-            <div class="panel-player">
-                <div class="glass-card" style="padding:15px 18px !important;">
-                    <div style="display:flex;align-items:center;gap:13px;">
-                        <img class="tab-music-cover" src="media/music-cover/cry.jpg"
-                             onerror="this.style.display='none';" alt="Cover"
-                             style="width:42px;height:42px;border-radius:7px;object-fit:cover;flex-shrink:0;box-shadow:0 0 14px rgba(255,255,255,0.07);">
-                        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;">
-                            <div class="song-title">&#8212;</div>
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <div id="progress-container-contact" style="flex:1;height:3px;background:rgba(255,255,255,0.10);border-radius:10px;cursor:pointer;position:relative;">
-                                    <div id="music-progress-contact" class="tab-music-progress" style="height:100%;width:0%;border-radius:10px;pointer-events:none;transition:width 0.1s linear;"></div>
-                                </div>
-                                <span id="music-time-contact" class="tab-music-time">0:00</span>
-                            </div>
-                        </div>
-                        <div style="display:flex;align-items:center;gap:13px;flex-shrink:0;">
-                            <i class="fas fa-backward control-icon" id="prev-btn-contact"      style="font-size:0.83rem;opacity:0.40;"></i>
-                            <i class="fas fa-play    control-icon" id="play-pause-btn-contact" style="font-size:1.05rem;opacity:0.75;"></i>
-                            <i class="fas fa-forward control-icon" id="next-btn-contact"       style="font-size:0.83rem;opacity:0.40;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div><!-- /panel-contact -->
 
     </div><!-- /card-container -->
 
     <!-- ══════════════════════════════════════════════════
          DISCORD
-    ══════════════════════════════════════════════════ --><script>
+    ══════════════════════════════════════════════════ --><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     (function () {
         var DISCORD_ID = '748831508776878110';
         var USERNAME   = 'shub.is.a.sailor';
@@ -609,7 +608,7 @@
         /* ══════════════════════════════════════════════
            VIDEO THEME SWITCHING
            Rule: NEVER use display:none on yt-dark / yt-light.
-           Only toggle opacity so YouTube keeps both streams alive.
+           Only toggle opacity so both streams stay alive.
            rope-theme.js calls window._syncBgVideos(isDark) on toggle.
         ══════════════════════════════════════════════ */
         function applyVideoTheme(isDark) {
@@ -619,7 +618,7 @@
 
         function initVideos() {
             var isDark = localStorage.getItem('theme') !== 'light';
-            /* Suppress transition on initial paint */
+            /* Suppress transition on initial paint so there's no flash */
             ytDark.style.transition  = 'none';
             ytLight.style.transition = 'none';
             applyVideoTheme(isDark);
@@ -635,6 +634,9 @@
         window._syncBgVideos = function (isNowDark) {
             applyVideoTheme(isNowDark);
         };
+
+        /* ── Sync video immediately so correct one plays behind the overlay blur ── */
+        initVideos();
 
         /* Audio helpers — player.js is deferred so we use getters */
         function getAudio() { return document.getElementById('bg-audio'); }
@@ -813,7 +815,8 @@
             setTimeout(function () {
                 overlay.style.display = 'none';
                 mainContent.classList.add('visible');
-                initVideos();
+                document.getElementById('fixed-nav').classList.add('visible');
+                document.getElementById('fixed-player').classList.add('visible');
                 window._startNameTypewriter();
                 if (window.startTitleLoop) window.startTitleLoop('Portfolio', 300);
                 setTimeout(function () { if (window._ropeInit) window._ropeInit(); }, 80);
@@ -826,7 +829,8 @@
         if (sessionStorage.getItem('site_entered')) {
             overlay.style.display = 'none';
             mainContent.classList.add('visible');
-            initVideos();
+            document.getElementById('fixed-nav').classList.add('visible');
+            document.getElementById('fixed-player').classList.add('visible');
             var audio = getAudio(), ppBtn = getPPBtn();
             if (audio) audio.play().catch(function () {
                 document.addEventListener('click', function () {
@@ -886,7 +890,8 @@
             emailjs.send('service_wfciems', 'template_srqhd09', { name: name, email: email, message: msg })
                 .then(function () {
                     showToast('Message sent!', 'success');
-                    ['f-name','f-email','f-message'].forEach(function (id) {                        document.getElementById(id).value = '';
+                    ['f-name','f-email','f-message'].forEach(function (id) {
+                        document.getElementById(id).value = '';
                     });
                     finish();
                 })
@@ -896,7 +901,7 @@
                 });
         });
 
-    });
+    }); // end DOMContentLoaded
     </script>
 </body>
 </html>
