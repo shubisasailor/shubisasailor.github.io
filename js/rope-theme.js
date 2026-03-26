@@ -278,10 +278,11 @@
         var burstColor = getBallColor();
         isDark = !isDark;
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        localStorage.setItem('theme_manual', '1'); /* user explicitly toggled */
+        localStorage.setItem('theme_manual', '1');
         applyTheme(isDark);
         if (window._syncBgVideos) window._syncBgVideos(isDark);
-        broken=true; dragging=false; particles=[];
+        /* Reset ALL drag state so red overlay never persists */
+        broken=true; dragging=false; tuggedDown=0; didToggle=false; particles=[];
         for (var i=0; i<26; i++) {
             var angle=(Math.PI*2*i)/26+Math.random()*0.2;
             var speed=2+Math.random()*5.5;
@@ -327,6 +328,10 @@
 
     function draw() {
         ctx.clearRect(0,0,W,H);
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur  = 0;
+        ctx.strokeStyle = 'transparent';
+        ctx.fillStyle   = 'transparent';
         if (broken) {
             for (var i=particles.length-1; i>=0; i--) {
                 var p=particles[i];
