@@ -11,18 +11,18 @@
     <script src="js/player.js" defer></script>
     <script src="js/rope-theme.js" defer></script>
     <style>
-        /* ── YouTube background ── */
-        .yt-bg-wrap {
+        /* ── Local webm background videos ── */
+        #yt-dark, #yt-light {
             position: fixed; inset: 0; z-index: 0;
             pointer-events: none; overflow: hidden; transition: opacity 0.6s ease;
         }
-        .yt-bg-wrap iframe {
+        #yt-dark video, #yt-light video {
             position: absolute;
             width: 100vw; height: 56.25vw;
             min-height: 100vh; min-width: 177.78vh;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            border: none;
+            object-fit: cover;
         }
         #yt-dark  { opacity: 1; }
         #yt-light { opacity: 0; }
@@ -87,14 +87,16 @@
 </head>
 <body class="about-page theme-dark">
 
-    <!-- YouTube backgrounds -->
-    <div class="yt-bg-wrap" id="yt-dark">
-        <iframe src="https://www.youtube.com/embed/Kt5llcrBaPs?autoplay=1&mute=1&loop=1&playlist=Kt5llcrBaPs&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1"
-            allow="autoplay; encrypted-media" allowfullscreen title="background"></iframe>
+    <!-- Local webm backgrounds -->
+    <div id="yt-dark">
+        <video autoplay muted loop playsinline>
+            <source src="media/dark.webm" type="video/webm">
+        </video>
     </div>
-    <div class="yt-bg-wrap" id="yt-light">
-        <iframe src="https://www.youtube.com/embed/t9h226JE3UA?autoplay=1&mute=1&loop=1&playlist=t9h226JE3UA&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1"
-            allow="autoplay; encrypted-media" allowfullscreen title="background"></iframe>
+    <div id="yt-light">
+        <video autoplay muted loop playsinline>
+            <source src="media/light.webm" type="video/webm">
+        </video>
     </div>
     <div id="bg-video-overlay"></div>
 

@@ -14,40 +14,108 @@
     <style>
         *, *::before, *::after { box-sizing: border-box; }
 
-        /* ── YouTube background ── */
-        .yt-bg-wrap {
+        /* ══════════════════════════════════════════════════
+           BACKGROUND VIDEO SYSTEM
+           Both iframes are ALWAYS in the DOM (never display:none)
+           so YouTube keeps buffering both streams.
+           Visibility is controlled by opacity only.
+           z-index ordering: bg-wrap(0) < vignette(3) < content(5)
+        ══════════════════════════════════════════════════ */
+        #bg-wrap {
             position: fixed;
             inset: 0;
             z-index: 0;
             pointer-events: none;
             overflow: hidden;
-            transition: opacity 0.6s ease;
+            background: #000;
         }
-        .yt-bg-wrap iframe {
+        /* Local webm background videos */
+        #bg-wrap video {
             position: absolute;
-            /* Oversized so it covers all aspect ratios */
             width: 100vw;
-            height: 56.25vw; /* 16:9 */
+            height: 56.25vw;     /* maintain 16:9 */
             min-height: 100vh;
-            min-width: 177.78vh; /* 16:9 inverted */
+            min-width: 177.78vh; /* 16:9 inverted — covers portrait */
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            border: none;
+            object-fit: cover;
+            pointer-events: none;
+            transition: opacity 0.65s ease;
         }
-        #yt-dark  { opacity: 1; }
-        #yt-light { opacity: 0; }
+        /* Dark is always layer 1, light crossfades on top */
+        #yt-dark  { opacity: 1; z-index: 1; }
+        #yt-light { opacity: 0; z-index: 2; }
 
-        #bg-video-overlay {
+        /* Subtle vignette */
+        #bg-vignette {
             position: fixed;
             inset: 0;
-            z-index: 1;
-            background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.20) 100%);
+            z-index: 3;
+            background: radial-gradient(ellipse at center, transparent 25%, rgba(0,0,0,0.22) 100%);
             pointer-events: none;
         }
 
-        /* ── Card container ── */
+        /* ══════════════════════════════════════════════════
+           LOADING / ENTRY OVERLAY
+        ══════════════════════════════════════════════════ */
+        #overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.9s ease;
+        }
+        #overlay-bg {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.88);
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+        }
+        #loader-card {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 22px;
+            width: min(320px, 86vw);
+        }
+        /* Animated monogram */
+        #loader-mono {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(2rem, 8vw, 2.8rem);
+            font-weight: 700;
+            letter-spacing: 8px;
+            color: rgba(255,255,255,0.10);
+            text-transform: uppercase;
+            user-select: none;
+            animation: monoGlow 3s ease-in-out infinite;
+        }
+        @keyframes monoGlow {
+            0%,100% { color: rgba(255,255,255,0.10); text-shadow: none; }
+            50%      { color: rgba(255,255,255,0.50); text-shadow: 0 0 28px rgba(255,255,255,0.22); }
+        }
+        /* Entry text */
+        #enter-prompt {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(0.78rem, 2.5vw, 0.92rem);
+            letter-spacing: 3.5px;
+            color: rgba(255,255,255,0.48);
+            cursor: pointer;
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        /* ══════════════════════════════════════════════════
+           MAIN LAYOUT
+        ══════════════════════════════════════════════════ */
         .card-container {
+            position: relative;
+            z-index: 5;
             display: flex !important;
             flex-direction: column;
             align-items: center;
@@ -58,72 +126,66 @@
             padding: 20px 16px 24px !important;
             gap: 12px;
             width: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1),
+                        visibility 1.5s cubic-bezier(0.19,1,0.22,1);
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
+        .card-container::-webkit-scrollbar { display: none; }
+        .card-container.visible { opacity: 1; visibility: visible; }
+        .glass-card { width: 100% !important; max-width: 480px; }
 
-        .glass-card {
-            width: 100% !important;
-            max-width: 480px;
-        }
-
-        /* ── Tab panels ── */
+        /* Tab panels */
         .tab-panel { display: none; width: 100%; }
         .tab-panel.active {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            flex: 1;
-            min-height: 0;
-            width: 100%;
+            display: flex; flex-direction: column;
+            align-items: center; flex: 1;
+            min-height: 0; width: 100%;
             animation: cardFadeIn 0.28s ease forwards;
         }
         @keyframes cardFadeIn {
             from { opacity: 0; transform: translateY(8px); }
             to   { opacity: 1; transform: translateY(0); }
         }
-
         .panel-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            width: 100%;
+            display: flex; flex-direction: column;
+            align-items: center; gap: 12px; width: 100%;
         }
-
         .panel-player {
-            width: 100%;
-            max-width: 480px;
-            margin-top: auto;
-            padding-top: 16px;
+            width: 100%; max-width: 480px;
+            margin-top: auto; padding-top: 16px;
         }
 
-        /* ── Typewriter cursor ── */
+        /* Typewriter cursor */
         @keyframes twBlink { 0%,100%{opacity:1} 50%{opacity:0} }
         #tw-cursor {
-            display:inline-block; width:2px; height:0.82em;
-            background:white; margin-left:3px; vertical-align:middle;
-            box-shadow:0 0 10px white, 0 0 22px rgba(255,255,255,0.35);
-            animation:twBlink 0.8s step-end infinite;
+            display: inline-block; width: 2px; height: 0.82em;
+            background: white; margin-left: 3px; vertical-align: middle;
+            box-shadow: 0 0 10px white, 0 0 22px rgba(255,255,255,0.35);
+            animation: twBlink 0.8s step-end infinite;
         }
 
-        /* ── Nav tabs ── */
+        /* Nav tabs */
         .nav-tab {
-            opacity:0.40; color:white;
-            transition:opacity 0.2s, text-shadow 0.2s;
-            font-size:clamp(0.6rem,2vw,0.7rem);
-            letter-spacing:2px; font-weight:bold; cursor:pointer;
-            padding:4px 8px; white-space:nowrap;
+            opacity: 0.40; color: white;
+            transition: opacity 0.2s, text-shadow 0.2s;
+            font-size: clamp(0.6rem,2vw,0.7rem);
+            letter-spacing: 2px; font-weight: bold;
+            cursor: pointer; padding: 4px 8px; white-space: nowrap;
         }
-        .nav-tab:hover  { opacity:0.72; }
+        .nav-tab:hover  { opacity: 0.72; }
         .nav-tab.active {
-            opacity:1;
-            text-shadow:0 0 14px rgba(255,255,255,0.55), 0 0 32px rgba(255,255,255,0.18);
+            opacity: 1;
+            text-shadow: 0 0 14px rgba(255,255,255,0.55), 0 0 32px rgba(255,255,255,0.18);
         }
 
-        /* ── Typography ── */
+        /* Typography */
         #display-name {
-            color:white;
-            font-size:clamp(1.8rem,6vw,2.6rem);
-            text-shadow:0 0 22px rgba(255,255,255,0.65), 0 0 50px rgba(255,255,255,0.18) !important;
+            color: white;
+            font-size: clamp(1.8rem,6vw,2.6rem);
+            text-shadow: 0 0 22px rgba(255,255,255,0.65), 0 0 50px rgba(255,255,255,0.18) !important;
         }
         .subtitle-text  { font-size:clamp(0.7rem,2vw,0.78rem); color:rgba(255,255,255,0.40); margin-top:5px; letter-spacing:1.5px; }
         .views-row      { display:flex; align-items:center; justify-content:center; gap:5px; margin-top:8px; font-size:clamp(0.62rem,1.8vw,0.7rem); color:rgba(255,255,255,0.35); letter-spacing:1px; }
@@ -131,14 +193,13 @@
         .bio-text       { font-size:clamp(0.78rem,2.2vw,0.85rem); line-height:1.8; color:rgba(255,255,255,0.55); margin:0; }
         .card-divider   { height:1px; background:rgba(255,255,255,0.06); margin:16px 0; }
 
-        /* ── Discord skeleton / card ── */
+        /* Discord */
         .discord-skeleton { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.025); border-radius:10px; padding:14px; margin-top:18px; }
         .skeleton-avatar  { width:42px; height:42px; border-radius:50%; background:rgba(255,255,255,0.06); flex-shrink:0; animation:skPulse 1.6s ease-in-out infinite; }
         .skeleton-lines   { display:flex; flex-direction:column; gap:8px; flex:1; }
         .skeleton-line    { height:9px; border-radius:5px; background:rgba(255,255,255,0.06); animation:skPulse 1.6s ease-in-out infinite; }
         .skeleton-line.short { width:55%; animation-delay:0.2s; }
         @keyframes skPulse { 0%,100%{opacity:0.25} 50%{opacity:0.65} }
-
         .discord-real { display:none; background:rgba(255,255,255,0.025); border-radius:10px; padding:14px; margin-top:18px; align-items:center; gap:12px; }
         .discord-real.loaded { display:flex; }
         .discord-avatar-wrap { position:relative; width:42px; height:42px; flex-shrink:0; }
@@ -153,43 +214,45 @@
         #discord-status, #discord-status a { font-size:clamp(0.65rem,1.8vw,0.72rem); margin-top:3px; color:rgba(255,255,255,0.50) !important; text-decoration:none; }
         #discord-activity { font-size:clamp(0.60rem,1.6vw,0.68rem); margin-top:2px; color:rgba(255,255,255,0.35); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
 
-        /* ── Skills ── */
+        /* Skills */
         .skills-grid { display:flex; flex-wrap:wrap; gap:7px; margin-top:4px; }
         .skill-tag   { font-size:clamp(0.65rem,1.8vw,0.72rem); letter-spacing:1px; padding:5px 11px; border-radius:6px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.09); color:rgba(255,255,255,0.55); transition:all 0.22s ease; }
         .skill-tag:hover { background:rgba(255,255,255,0.09); border-color:rgba(255,255,255,0.22); color:rgba(255,255,255,0.85); }
 
-        /* ── Under process ── */
+        /* Under process */
         .under-process      { display:flex; align-items:center; gap:10px; padding:11px 15px; background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.06); border-radius:9px; }
         .under-process-dot  { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.30); flex-shrink:0; animation:upDotPulse 2s ease-in-out infinite; }
         @keyframes upDotPulse { 0%,100%{opacity:0.30;transform:scale(1)} 50%{opacity:0.90;transform:scale(1.35)} }
         .under-process-text { font-size:clamp(0.62rem,1.8vw,0.7rem); letter-spacing:2px; color:rgba(255,255,255,0.35); }
 
-        /* ── Socials ── */
+        /* Socials */
         .social-links     { display:flex; justify-content:center; flex-wrap:wrap; gap:18px; margin-top:18px; }
         .social-links a   { display:flex; align-items:center; justify-content:center; width:24px; height:24px; text-decoration:none; transition:0.3s; }
         .social-links i   { color:rgba(255,255,255,0.60); font-size:18px; filter:drop-shadow(0 0 5px rgba(255,255,255,0.4)); transition:0.3s; }
         .social-links a:hover   { transform:scale(1.2); }
         .social-links a:hover i { color:white; filter:drop-shadow(0 0 10px #fff); }
 
-        /* ── Music player ── */
-        .music-player-card img   { width:42px; height:42px; border-radius:7px; object-fit:cover; flex-shrink:0; box-shadow:0 0 14px rgba(255,255,255,0.07); }
-        #cover-fallback          { display:none; width:42px; height:42px; border-radius:7px; background:rgba(255,255,255,0.05); flex-shrink:0; align-items:center; justify-content:center; font-size:0.9rem; color:rgba(255,255,255,0.25); }
-        .song-title              { font-size:clamp(0.72rem,2vw,0.78rem); font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:rgba(255,255,255,0.60) !important; }
-        #music-time              { font-size:clamp(0.58rem,1.6vw,0.65rem); color:rgba(255,255,255,0.35) !important; white-space:nowrap; min-width:30px; text-align:right; }
-        #music-progress          { background:rgba(255,255,255,0.55) !important; box-shadow:0 0 7px rgba(255,255,255,0.18) !important; }
+        /* Music player */
+        .music-player-card img { width:42px; height:42px; border-radius:7px; object-fit:cover; flex-shrink:0; box-shadow:0 0 14px rgba(255,255,255,0.07); }
+        #cover-fallback        { display:none; width:42px; height:42px; border-radius:7px; background:rgba(255,255,255,0.05); flex-shrink:0; align-items:center; justify-content:center; font-size:0.9rem; color:rgba(255,255,255,0.25); }
+        .song-title            { font-size:clamp(0.72rem,2vw,0.78rem); font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:rgba(255,255,255,0.60) !important; }
+        #music-time            { font-size:clamp(0.58rem,1.6vw,0.65rem); color:rgba(255,255,255,0.35) !important; white-space:nowrap; min-width:30px; text-align:right; }
+        #music-progress        { background:rgba(255,255,255,0.55) !important; box-shadow:0 0 7px rgba(255,255,255,0.18) !important; }
+        .tab-music-progress    { background:rgba(255,255,255,0.55) !important; box-shadow:0 0 7px rgba(255,255,255,0.18) !important; }
+        .tab-music-time        { font-size:clamp(0.58rem,1.6vw,0.65rem); color:rgba(255,255,255,0.35); white-space:nowrap; min-width:30px; text-align:right; }
 
-        /* ── Contact form ── */
+        /* Contact form */
         .email-row   { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:11px 14px; font-size:clamp(0.78rem,2.2vw,0.85rem); color:rgba(255,255,255,0.55); word-break:break-all; }
         .email-row i { opacity:0.40; flex-shrink:0; }
-        #email-display  { flex:1; }
-        .email-copy     { margin-left:auto; opacity:0.30; transition:opacity 0.2s; font-size:0.8rem; cursor:pointer; flex-shrink:0; }
+        #email-display { flex:1; }
+        .email-copy    { margin-left:auto; opacity:0.30; transition:opacity 0.2s; font-size:0.8rem; cursor:pointer; flex-shrink:0; }
         .email-copy:hover { opacity:0.85; }
-        .form-group     { display:flex; flex-direction:column; gap:10px; }
+        .form-group    { display:flex; flex-direction:column; gap:10px; }
         .form-input, .form-textarea { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:11px 14px; font-family:'Inter',sans-serif; font-size:clamp(0.76rem,2vw,0.82rem); color:rgba(255,255,255,0.75); outline:none; transition:border-color 0.2s, background 0.2s; width:100%; }
         .form-input::placeholder, .form-textarea::placeholder { color:rgba(255,255,255,0.25); }
         .form-input:focus, .form-textarea:focus { border-color:rgba(255,255,255,0.28); background:rgba(255,255,255,0.06); }
-        .form-textarea  { resize:none; height:88px; }
-        .form-row       { display:flex; gap:10px; }
+        .form-textarea { resize:none; height:88px; }
+        .form-row      { display:flex; gap:10px; }
         .form-row .form-input { flex:1; min-width:0; }
         @media (max-width:380px) { .form-row { flex-direction:column; } }
         .submit-btn { width:100%; padding:11px; margin-top:4px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.10); border-radius:8px; color:rgba(255,255,255,0.55); font-family:'Inter',sans-serif; font-size:clamp(0.68rem,1.8vw,0.75rem); letter-spacing:2px; cursor:pointer; transition:all 0.22s ease; display:flex; align-items:center; justify-content:center; gap:8px; }
@@ -201,48 +264,51 @@
         .submit-btn.loading .btn-label  { opacity:0.4; }
         @keyframes spin { to { transform:rotate(360deg); } }
 
-        /* ── Toast ── */
+        /* Toast */
         #toast { position:fixed; bottom:24px; left:18px; background:rgba(0,0,0,0.70); border:1px solid rgba(255,255,255,0.12); backdrop-filter:blur(18px); border-radius:8px; padding:9px 16px; font-size:clamp(0.72rem,2vw,0.8rem); color:rgba(255,255,255,0.75); opacity:0; transition:opacity 0.4s ease; pointer-events:none; z-index:500; max-width:calc(100vw - 36px); }
         #toast.success { border-color:rgba(100,255,150,0.35); color:rgba(150,255,180,0.85); }
         #toast.error   { border-color:rgba(255,100,100,0.35); color:rgba(255,150,150,0.85); }
 
-        /* ── Safe areas ── */
+        /* Safe areas */
         .top-left-wrapper { top:max(18px,env(safe-area-inset-top,18px)); left:max(18px,env(safe-area-inset-left,18px)); }
         @supports (padding-bottom:env(safe-area-inset-bottom)) {
             .panel-player { padding-bottom:max(0px,env(safe-area-inset-bottom)); }
         }
         @media (max-width:319px) { #rope-canvas, #rope-hit { display:none !important; } }
-
-        /* ── Secondary music player ── */
-        .tab-music-progress { background:rgba(255,255,255,0.55) !important; box-shadow:0 0 7px rgba(255,255,255,0.18) !important; }
-        .tab-music-time     { font-size:clamp(0.58rem,1.6vw,0.65rem); color:rgba(255,255,255,0.35); white-space:nowrap; min-width:30px; text-align:right; }
     </style>
 </head>
 <body class="theme-dark">
 
-    <!-- ── YouTube background videos (replaces 200MB local files) ── -->
-    <!-- Dark mode: Kt5llcrBaPs | Light mode: t9h226JE3UA -->
-    <div class="yt-bg-wrap" id="yt-dark">
-        <iframe id="yt-iframe-dark"
-            src="https://www.youtube.com/embed/Kt5llcrBaPs?autoplay=1&mute=1&loop=1&playlist=Kt5llcrBaPs&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1"
-            allow="autoplay; encrypted-media"
-            allowfullscreen
-            title="background"></iframe>
+    <!-- ══════════════════════════════════════════════════
+         BACKGROUND VIDEOS (local .webm)
+         dark  = media/dark.webm
+         light = media/light.webm
+         Both videos stay in DOM; switching is opacity-only.
+    ══════════════════════════════════════════════════ -->
+    <div id="bg-wrap">
+        <!-- Layer 1: dark mode video -->
+        <video id="yt-dark" class="bg-video" autoplay muted loop playsinline>
+            <source src="media/dark.webm" type="video/webm">
+        </video>
+        <!-- Layer 2: light mode video (starts hidden, fades in on light theme) -->
+        <video id="yt-light" class="bg-video" autoplay muted loop playsinline>
+            <source src="media/light.webm" type="video/webm">
+        </video>
     </div>
-    <div class="yt-bg-wrap" id="yt-light" style="opacity:0;">
-        <iframe id="yt-iframe-light"
-            src="https://www.youtube.com/embed/t9h226JE3UA?autoplay=1&mute=1&loop=1&playlist=t9h226JE3UA&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1"
-            allow="autoplay; encrypted-media"
-            allowfullscreen
-            title="background"></iframe>
-    </div>
-    <div id="bg-video-overlay"></div>
+    <div id="bg-vignette"></div>
 
-    <div id="overlay" style="position:fixed;inset:0;z-index:9999;display:flex;justify-content:center;align-items:center;transition:opacity 0.8s ease;">
-        <div style="position:absolute;inset:0;background:rgba(0,0,0,0.78);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);"></div>
-        <div class="enter-button" style="position:relative;z-index:10;font-size:clamp(0.9rem,3vw,1.1rem);letter-spacing:3px;color:rgba(255,255,255,0.50);animation:pulse 2s infinite ease-in-out;">click to enter...</div>
+    <!-- ══════════════════════════════════════════════════
+         LOADING / ENTRY OVERLAY
+    ══════════════════════════════════════════════════ -->
+    <div id="overlay">
+        <div id="overlay-bg"></div>
+        <div id="loader-card">
+            <div id="loader-mono">F</div>
+            <div id="enter-prompt" class="show">click to enter...</div>
+        </div>
     </div>
 
+    <!-- Volume (top-left) -->
     <div class="top-left-wrapper">
         <div class="volume-container">
             <i class="fas fa-volume-up control-icon" id="mute-btn"></i>
@@ -253,6 +319,9 @@
     <audio id="bg-audio" loop><source src="" type="audio/mpeg"></audio>
     <div id="toast"></div>
 
+    <!-- ══════════════════════════════════════════════════
+         MAIN CONTENT
+    ══════════════════════════════════════════════════ -->
     <div class="card-container" id="main-content">
 
         <!-- NAV -->
@@ -264,10 +333,9 @@
             </div>
         </div>
 
-        <!-- ════════════ OVERVIEW ════════════ -->
+        <!-- ════════ OVERVIEW ════════ -->
         <div class="tab-panel active" id="panel-overview">
             <div class="panel-content">
-                <!-- Profile card -->
                 <div class="glass-card">
                     <div style="text-align:center;">
                         <h1 style="margin:0;display:inline-block;">
@@ -278,7 +346,6 @@
                             <i class="fas fa-eye"></i>
                             <span class="visit-count-val">1.1k</span>&nbsp;visitors
                         </div>
-
                         <!-- Discord -->
                         <div class="discord-skeleton" id="discord-skeleton">
                             <div class="skeleton-avatar"></div>
@@ -298,7 +365,6 @@
                                 <div id="discord-activity"></div>
                             </div>
                         </div>
-
                         <!-- Socials -->
                         <div class="social-links">
                             <a href="https://linkedin.com/in/c3o"             target="_blank" rel="noopener"><i class="fab fa-linkedin"></i></a>
@@ -306,21 +372,20 @@
                             <a href="https://pinterest.com/shubflexin"        target="_blank" rel="noopener"><i class="fab fa-pinterest"></i></a>
                             <a href="https://youtube.com/@Tarnished_Shubh"    target="_blank" rel="noopener"><i class="fab fa-youtube"></i></a>
                             <a href="https://x.com/ZetsuoNoShub"              target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i></a>
-                            <a href="mailto:shub.professional@gmail.com"><i class="fas fa-envelope"></i></a>
+                            <a href="/cdn-cgi/l/email-protection#0d7e65786f237d7f626b687e7e6462636c614d6a606c6461236e6260"><i class="fas fa-envelope"></i></a>
                         </div>
                     </div>
                 </div>
-            </div><!-- /panel-content -->
-
-            <!-- Music player pinned to bottom -->
+            </div>
+            <!-- Music player -->
             <div class="panel-player">
                 <div class="glass-card music-player-card" style="padding:15px 18px !important;">
                     <div style="display:flex;align-items:center;gap:13px;">
                         <img id="music-cover" src="media/music-cover/cry.jpg"
                              onerror="this.style.display='none';document.getElementById('cover-fallback').style.display='flex';" alt="Cover">
-                        <div id="cover-fallback" style="display:none;width:42px;height:42px;border-radius:7px;background:rgba(255,255,255,0.05);align-items:center;justify-content:center;font-size:0.9rem;color:rgba(255,255,255,0.25);flex-shrink:0;">♪</div>
+                        <div id="cover-fallback" style="display:none;width:42px;height:42px;border-radius:7px;background:rgba(255,255,255,0.05);align-items:center;justify-content:center;font-size:0.9rem;color:rgba(255,255,255,0.25);flex-shrink:0;">&#9834;</div>
                         <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;">
-                            <div class="song-title">—</div>
+                            <div class="song-title">&#8212;</div>
                             <div style="display:flex;align-items:center;gap:8px;">
                                 <div id="progress-container" style="flex:1;height:3px;background:rgba(255,255,255,0.10);border-radius:10px;cursor:pointer;position:relative;">
                                     <div id="music-progress" style="height:100%;width:0%;border-radius:10px;pointer-events:none;transition:width 0.1s linear;"></div>
@@ -335,16 +400,16 @@
                         </div>
                     </div>
                 </div>
-            </div><!-- /panel-player -->
+            </div>
         </div><!-- /panel-overview -->
 
-        <!-- ════════════ ABOUT ════════════ -->
+        <!-- ════════ ABOUT ════════ -->
         <div class="tab-panel" id="panel-about">
             <div class="panel-content">
                 <div class="glass-card">
                     <div class="section-label">who i am</div>
                     <p class="bio-text">
-                        Hey, I'm Francisco — a CS student with a passion for building things that feel
+                        Hey, I'm Francisco &#8212; a CS student with a passion for building things that feel
                         alive. I gravitate toward dark aesthetics, atmospheric design, and code that
                         has personality. When I'm not writing software, I'm probably listening to music
                         that nobody else has heard of.
@@ -370,9 +435,7 @@
                         <span class="under-process-text">UNDER PROCESS</span>
                     </div>
                 </div>
-            </div><!-- /panel-content -->
-
-            <!-- Music player pinned to bottom -->
+            </div>
             <div class="panel-player">
                 <div class="glass-card" style="padding:15px 18px !important;">
                     <div style="display:flex;align-items:center;gap:13px;">
@@ -380,7 +443,7 @@
                              onerror="this.style.display='none';" alt="Cover"
                              style="width:42px;height:42px;border-radius:7px;object-fit:cover;flex-shrink:0;box-shadow:0 0 14px rgba(255,255,255,0.07);">
                         <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;">
-                            <div class="song-title">—</div>
+                            <div class="song-title">&#8212;</div>
                             <div style="display:flex;align-items:center;gap:8px;">
                                 <div id="progress-container-about" style="flex:1;height:3px;background:rgba(255,255,255,0.10);border-radius:10px;cursor:pointer;position:relative;">
                                     <div id="music-progress-about" class="tab-music-progress" style="height:100%;width:0%;border-radius:10px;pointer-events:none;transition:width 0.1s linear;"></div>
@@ -395,17 +458,17 @@
                         </div>
                     </div>
                 </div>
-            </div><!-- /panel-player -->
+            </div>
         </div><!-- /panel-about -->
 
-        <!-- ════════════ CONTACT ════════════ -->
+        <!-- ════════ CONTACT ════════ -->
         <div class="tab-panel" id="panel-contact">
             <div class="panel-content">
                 <div class="glass-card">
                     <div class="section-label">reach me at</div>
                     <div class="email-row">
                         <i class="fas fa-envelope"></i>
-                        <span id="email-display">shub.professional@gmail.com</span>
+                        <span id="email-display"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b9cad1ccdb97c9cbd6dfdccacad0d6d7d8d5f9ded4d8d0d597dad6d4">[email&#160;protected]</a></span>
                         <i class="fas fa-copy email-copy" id="copy-btn" title="Copy email"></i>
                     </div>
                     <div class="card-divider"></div>
@@ -422,9 +485,7 @@
                         </button>
                     </div>
                 </div>
-            </div><!-- /panel-content -->
-
-            <!-- Music player pinned to bottom -->
+            </div>
             <div class="panel-player">
                 <div class="glass-card" style="padding:15px 18px !important;">
                     <div style="display:flex;align-items:center;gap:13px;">
@@ -432,7 +493,7 @@
                              onerror="this.style.display='none';" alt="Cover"
                              style="width:42px;height:42px;border-radius:7px;object-fit:cover;flex-shrink:0;box-shadow:0 0 14px rgba(255,255,255,0.07);">
                         <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;">
-                            <div class="song-title">—</div>
+                            <div class="song-title">&#8212;</div>
                             <div style="display:flex;align-items:center;gap:8px;">
                                 <div id="progress-container-contact" style="flex:1;height:3px;background:rgba(255,255,255,0.10);border-radius:10px;cursor:pointer;position:relative;">
                                     <div id="music-progress-contact" class="tab-music-progress" style="height:100%;width:0%;border-radius:10px;pointer-events:none;transition:width 0.1s linear;"></div>
@@ -447,18 +508,19 @@
                         </div>
                     </div>
                 </div>
-            </div><!-- /panel-player -->
+            </div>
         </div><!-- /panel-contact -->
 
     </div><!-- /card-container -->
 
-    <!-- ── Discord ── -->
-    <script>
+    <!-- ══════════════════════════════════════════════════
+         DISCORD
+    ══════════════════════════════════════════════════ -->
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     (function () {
         var DISCORD_ID = '748831508776878110';
         var USERNAME   = 'shub.is.a.sailor';
         var DISPLAY    = 'Francisco';
-
         var skeletonEl = document.getElementById('discord-skeleton');
         var cardEl     = document.getElementById('discord-card');
         var pfpEl      = document.getElementById('discord-pfp');
@@ -467,43 +529,33 @@
         var activityEl = document.getElementById('discord-activity');
         var dotEl      = document.getElementById('discord-dot');
         if (!skeletonEl || !cardEl) return;
-
         var STATUS_CLASS = { online:'ds-online', idle:'ds-idle', dnd:'ds-dnd', offline:'ds-offline', streaming:'ds-streaming' };
         var STATUS_LABEL = { online:'Online', idle:'Idle', dnd:'Do Not Disturb', offline:'Offline', streaming:'Live' };
-
         function render(avatarSrc, data) {
             pfpEl.src = avatarSrc;
             pfpEl.onerror = function () {
                 pfpEl.style.background = 'linear-gradient(135deg,#5865F2,#7289da)';
                 pfpEl.removeAttribute('src');
             };
-
             var status = (data && data.discord_status) || 'offline';
             dotEl.className = 'discord-status-dot ' + (STATUS_CLASS[status] || 'ds-offline');
-
-            var globalName = (data && data.discord_user && data.discord_user.global_name) || DISPLAY;
-            nameEl.textContent = globalName;
-
-            statusEl.innerHTML =
-                '<a href="https://discord.com/users/' + DISCORD_ID + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">' +
-                (STATUS_LABEL[status] || 'Offline') + ' · @' + USERNAME + '</a>';
-
+            nameEl.textContent = (data && data.discord_user && data.discord_user.global_name) || DISPLAY;
+            statusEl.innerHTML = '<a href="https://discord.com/users/' + DISCORD_ID + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">'
+                + (STATUS_LABEL[status] || 'Offline') + ' \u00b7 @' + USERNAME + '</a>';
             var acts = (data && data.activities) || [], actText = '';
             for (var i = 0; i < acts.length; i++) {
                 var a = acts[i];
-                if (a.type === 2 && a.details) { actText = '🎵 ' + a.details + (a.state ? ' — ' + a.state : ''); break; }
-                if (a.type === 0 && a.name && !actText) actText = '🎮 Playing ' + a.name;
+                if (a.type === 2 && a.details) { actText = '\ud83c\udfb5 ' + a.details + (a.state ? ' \u2014 ' + a.state : ''); break; }
+                if (a.type === 0 && a.name && !actText) actText = '\ud83c\udfae Playing ' + a.name;
                 if (a.type === 4 && a.state && !actText) actText = a.state;
             }
             if (activityEl) activityEl.textContent = actText;
             skeletonEl.style.display = 'none';
             cardEl.classList.add('loaded');
         }
-
         var defaultAvatar = 'https://cdn.discordapp.com/embed/avatars/' + (parseInt(DISCORD_ID.slice(-4)) % 6) + '.png';
         var done = false;
         var fallbackTimer = setTimeout(function () { if (!done) { done = true; render(defaultAvatar, null); } }, 4000);
-
         fetch('https://api.lanyard.rest/v1/users/' + DISCORD_ID)
             .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
             .then(function (json) {
@@ -512,8 +564,8 @@
                 done = true;
                 var d = json && json.data, user = d && d.discord_user, av = defaultAvatar;
                 if (user && user.avatar) {
-                    var ext = user.avatar.startsWith('a_') ? '.gif' : '.webp';
-                    av = 'https://cdn.discordapp.com/avatars/' + DISCORD_ID + '/' + user.avatar + ext + '?size=128';
+                    av = 'https://cdn.discordapp.com/avatars/' + DISCORD_ID + '/' + user.avatar
+                       + (user.avatar.startsWith('a_') ? '.gif' : '.webp') + '?size=128';
                 }
                 render(av, d);
             })
@@ -521,11 +573,13 @@
     })();
     </script>
 
-    <!-- ── Main script ── -->
+    <!-- ══════════════════════════════════════════════════
+         MAIN SCRIPT
+    ══════════════════════════════════════════════════ -->
     <script>
     document.addEventListener('DOMContentLoaded', function () {
 
-        // EmailJS init
+        /* EmailJS */
         if (typeof emailjs !== 'undefined') {
             emailjs.init({ publicKey: 'ANitUhHu4kV4-js93' });
         } else {
@@ -539,26 +593,37 @@
         var mainContent = document.getElementById('main-content');
         var overlay     = document.getElementById('overlay');
 
-        /* ── YouTube video crossfade (replaces _syncBgVideos for video tags) ── */
-        function initVideos() {
-            var dark = localStorage.getItem('theme') !== 'light';
-            ytDark.style.transition  = 'none';
-            ytLight.style.transition = 'none';
-            ytDark.style.opacity  = dark ? '1' : '0';
-            ytLight.style.opacity = dark ? '0' : '1';
-            requestAnimationFrame(function () { requestAnimationFrame(function () {
-                ytDark.style.transition  = 'opacity 0.55s ease';
-                ytLight.style.transition = 'opacity 0.55s ease';
-            }); });
+        /* ══════════════════════════════════════════════
+           VIDEO THEME SWITCHING
+           Rule: NEVER use display:none on yt-dark / yt-light.
+           Only toggle opacity so YouTube keeps both streams alive.
+           rope-theme.js calls window._syncBgVideos(isDark) on toggle.
+        ══════════════════════════════════════════════ */
+        function applyVideoTheme(isDark) {
+            ytDark.style.opacity  = isDark ? '1' : '0';
+            ytLight.style.opacity = isDark ? '0' : '1';
         }
 
-        /* rope-theme.js calls this to crossfade on toggle */
+        function initVideos() {
+            var isDark = localStorage.getItem('theme') !== 'light';
+            /* Suppress transition on initial paint */
+            ytDark.style.transition  = 'none';
+            ytLight.style.transition = 'none';
+            applyVideoTheme(isDark);
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                    ytDark.style.transition  = 'opacity 0.65s ease';
+                    ytLight.style.transition = 'opacity 0.65s ease';
+                });
+            });
+        }
+
+        /* Called by rope-theme.js every time the theme toggles */
         window._syncBgVideos = function (isNowDark) {
-            ytDark.style.opacity  = isNowDark ? '1' : '0';
-            ytLight.style.opacity = isNowDark ? '0' : '1';
+            applyVideoTheme(isNowDark);
         };
 
-        /* ── Helpers (player.js is deferred) ── */
+        /* Audio helpers — player.js is deferred so we use getters */
         function getAudio() { return document.getElementById('bg-audio'); }
         function getPPBtn()  { return document.getElementById('play-pause-btn'); }
 
@@ -567,38 +632,33 @@
             var suffixes = ['about', 'contact'];
 
             setTimeout(function () {
-                var masterCover = document.getElementById('music-cover');
-                var masterTitle = document.querySelector('#panel-overview .song-title');
-                var currentTitle = masterTitle ? masterTitle.textContent : '—';
-                var currentSrc   = masterCover ? masterCover.src : '';
-
+                var mc = document.getElementById('music-cover');
+                var mt = document.querySelector('#panel-overview .song-title');
                 document.querySelectorAll('.tab-music-cover').forEach(function (el) {
-                    if (currentSrc) el.src = currentSrc;
+                    if (mc && mc.src) el.src = mc.src;
                 });
                 document.querySelectorAll('.tab-panel:not(#panel-overview) .song-title').forEach(function (el) {
-                    el.textContent = currentTitle;
+                    if (mt) el.textContent = mt.textContent;
                 });
             }, 300);
 
             suffixes.forEach(function (suffix) {
-                var pp  = document.getElementById('play-pause-btn-' + suffix);
-                var pr  = document.getElementById('music-progress-' + suffix);
-                var ti  = document.getElementById('music-time-' + suffix);
-                var pc  = document.getElementById('progress-container-' + suffix);
+                var pp = document.getElementById('play-pause-btn-' + suffix);
+                var pr = document.getElementById('music-progress-' + suffix);
+                var ti = document.getElementById('music-time-' + suffix);
+                var pc = document.getElementById('progress-container-' + suffix);
 
-                function syncIcon() {
+                (function syncIcon() {
                     var audio = getAudio();
                     if (!audio || !pp) return;
-                    if (audio.paused) { pp.classList.replace('fa-pause', 'fa-play');  }
-                    else              { pp.classList.replace('fa-play',  'fa-pause'); }
-                }
-                syncIcon();
+                    if (audio.paused) pp.classList.replace('fa-pause', 'fa-play');
+                    else              pp.classList.replace('fa-play',  'fa-pause');
+                })();
 
                 setInterval(function () {
                     var audio = getAudio();
                     if (!audio || !audio.duration || !isFinite(audio.duration)) return;
-                    var pct = (audio.currentTime / audio.duration) * 100;
-                    if (pr) pr.style.width = pct + '%';
+                    if (pr) pr.style.width = (audio.currentTime / audio.duration * 100) + '%';
                     if (ti) {
                         var rem = audio.duration - audio.currentTime;
                         var m = Math.floor(rem / 60), s = Math.floor(rem % 60);
@@ -606,35 +666,24 @@
                     }
                 }, 250);
 
-                if (pp) {
-                    pp.addEventListener('click', function () {
-                        var audio = getAudio();
-                        if (!audio) return;
-                        if (audio.paused) audio.play().catch(function(){});
-                        else              audio.pause();
-                    });
-                }
-
-                var prev = document.getElementById('prev-btn-' + suffix);
-                var next = document.getElementById('next-btn-' + suffix);
-                if (prev) prev.addEventListener('click', function () {
-                    var btn = document.getElementById('prev-btn');
-                    if (btn) btn.click();
-                });
-                if (next) next.addEventListener('click', function () {
-                    var btn = document.getElementById('next-btn');
-                    if (btn) btn.click();
+                if (pp) pp.addEventListener('click', function () {
+                    var a = getAudio();
+                    if (!a) return;
+                    if (a.paused) a.play().catch(function(){});
+                    else          a.pause();
                 });
 
-                if (pc) {
-                    pc.addEventListener('click', function (e) {
-                        var audio = getAudio();
-                        if (!audio || !audio.duration || !isFinite(audio.duration)) return;
-                        var rect  = pc.getBoundingClientRect();
-                        var ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-                        audio.currentTime = ratio * audio.duration;
-                    });
-                }
+                var prevB = document.getElementById('prev-btn-' + suffix);
+                var nextB = document.getElementById('next-btn-' + suffix);
+                if (prevB) prevB.addEventListener('click', function () { var b = document.getElementById('prev-btn'); if (b) b.click(); });
+                if (nextB) nextB.addEventListener('click', function () { var b = document.getElementById('next-btn'); if (b) b.click(); });
+
+                if (pc) pc.addEventListener('click', function (e) {
+                    var audio = getAudio();
+                    if (!audio || !audio.duration || !isFinite(audio.duration)) return;
+                    var rect = pc.getBoundingClientRect();
+                    audio.currentTime = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)) * audio.duration;
+                });
             });
 
             var audio = getAudio();
@@ -644,16 +693,11 @@
                         var pp = document.getElementById('play-pause-btn-' + s);
                         if (pp) pp.classList.replace('fa-play', 'fa-pause');
                     });
-                    var masterCover = document.getElementById('music-cover');
-                    var masterTitle = document.querySelector('#panel-overview .song-title');
-                    document.querySelectorAll('.tab-music-cover').forEach(function (el) {
-                        if (masterCover) el.src = masterCover.src;
-                    });
-                    document.querySelectorAll('.tab-panel:not(#panel-overview) .song-title').forEach(function (el) {
-                        if (masterTitle) el.textContent = masterTitle.textContent;
-                    });
+                    var mc = document.getElementById('music-cover');
+                    var mt = document.querySelector('#panel-overview .song-title');
+                    document.querySelectorAll('.tab-music-cover').forEach(function (el) { if (mc) el.src = mc.src; });
+                    document.querySelectorAll('.tab-panel:not(#panel-overview) .song-title').forEach(function (el) { if (mt) el.textContent = mt.textContent; });
                 });
-
                 audio.addEventListener('pause', function () {
                     suffixes.forEach(function (s) {
                         var pp = document.getElementById('play-pause-btn-' + s);
@@ -664,18 +708,18 @@
         }
 
         /* ── Tab switching ── */
-        var SUFFIX    = { overview:'Portfolio', about:'About', contact:'Contact' };
+        var SUFFIX    = { overview: 'Portfolio', about: 'About', contact: 'Contact' };
         var TAB_ORDER = ['overview', 'about', 'contact'];
         var currentTab = 'overview';
 
         window.switchTab = function (tab) {
             if (tab === currentTab || !document.getElementById('panel-' + tab)) return;
             document.getElementById('tab-' + currentTab).classList.remove('active');
-            document.getElementById('tab-' + tab).classList.add('active');
+            document.getElementById('tab-'   + tab).classList.add('active');
             document.getElementById('panel-' + currentTab).classList.remove('active');
             document.getElementById('panel-' + tab).classList.add('active');
             mainContent.scrollTop = 0;
-            window.startTitleLoop && window.startTitleLoop(SUFFIX[tab], 0);
+            if (window.startTitleLoop) window.startTitleLoop(SUFFIX[tab], 0);
             history.pushState({ tab: tab }, '', tab === 'overview' ? '/' : '/' + tab);
             currentTab = tab;
         };
@@ -689,11 +733,9 @@
             if (tag === 'INPUT' || tag === 'TEXTAREA') return;
             var idx = TAB_ORDER.indexOf(currentTab);
             if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-                e.preventDefault();
-                window.switchTab(TAB_ORDER[(idx + 1) % TAB_ORDER.length]);
+                e.preventDefault(); window.switchTab(TAB_ORDER[(idx + 1) % TAB_ORDER.length]);
             } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-                e.preventDefault();
-                window.switchTab(TAB_ORDER[(idx - 1 + TAB_ORDER.length) % TAB_ORDER.length]);
+                e.preventDefault(); window.switchTab(TAB_ORDER[(idx - 1 + TAB_ORDER.length) % TAB_ORDER.length]);
             }
         });
 
@@ -739,16 +781,17 @@
                 }).catch(function () {});
         }
 
-        /* ── Enter site ── */
+        /* ══════════════════════════════════════════════
+           ENTER SITE
+        ══════════════════════════════════════════════ */
         function enterSite() {
             sessionStorage.setItem('site_entered', '1');
-            var audio = getAudio();
-            var ppBtn = getPPBtn();
-            if (audio) {
-                audio.play().catch(function () {
-                    document.addEventListener('click', function () { getAudio() && getAudio().play(); }, { once: true });
-                });
-            }
+            var audio = getAudio(), ppBtn = getPPBtn();
+            if (audio) audio.play().catch(function () {
+                document.addEventListener('click', function () {
+                    var a = getAudio(); if (a) a.play().catch(function(){});
+                }, { once: true });
+            });
             if (ppBtn) ppBtn.classList.replace('fa-play', 'fa-pause');
             overlay.style.opacity = '0';
             setTimeout(function () {
@@ -756,33 +799,35 @@
                 mainContent.classList.add('visible');
                 initVideos();
                 window._startNameTypewriter();
-                window.startTitleLoop && window.startTitleLoop('Portfolio', 300);
-                setTimeout(function () { window._ropeInit && window._ropeInit(); }, 80);
+                if (window.startTitleLoop) window.startTitleLoop('Portfolio', 300);
+                setTimeout(function () { if (window._ropeInit) window._ropeInit(); }, 80);
                 syncSecondaryPlayers();
             }, 800);
         }
 
+        /* Already visited this session — skip loader entirely */
         if (sessionStorage.getItem('site_entered')) {
             overlay.style.display = 'none';
             mainContent.classList.add('visible');
             initVideos();
-            var audio = getAudio();
-            var ppBtn = getPPBtn();
-            if (audio) {
-                audio.play().catch(function () {
-                    document.addEventListener('click', function () { getAudio() && getAudio().play(); }, { once: true });
-                });
-            }
+            var audio = getAudio(), ppBtn = getPPBtn();
+            if (audio) audio.play().catch(function () {
+                document.addEventListener('click', function () {
+                    var a = getAudio(); if (a) a.play().catch(function(){});
+                }, { once: true });
+            });
             if (ppBtn) ppBtn.classList.replace('fa-play', 'fa-pause');
             window._startNameTypewriter();
-            window.startTitleLoop && window.startTitleLoop('Portfolio', 400);
-            setTimeout(function () { window._ropeInit && window._ropeInit(); }, 80);
+            if (window.startTitleLoop) window.startTitleLoop('Portfolio', 400);
+            setTimeout(function () { if (window._ropeInit) window._ropeInit(); }, 80);
             syncSecondaryPlayers();
+
         } else {
+            /* Simple click-to-enter */
             overlay.addEventListener('click', enterSite, { once: true });
         }
 
-        /* ── Toast helper ── */
+        /* ── Toast ── */
         function showToast(msg, type) {
             var t = document.getElementById('toast');
             t.textContent = msg; t.className = type || ''; t.style.opacity = '1';
@@ -790,44 +835,38 @@
         }
 
         /* ── Copy email ── */
-        document.getElementById('copy-btn').addEventListener('click', function () {
+        var copyBtn = document.getElementById('copy-btn');
+        if (copyBtn) copyBtn.addEventListener('click', function () {
             navigator.clipboard.writeText('shub.professional@gmail.com')
                 .then(function () { showToast('Email copied!', 'success'); })
                 .catch(function () { showToast('Could not copy.', 'error'); });
         });
 
         /* ── Send message ── */
-        document.getElementById('send-btn').addEventListener('click', function () {
-            var name  = document.getElementById('f-name').value.trim();
-            var email = document.getElementById('f-email').value.trim();
-            var msg   = document.getElementById('f-message').value.trim();
+        var sendBtn = document.getElementById('send-btn');
+        if (sendBtn) sendBtn.addEventListener('click', function () {
+            var name  = (document.getElementById('f-name').value  || '').trim();
+            var email = (document.getElementById('f-email').value || '').trim();
+            var msg   = (document.getElementById('f-message').value || '').trim();
             if (!name || !email || !msg) { showToast('Please fill in all fields.', 'error'); return; }
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Please enter a valid email.', 'error'); return; }
-            var btn = document.getElementById('send-btn');
-            btn.classList.add('loading'); btn.disabled = true;
+
+            sendBtn.classList.add('loading'); sendBtn.disabled = true;
 
             function fallbackMailto(n, e, m) {
-                var s = encodeURIComponent('Message from ' + n);
-                var b = encodeURIComponent('From: ' + n + ' <' + e + '>\n\n' + m);
-                window.open('mailto:shub.professional@gmail.com?subject=' + s + '&body=' + b);
+                window.open('mailto:shub.professional@gmail.com?subject='
+                    + encodeURIComponent('Message from ' + n)
+                    + '&body=' + encodeURIComponent('From: ' + n + ' <' + e + '>\n\n' + m));
                 showToast('Opening mail client...', '');
             }
 
+            function finish() { sendBtn.classList.remove('loading'); sendBtn.disabled = false; }
+
             if (typeof emailjs === 'undefined') {
-                fallbackMailto(name, email, msg);
-                btn.classList.remove('loading'); btn.disabled = false;
-                return;
+                fallbackMailto(name, email, msg); finish(); return;
             }
+
             emailjs.send('service_wfciems', 'template_srqhd09', { name: name, email: email, message: msg })
                 .then(function () {
                     showToast('Message sent!', 'success');
-                    ['f-name', 'f-email', 'f-message'].forEach(function (id) { document.getElementById(id).value = ''; });
-                })
-                .catch(function () { fallbackMailto(name, email, msg); })
-                .finally(function () { btn.classList.remove('loading'); btn.disabled = false; });
-        });
-
-    });
-    </script>
-</body>
-</html>
+                    ['f-name','f-email','f-message'].forEach(function (id) {
