@@ -110,13 +110,13 @@
 </head>
 <body class="contact-page theme-dark">
 
-    <!-- Local webm backgrounds (same as index.html) -->
-    <div id="yt-dark" style="position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;transition:opacity 0.6s ease;">
+    <!-- Local webm backgrounds -->
+    <div id="yt-dark" style="position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;opacity:1;transition:opacity 0.65s ease;">
         <video autoplay muted loop playsinline style="position:absolute;width:100vw;height:56.25vw;min-height:100vh;min-width:177.78vh;top:50%;left:50%;transform:translate(-50%,-50%);object-fit:cover;">
             <source src="media/dark.webm" type="video/webm">
         </video>
     </div>
-    <div id="yt-light" style="position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;opacity:0;transition:opacity 0.6s ease;">
+    <div id="yt-light" style="position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;opacity:0;transition:opacity 0.65s ease;">
         <video autoplay muted loop playsinline style="position:absolute;width:100vw;height:56.25vw;min-height:100vh;min-width:177.78vh;top:50%;left:50%;transform:translate(-50%,-50%);object-fit:cover;">
             <source src="media/light.webm" type="video/webm">
         </video>
@@ -230,7 +230,7 @@
             sessionStorage.setItem('site_entered', '1');
             audio.play()
                 .then(function () { window._restoreMusicTime && window._restoreMusicTime(); })
-                .catch(function () { document.addEventListener('click', function () { audio.play().then(function(){ window._restoreMusicTime && window._restoreMusicTime(); }).catch(function(){}); }, { once: true }); });
+                .catch(function () { document.addEventListener('click', function () { audio.play().catch(function(){}); }, { once: true }); });
             if (playPauseBtn) playPauseBtn.classList.replace('fa-play', 'fa-pause');
             overlay.style.opacity = '0';
             setTimeout(function () {
@@ -248,7 +248,7 @@
             startVideos();
             audio.play()
                 .then(function () { window._restoreMusicTime && window._restoreMusicTime(); })
-                .catch(function () { document.addEventListener('click', function () { audio.play().then(function(){ window._restoreMusicTime && window._restoreMusicTime(); }).catch(function(){}); }, { once: true }); });
+                .catch(function () { document.addEventListener('click', function () { audio.play().catch(function(){}); }, { once: true }); });
             if (playPauseBtn) playPauseBtn.classList.replace('fa-play', 'fa-pause');
             setTimeout(function () { window._ropeInit && window._ropeInit(); }, 80);
         } else {

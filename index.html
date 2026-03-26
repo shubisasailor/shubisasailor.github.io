@@ -372,7 +372,7 @@
                             <a href="https://pinterest.com/shubflexin"        target="_blank" rel="noopener"><i class="fab fa-pinterest"></i></a>
                             <a href="https://youtube.com/@Tarnished_Shubh"    target="_blank" rel="noopener"><i class="fab fa-youtube"></i></a>
                             <a href="https://x.com/ZetsuoNoShub"              target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i></a>
-                            <a href="mailto:shub.professional@gmail.com"                          rel="noopener"><i class="fas fa-envelope"></i></a>
+                            <a href="mailto:shub.professional@gmail.com" rel="noopener"><i class="fas fa-envelope"></i></a>
                         </div>
                     </div>
                 </div>
@@ -513,14 +513,9 @@
 
     </div><!-- /card-container -->
 
-    <!-- switchTab stub — defined immediately so inline onclick attrs never throw before DOMContentLoaded -->
+    <!-- switchTab stub: available immediately so inline onclick attrs never throw -->
     <script>
-    window.switchTab = function (tab) {
-        // Will be replaced by the full implementation in DOMContentLoaded
-        document.addEventListener('DOMContentLoaded', function () {
-            if (window.switchTab._ready) window.switchTab(tab);
-        });
-    };
+    window.switchTab = window.switchTab || function(){};
     </script>
 
     <!-- ══════════════════════════════════════════════════
@@ -733,7 +728,6 @@
             history.pushState({ tab: tab }, '', tab === 'overview' ? '/' : '/' + tab);
             currentTab = tab;
         };
-        window.switchTab._ready = true;
 
         window.addEventListener('popstate', function (e) {
             if (e.state && e.state.tab) window.switchTab(e.state.tab);
@@ -838,7 +832,7 @@
             syncSecondaryPlayers();
 
         } else {
-            /* Simple click-to-enter — also covered by inline onclick on #overlay */
+            /* Simple click-to-enter */
             overlay.addEventListener('click', enterSite);
         }
 
