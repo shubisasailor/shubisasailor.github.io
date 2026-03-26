@@ -192,6 +192,18 @@
 
     applyTheme(isDark);
 
+    // Live-follow OS preference changes — only when user hasn't manually toggled
+    if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+            if (!localStorage.getItem('theme_manual')) {
+                isDark = e.matches;
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                applyTheme(isDark);
+                if (window._syncBgVideos) window._syncBgVideos(isDark);
+            }
+        });
+    }
+
     // ══════════════════════════════════════════════════════════════
     //  ROPE PHYSICS
     // ══════════════════════════════════════════════════════════════
@@ -342,6 +354,7 @@
 
         isDark = !isDark;
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        localStorage.setItem('theme_manual', '1'); // user explicitly toggled — stop following OS
         applyTheme(isDark);
         if (window._syncBgVideos) window._syncBgVideos(isDark);
         broken   = true;
@@ -493,7 +506,7 @@
     // Do NOT auto-build on load — the hitDiv would intercept overlay clicks.
 
     window.ropeTheme = {
-        toggle:  function () { isDark = !isDark; localStorage.setItem('theme', isDark ? 'dark' : 'light'); applyTheme(isDark); },
+        toggle:  function () { isDark = !isDark; localStorage.setItem('theme', isDark ? 'dark' : 'light'); localStorage.setItem('theme_manual', '1'); applyTheme(isDark); },
         isDark:  function () { return isDark; }
     };
 

@@ -315,7 +315,7 @@
         @keyframes spin { to { transform:rotate(360deg); } }
 
         /* ── Volume — desktop hover, mobile always visible ── */
-        .top-left-wrapper { position:fixed; top:max(18px,env(safe-area-inset-top,18px)); left:max(18px,env(safe-area-inset-left,18px)); z-index:10; }
+        .top-left-wrapper { position:fixed; top:max(18px,env(safe-area-inset-top,18px)); left:max(18px,env(safe-area-inset-left,18px)); z-index:202; }
         .volume-container { display:flex; align-items:center; gap:10px; }
         .volume-slider    { height:4px; accent-color:#fff; cursor:pointer; transition:width 0.3s ease, opacity 0.3s ease; }
         /* Desktop with real hover support: hide until hovered */
@@ -656,7 +656,11 @@
         /* Video theme */
         function applyVideoTheme(dark) { ytDark.style.opacity = dark?'1':'0'; ytLight.style.opacity = dark?'0':'1'; }
         function initVideos() {
-            var dark = localStorage.getItem('theme') !== 'light';
+            var stored = localStorage.getItem('theme');
+            var dark;
+            if (stored === 'light') { dark = false; }
+            else if (stored === 'dark') { dark = true; }
+            else { dark = !(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches); }
             ytDark.style.transition = ytLight.style.transition = 'none';
             applyVideoTheme(dark);
             requestAnimationFrame(function(){requestAnimationFrame(function(){
@@ -665,6 +669,18 @@
         }
         window._syncBgVideos = function(dark){ applyVideoTheme(dark); };
         initVideos();
+
+        // Live-update if OS theme changes and user hasn't manually toggled
+        if (window.matchMedia) {
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+                // Only follow OS if no manual override stored yet
+                var stored = localStorage.getItem('theme');
+                if (!stored || stored === '_auto') {
+                    applyVideoTheme(e.matches);
+                    if (window.ropeTheme) { /* rope-theme.js handles its own listener */ }
+                }
+            });
+        }
 
         function getAudio(){ return document.getElementById('bg-audio'); }
         function getPPBtn() { return document.getElementById('play-pause-btn'); }
