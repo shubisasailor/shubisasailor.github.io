@@ -11,23 +11,15 @@
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script src="js/player.js" defer></script>
     <script>
-    // _syncBgVideos is registered here so rope-theme.js (deferred) can call it.
-    // The INITIAL sync is deferred to DOMContentLoaded — the video elements
-    // don't exist yet when <head> scripts execute, so calling getElementById
-    // here returns null and the opacity never gets set (causing the visible
-    // "video swap" flash on enter). DOMContentLoaded fires after DOM is parsed
-    // but before images/media load, so the elements are guaranteed to exist.
+    // _syncBgVideos stub — rope-theme.js (deferred) may call this before main script runs.
+    // The real implementation is set in DOMContentLoaded below.
     (function() {
-        function syncVid(isDark) {
+        window._syncBgVideos = function (isDark) {
             var d = document.getElementById('yt-dark');
             var l = document.getElementById('yt-light');
             if (d) d.style.opacity = isDark ? '1' : '0';
             if (l) l.style.opacity = isDark ? '0' : '1';
-        }
-        window._syncBgVideos = syncVid;
-        document.addEventListener('DOMContentLoaded', function () {
-            syncVid(localStorage.getItem('theme') !== 'light');
-        });
+        };
     })();
     </script>
     <script src="js/rope-theme.js" defer></script>
@@ -197,6 +189,9 @@
             display: flex; flex-direction: column;
             align-items: center;
             width: 100%; max-width: 480px;
+        }
+        /* Only animate after first user-triggered tab switch (not on initial load) */
+        .tab-panel.animate-in {
             animation: cardFadeIn 0.28s ease forwards;
         }
         @keyframes cardFadeIn {
@@ -455,7 +450,7 @@
                             <a href="https://pinterest.com/shubflexin"        target="_blank" rel="noopener"><i class="fab fa-pinterest"></i></a>
                             <a href="https://youtube.com/@Tarnished_Shubh"    target="_blank" rel="noopener"><i class="fab fa-youtube"></i></a>
                             <a href="https://x.com/ZetsuoNoShub"              target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i></a>
-                            <a href="mailto:shub.professional@gmail.com"      rel="noopener"><i class="fas fa-envelope"></i></a>
+                            <a href="/cdn-cgi/l/email-protection#bac9d2cfd894cac8d5dcdfc9c9d3d5d4dbd6faddd7dbd3d694d9d5d7" rel="noopener"><i class="fas fa-envelope"></i></a>
                         </div>
                     </div>
                 </div>
@@ -504,7 +499,7 @@
                     <div class="section-label">reach me at</div>
                     <div class="email-row">
                         <i class="fas fa-envelope"></i>
-                        <span id="email-display">shub.professional@gmail.com</span>
+                        <span id="email-display"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="05766d70672b75776a636076766c6a6b6469456268646c692b666a68">[email&#160;protected]</a></span>
                         <i class="fas fa-copy email-copy" id="copy-btn" title="Copy email"></i>
                     </div>
                     <div class="card-divider"></div>
@@ -528,7 +523,7 @@
 
     <!-- ══════════════════════════════════════════════════
          DISCORD
-    ══════════════════════════════════════════════════ --><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    ══════════════════════════════════════════════════ --><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     (function () {
         var DISCORD_ID = '748831508776878110';
         var USERNAME   = 'shub.is.a.sailor';
@@ -590,6 +585,12 @@
     ══════════════════════════════════════════════════ -->
     <script>
     document.addEventListener('DOMContentLoaded', function () {
+
+        /* ── Instantly hide overlay for returning visitors BEFORE any paint ── */
+        if (sessionStorage.getItem('site_entered')) {
+            var ov = document.getElementById('overlay');
+            if (ov) { ov.style.transition = 'none'; ov.style.display = 'none'; }
+        }
 
         /* EmailJS */
         if (typeof emailjs !== 'undefined') {
@@ -727,12 +728,20 @@
         var TAB_ORDER = ['overview', 'about', 'contact'];
         var currentTab = 'overview';
 
-        window.switchTab = function (tab) {
+        window.switchTab = function (tab, noAnimate) {
             if (tab === currentTab || !document.getElementById('panel-' + tab)) return;
             document.getElementById('tab-' + currentTab).classList.remove('active');
             document.getElementById('tab-'   + tab).classList.add('active');
-            document.getElementById('panel-' + currentTab).classList.remove('active');
-            document.getElementById('panel-' + tab).classList.add('active');
+            var prevPanel = document.getElementById('panel-' + currentTab);
+            var nextPanel = document.getElementById('panel-' + tab);
+            prevPanel.classList.remove('active', 'animate-in');
+            nextPanel.classList.remove('animate-in');
+            nextPanel.classList.add('active');
+            if (!noAnimate) {
+                // Trigger reflow so animation restarts cleanly
+                void nextPanel.offsetWidth;
+                nextPanel.classList.add('animate-in');
+            }
             mainContent.scrollTop = 0;
             if (window.startTitleLoop) window.startTitleLoop(SUFFIX[tab], 0);
             history.pushState({ tab: tab }, '', tab === 'overview' ? '/' : '/' + tab);
@@ -740,7 +749,7 @@
         };
 
         window.addEventListener('popstate', function (e) {
-            if (e.state && e.state.tab) window.switchTab(e.state.tab);
+            if (e.state && e.state.tab) window.switchTab(e.state.tab, false);
         });
 
         document.addEventListener('keydown', function (e) {
@@ -827,7 +836,10 @@
         /* Already visited this session — skip loader entirely */
         window._enterSite = enterSite;
         if (sessionStorage.getItem('site_entered')) {
-            overlay.style.display = 'none';
+            /* Kill overlay instantly — no fade, no flash */
+            overlay.style.transition = 'none';
+            overlay.style.opacity    = '0';
+            overlay.style.display    = 'none';
             mainContent.classList.add('visible');
             document.getElementById('fixed-nav').classList.add('visible');
             document.getElementById('fixed-player').classList.add('visible');
@@ -892,16 +904,3 @@
                     showToast('Message sent!', 'success');
                     ['f-name','f-email','f-message'].forEach(function (id) {
                         document.getElementById(id).value = '';
-                    });
-                    finish();
-                })
-                .catch(function () {
-                    fallbackMailto(name, email, msg);
-                    finish();
-                });
-        });
-
-    }); // end DOMContentLoaded
-    </script>
-</body>
-</html>
