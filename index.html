@@ -378,17 +378,21 @@
         /* ── Player expanded (double-click) ── */
         #fixed-player.expanded {
             width: calc(100% - 28px) !important;
-            max-width: 100vw !important;
-            bottom: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            transform: none !important;
-            border-radius: 20px 20px 0 0 !important;
+            max-width: 520px !important;
+            bottom: 16px !important;
+            left: 50% !important;
+            right: auto !important;
+            transform: translateX(-50%) !important;
+            border-radius: 20px !important;
             z-index: 400;
+            transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1) !important;
         }
         #fixed-player.expanded .glass-card {
-            border-radius: 20px 20px 0 0 !important;
-            padding: 20px 22px 28px !important;
+            border-radius: 20px !important;
+            padding: 20px 22px 24px !important;
+        }
+        #fixed-player {
+            transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1) !important;
         }
         #player-expand-hint {
             text-align: center;
@@ -426,7 +430,7 @@
             border-radius: 10px;
         }
         @media (min-width: 701px) {
-            .panel-drag-bar { display: flex; }
+            .panel-drag-bar { display: flex !important; }
         }
 
         /* ── Send animation ── */
@@ -443,6 +447,79 @@
         .send-flying { animation: sendPaperPlane 0.65s cubic-bezier(0.36, 0, 0.66, -0.56) forwards; }
         .send-done   { animation: sendSuccess 0.4s ease forwards; }
         @media (max-width:319px) { #rope-canvas, #rope-hit { display:none !important; } }
+
+        /* ── Success Modal ── */
+        #success-modal {
+            position: fixed; inset: 0; z-index: 1000;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.35s ease, visibility 0.35s;
+        }
+        #success-modal.open { opacity: 1; visibility: visible; }
+        #success-modal-bg {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        }
+        #success-modal-card {
+            position: relative; z-index: 10;
+            background: rgba(6,6,12,0.95);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 20px;
+            padding: 36px 32px 28px;
+            max-width: 340px; width: calc(100% - 40px);
+            text-align: center;
+            box-shadow: 0 32px 64px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.07);
+            transform: scale(0.88) translateY(16px);
+            transition: transform 0.45s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        #success-modal.open #success-modal-card { transform: scale(1) translateY(0); }
+        #success-checkmark {
+            width: 56px; height: 56px;
+            background: rgba(35,165,90,0.12);
+            border: 1px solid rgba(35,165,90,0.35);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 18px;
+            font-size: 1.4rem; color: #23a55a;
+            animation: checkPop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        }
+        @keyframes checkPop {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        #success-modal h3 {
+            margin: 0 0 8px; font-size: 1.05rem; font-weight: 700;
+            color: rgba(255,255,255,0.90); letter-spacing: 0.5px;
+        }
+        #success-modal p {
+            margin: 0 0 24px; font-size: 0.78rem;
+            color: rgba(255,255,255,0.42); line-height: 1.7;
+        }
+        #success-modal-close {
+            padding: 10px 28px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 10px;
+            color: rgba(255,255,255,0.65);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.70rem; letter-spacing: 2px;
+            cursor: pointer; transition: all 0.2s;
+        }
+        #success-modal-close:hover {
+            background: rgba(255,255,255,0.10);
+            border-color: rgba(255,255,255,0.25);
+            color: rgba(255,255,255,0.90);
+        }
+        /* Floating particles inside modal */
+        .modal-particle {
+            position: absolute; border-radius: 50%;
+            pointer-events: none; animation: floatUp 1.8s ease-out forwards;
+        }
+        @keyframes floatUp {
+            0%   { opacity: 0.8; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-80px) scale(0.3); }
+        }
     </style>
 </head>
 <body class="theme-dark">
@@ -472,6 +549,17 @@
 <audio id="bg-audio" preload="none"><source src="" type="audio/mpeg"></audio>
 <div id="toast"></div>
 <div id="panel-backdrop"></div>
+
+<!-- Success Modal -->
+<div id="success-modal">
+    <div id="success-modal-bg"></div>
+    <div id="success-modal-card">
+        <div id="success-checkmark">✓</div>
+        <h3>Message Sent!</h3>
+        <p>Thanks for reaching out. I'll get back to you as soon as possible.</p>
+        <button id="success-modal-close">CLOSE</button>
+    </div>
+</div>
 
 <!-- Projects panel -->
 <div id="projects-panel">
@@ -1094,12 +1182,45 @@ document.addEventListener('DOMContentLoaded', function () {
         if(planeEl){ planeEl.classList.add('send-flying'); }
         if(labelEl){ labelEl.style.opacity='0.3'; }
 
+        function showSuccessModal() {
+            var modal = document.getElementById('success-modal');
+            var card  = document.getElementById('success-modal-card');
+            if (!modal) return;
+            modal.classList.add('open');
+            /* Spawn floating particles */
+            var colors = ['rgba(35,165,90,0.7)', 'rgba(255,255,255,0.5)', 'rgba(100,255,150,0.6)'];
+            for (var pi=0; pi<12; pi++) {
+                var pt = document.createElement('div');
+                pt.className = 'modal-particle';
+                var sz = 3 + Math.random()*5;
+                pt.style.cssText = [
+                    'width:'+sz+'px','height:'+sz+'px',
+                    'background:'+colors[Math.floor(Math.random()*colors.length)],
+                    'left:'+(20+Math.random()*60)+'%',
+                    'bottom:'+(10+Math.random()*30)+'%',
+                    'animation-delay:'+(Math.random()*0.6)+'s',
+                    'animation-duration:'+(1.2+Math.random()*0.8)+'s'
+                ].join(';');
+                card.appendChild(pt);
+                setTimeout(function(el){ el.remove(); }, 2500, pt);
+            }
+        }
+        function closeSuccessModal() {
+            var modal = document.getElementById('success-modal');
+            if (modal) modal.classList.remove('open');
+        }
+        var smClose = document.getElementById('success-modal-close');
+        var smBg    = document.getElementById('success-modal-bg');
+        if (smClose) smClose.addEventListener('click', closeSuccessModal);
+        if (smBg)    smBg.addEventListener('click', closeSuccessModal);
+        document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeSuccessModal(); });
+
         function showSuccess(){
             sb.style.borderColor='rgba(100,255,150,0.40)';
             sb.style.color='rgba(140,255,170,0.90)';
             if(planeEl){ planeEl.classList.remove('send-flying'); planeEl.className='fas fa-check send-done'; }
             if(labelEl){ labelEl.textContent='SENT!'; labelEl.style.opacity='1'; }
-            window.showToast('Message sent! ✓','success');
+            showSuccessModal();
             document.getElementById('f-name').value='';
             document.getElementById('f-email').value='';
             document.getElementById('f-message').value='';
@@ -1134,15 +1255,10 @@ document.addEventListener('DOMContentLoaded', function () {
     var fixedPlayer = document.getElementById('fixed-player');
     var collapseBtn = document.getElementById('player-collapse-btn');
     if(fixedPlayer){
-        var lastClick=0;
-        fixedPlayer.addEventListener('click', function(e){
+        fixedPlayer.addEventListener('dblclick', function(e){
             /* ignore clicks on controls */
-            if(e.target.closest('#play-pause-btn,#prev-btn,#next-btn,#mute-btn,#volume-bar,#progress-container,#player-collapse-btn')) return;
-            var now=Date.now();
-            if(now-lastClick<350){
-                fixedPlayer.classList.toggle('expanded');
-            }
-            lastClick=now;
+            if(e.target.closest && e.target.closest('#play-pause-btn,#prev-btn,#next-btn,#mute-btn,#volume-bar,#progress-container,#player-collapse-btn')) return;
+            fixedPlayer.classList.toggle('expanded');
         });
         if(collapseBtn){
             collapseBtn.addEventListener('click',function(e){
@@ -1164,23 +1280,33 @@ document.addEventListener('DOMContentLoaded', function () {
             dragBar.innerHTML='<div class="panel-drag-bar-inner"></div>';
             pPanel.insertBefore(dragBar, pPanel.firstChild);
         }
-        var pdx=0,pdy=0,pox=0,poy=0,pdragging=false;
+        /* Force visible on desktop */
+        dragBar.style.display='flex';
         dragBar.style.cursor='grab';
+
+        var pdx=null,pdy=null,pox=0,poy=0,pdragging=false,hasDragged=false;
+
         dragBar.addEventListener('mousedown',function(e){
-            pdragging=true;
+            pdragging=true; hasDragged=false;
             pPanel.classList.add('dragging');
             dragBar.style.cursor='grabbing';
+            /* If panel hasn't been dragged yet, compute initial position from its current rendered rect */
             var rect=pPanel.getBoundingClientRect();
-            pox=e.clientX-rect.left; poy=e.clientY-rect.top;
+            if(pdx===null){ pdx=rect.left; pdy=rect.top; }
+            pox=e.clientX-pdx; poy=e.clientY-pdy;
             e.preventDefault();
         });
         window.addEventListener('mousemove',function(e){
             if(!pdragging) return;
+            hasDragged=true;
             pdx=e.clientX-pox; pdy=e.clientY-poy;
             /* Clamp inside viewport */
             pdx=Math.max(0,Math.min(window.innerWidth-pPanel.offsetWidth,pdx));
             pdy=Math.max(0,Math.min(window.innerHeight-pPanel.offsetHeight,pdy));
-            pPanel.style.cssText+='position:fixed!important;left:'+pdx+'px!important;top:'+pdy+'px!important;transform:none!important;bottom:auto!important;';
+            pPanel.style.setProperty('left', pdx+'px', 'important');
+            pPanel.style.setProperty('top',  pdy+'px', 'important');
+            pPanel.style.setProperty('transform', 'none', 'important');
+            pPanel.style.setProperty('bottom', 'auto', 'important');
         });
         window.addEventListener('mouseup',function(){
             if(!pdragging) return;

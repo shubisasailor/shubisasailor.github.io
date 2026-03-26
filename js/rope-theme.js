@@ -254,7 +254,7 @@
         }
         function onEnd() {
             if (!dragging) return;
-            dragging=false; tuggedDown=0; ballVy=-3; ballVx=0;
+            dragging=false; tuggedDown=0; ballVy=-2.5; ballVx=0;
             didToggle=false;
         }
 
@@ -347,13 +347,13 @@
         ctx.lineTo(ballX,ballY);
         ctx.strokeStyle=ropeColor; ctx.lineWidth=1.8; ctx.stroke();
 
-        if (tuggedDown>8 && dragging) {
+        if (dragging && tuggedDown>8) {
             var t=Math.min(tuggedDown/MAX_PULL,1);
             ctx.beginPath();
             ctx.moveTo(nodes[0].x,nodes[0].y);
-            for (var i=1; i<nodes.length; i++) ctx.lineTo(nodes[i].x,nodes[i].y);
+            for (var i2=1; i2<nodes.length; i2++) ctx.lineTo(nodes[i2].x,nodes[i2].y);
             ctx.lineTo(ballX,ballY);
-            ctx.strokeStyle='rgba(255,'+Math.round(80*(1-t))+','+Math.round(80*(1-t))+','+(t*0.5)+')';
+            ctx.strokeStyle='rgba(255,'+Math.round(80*(1-t))+','+Math.round(80*(1-t))+','+(t*0.45)+')';
             ctx.lineWidth=1.8; ctx.stroke();
         }
 
