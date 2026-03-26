@@ -2,166 +2,141 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Francisco | </title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <link rel="stylesheet" href="css/main.css">
     <script src="js/title-typer.js"></script>
-    <script src="js/player.js" defer></script>
+
+    <!-- Instant overlay kill for returning visitors — before first paint -->
     <script>
-    (function () {
-        function syncVid(isDark) {
-            var d = document.getElementById('yt-dark');
-            var l = document.getElementById('yt-light');
-            if (d) d.style.opacity = isDark ? '1' : '0';
-            if (l) l.style.opacity = isDark ? '0' : '1';
-        }
-        window._syncBgVideos = syncVid;
+    if (sessionStorage.getItem('site_entered')) {
         document.addEventListener('DOMContentLoaded', function () {
-            syncVid(localStorage.getItem('theme') !== 'light');
+            var ov = document.getElementById('overlay');
+            if (ov) { ov.style.transition = 'none'; ov.style.display = 'none'; }
         });
-    })();
+    }
     </script>
+
+    <!-- Theme video sync stub -->
+    <script>
+    window._syncBgVideos = function (isDark) {
+        var d = document.getElementById('yt-dark');
+        var l = document.getElementById('yt-light');
+        if (d) d.style.opacity = isDark ? '1' : '0';
+        if (l) l.style.opacity = isDark ? '0' : '1';
+    };
+    </script>
+
     <script src="js/rope-theme.js" defer></script>
+    <script src="js/player.js" defer></script>
+
     <style>
-        #yt-dark, #yt-light {
+        *, *::before, *::after { box-sizing: border-box; }
+
+        #bg-wrap {
             position: fixed; inset: 0; z-index: 0;
-            pointer-events: none; overflow: hidden; transition: opacity 0.65s ease;
+            pointer-events: none; overflow: hidden; background: #000;
         }
-        #yt-dark video, #yt-light video {
+        #bg-wrap video {
             position: absolute;
             width: 100vw; height: 56.25vw;
             min-height: 100vh; min-width: 177.78vh;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            object-fit: cover;
+            object-fit: cover; pointer-events: none;
         }
-        #yt-dark  { opacity: 1; }
-        #yt-light { opacity: 0; }
+        #yt-dark  { opacity: 1; z-index: 1; transition: opacity 0.65s ease; }
+        #yt-light { opacity: 0; z-index: 2; transition: opacity 0.65s ease; }
+        #bg-vignette {
+            position: fixed; inset: 0; z-index: 3;
+            background: radial-gradient(ellipse at center, transparent 25%, rgba(0,0,0,0.22) 100%);
+            pointer-events: none;
+        }
 
-        #fixed-nav {
-            position: fixed; top: 20px; left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 32px); max-width: 450px;
-            z-index: 200; opacity: 0; visibility: hidden;
-            transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1),
-                        visibility 1.5s cubic-bezier(0.19,1,0.22,1);
+        #overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            transition: opacity 0.9s ease;
         }
-        #fixed-nav.visible { opacity: 1; visibility: visible; }
+        .overlay-blur { position:absolute; inset:0; background:rgba(0,0,0,0.88); backdrop-filter:blur(32px); -webkit-backdrop-filter:blur(32px); }
+        .enter-button { position:relative; z-index:10; font-size:clamp(0.78rem,2.5vw,0.92rem); letter-spacing:3.5px; color:rgba(255,255,255,0.48); cursor:pointer; animation:pulse 2s infinite ease-in-out; }
+        @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:0.85} }
 
-        #fixed-player {
-            position: fixed; bottom: 20px; left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 32px); max-width: 450px;
-            z-index: 200; opacity: 0; visibility: hidden;
-            transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1),
-                        visibility 1.5s cubic-bezier(0.19,1,0.22,1);
+        .top-left-wrapper { position:fixed; top:max(18px,env(safe-area-inset-top,18px)); left:max(18px,env(safe-area-inset-left,18px)); z-index:10; }
+        .volume-container { display:flex; align-items:center; gap:10px; }
+        .volume-slider    { height:4px; accent-color:#fff; cursor:pointer; transition:width 0.3s ease,opacity 0.3s ease; }
+        @media (hover:hover) and (pointer:fine) {
+            .volume-slider { width:0; opacity:0; }
+            .volume-container:hover .volume-slider { width:80px; opacity:1; }
         }
-        #fixed-player.visible { opacity: 1; visibility: visible; }
+        @media (hover:none),(pointer:coarse) { .volume-slider { width:72px; opacity:0.80; } }
 
-        .card-container {
-            position: fixed; inset: 0; z-index: 5;
-            display: flex; flex-direction: column; align-items: center;
-            overflow-y: auto; overflow-x: hidden;
-            padding: 88px 16px 100px !important;
-            width: 100%; opacity: 0; visibility: hidden;
-            transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1),
-                        visibility 1.5s cubic-bezier(0.19,1,0.22,1);
-            scrollbar-width: none; -ms-overflow-style: none;
-        }
-        .card-container::-webkit-scrollbar { display: none; }
-        .card-container.visible { opacity: 1; visibility: visible; }
-        .glass-card { width: 100% !important; max-width: 450px; }
+        #fixed-nav { position:fixed; top:20px; left:50%; transform:translateX(-50%); width:calc(100% - 32px); max-width:480px; z-index:200; opacity:0; visibility:hidden; transition:opacity 1.5s cubic-bezier(0.19,1,0.22,1),visibility 1.5s cubic-bezier(0.19,1,0.22,1); }
+        #fixed-nav.visible { opacity:1; visibility:visible; }
+        #fixed-player { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); width:calc(100% - 32px); max-width:480px; z-index:200; opacity:0; visibility:hidden; transition:opacity 1.5s cubic-bezier(0.19,1,0.22,1),visibility 1.5s cubic-bezier(0.19,1,0.22,1); }
+        #fixed-player.visible { opacity:1; visibility:visible; }
 
-        .section-label {
-            font-size: 0.60rem; letter-spacing: 3px; font-weight: bold;
-            margin-bottom: 14px; text-transform: uppercase;
-            color: var(--section-label-color, rgba(255,255,255,0.55));
-        }
-        .email-row {
-            display: flex; align-items: center; gap: 12px;
-            background: var(--email-row-bg, rgba(255,255,255,0.04));
-            border: 1px solid var(--email-row-border, rgba(255,255,255,0.08));
-            border-radius: 8px; padding: 12px 16px;
-            font-size: 0.85rem; color: var(--email-row-text, rgba(255,255,255,0.75));
-            word-break: break-all;
-        }
-        .email-row i { opacity: 0.45; }
-        .email-copy { margin-left: auto; opacity: 0.35; transition: opacity 0.2s; font-size: 0.8rem; cursor: pointer; flex-shrink: 0; }
-        .email-copy:hover { opacity: 0.90; }
-        .card-divider { height: 1px; background: var(--divider, rgba(255,255,255,0.07)); margin: 18px 0; }
+        .card-container { position:fixed; inset:0; z-index:5; display:flex; flex-direction:column; align-items:center; overflow-y:auto; overflow-x:hidden; padding:88px 16px 100px; width:100%; opacity:0; visibility:hidden; transition:opacity 1.5s cubic-bezier(0.19,1,0.22,1),visibility 1.5s cubic-bezier(0.19,1,0.22,1); scrollbar-width:none; -ms-overflow-style:none; }
+        .card-container::-webkit-scrollbar { display:none; }
+        .card-container.visible { opacity:1; visibility:visible; }
+        .glass-card { width:100% !important; max-width:480px; }
 
-        .form-group { display: flex; flex-direction: column; gap: 10px; }
-        .form-input, .form-textarea {
-            background: var(--input-bg, rgba(255,255,255,0.04));
-            border: 1px solid var(--input-border, rgba(255,255,255,0.08));
-            border-radius: 8px; padding: 11px 14px;
-            font-family: 'Inter', sans-serif; font-size: 0.82rem;
-            color: var(--input-text, white); outline: none;
-            transition: border-color 0.2s, background 0.2s; width: 100%; box-sizing: border-box;
-        }
-        .form-input::placeholder, .form-textarea::placeholder { color: var(--input-ph, rgba(255,255,255,0.28)); }
-        .form-input:focus, .form-textarea:focus { border-color: rgba(255,255,255,0.28); background: rgba(255,255,255,0.07); }
-        .form-textarea { resize: none; height: 90px; }
-        .form-row { display: flex; gap: 10px; }
-        .form-row .form-input { flex: 1; }
-        @media (max-width: 380px) { .form-row { flex-direction: column; } }
+        .section-label { font-size:clamp(0.55rem,1.6vw,0.62rem); letter-spacing:3px; font-weight:bold; margin-bottom:12px; text-transform:uppercase; color:var(--section-label-color,rgba(255,255,255,0.45)); }
+        .card-divider  { height:1px; background:var(--divider,rgba(255,255,255,0.06)); margin:16px 0; }
 
-        .submit-btn {
-            margin-top: 4px; width: 100%; padding: 11px;
-            background: var(--submit-bg, rgba(255,255,255,0.06));
-            border: 1px solid var(--submit-border, rgba(255,255,255,0.12));
-            border-radius: 8px; color: var(--submit-text, rgba(255,255,255,0.70));
-            font-family: 'Inter', sans-serif; font-size: 0.75rem; letter-spacing: 2px; cursor: pointer;
-            transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
-        .submit-btn:hover:not(:disabled) { background: rgba(255,255,255,0.14); color: white; border-color: rgba(255,255,255,0.32); }
-        .submit-btn:active:not(:disabled) { transform: scale(0.98); }
-        .submit-btn:disabled { opacity: 0.50; }
-        .btn-spinner { width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.30); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
-        .submit-btn.loading .btn-spinner { display: block; }
-        .submit-btn.loading .btn-label  { opacity: 0.50; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .email-row   { display:flex; align-items:center; gap:12px; background:var(--email-row-bg,rgba(255,255,255,0.03)); border:1px solid var(--email-row-border,rgba(255,255,255,0.08)); border-radius:8px; padding:11px 14px; font-size:clamp(0.78rem,2.2vw,0.85rem); color:var(--email-row-text,rgba(255,255,255,0.55)); word-break:break-all; }
+        .email-row i { opacity:0.40; flex-shrink:0; }
+        #email-display { flex:1; }
+        .email-copy { margin-left:auto; opacity:0.30; transition:opacity 0.2s; font-size:0.8rem; cursor:pointer; flex-shrink:0; }
+        .email-copy:hover { opacity:0.85; }
 
-        .song-title   { font-size: 0.78rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: rgba(255,255,255,0.65) !important; }
-        #music-time   { font-size: 0.65rem; opacity: 0.45; white-space: nowrap; min-width: 32px; text-align: right; color: var(--text, white); }
-        #music-progress { background: rgba(255,255,255,0.55) !important; box-shadow: 0 0 7px rgba(255,255,255,0.18) !important; }
+        .form-group    { display:flex; flex-direction:column; gap:10px; }
+        .form-input, .form-textarea { background:var(--input-bg,rgba(255,255,255,0.03)); border:1px solid var(--input-border,rgba(255,255,255,0.08)); border-radius:8px; padding:11px 14px; font-family:'Inter',sans-serif; font-size:clamp(0.76rem,2vw,0.82rem); color:var(--input-text,rgba(255,255,255,0.75)); outline:none; transition:border-color 0.2s,background 0.2s; width:100%; }
+        .form-input::placeholder,.form-textarea::placeholder { color:var(--input-ph,rgba(255,255,255,0.25)); }
+        .form-input:focus,.form-textarea:focus { border-color:rgba(255,255,255,0.28); background:rgba(255,255,255,0.06); }
+        .form-textarea { resize:none; height:88px; }
+        .form-row      { display:flex; gap:10px; }
+        .form-row .form-input { flex:1; min-width:0; }
+        @media (max-width:380px) { .form-row { flex-direction:column; } }
+        .submit-btn { width:100%; padding:11px; margin-top:4px; background:var(--submit-bg,rgba(255,255,255,0.04)); border:1px solid var(--submit-border,rgba(255,255,255,0.10)); border-radius:8px; color:var(--submit-text,rgba(255,255,255,0.55)); font-family:'Inter',sans-serif; font-size:clamp(0.68rem,1.8vw,0.75rem); letter-spacing:2px; cursor:pointer; transition:all 0.22s ease; display:flex; align-items:center; justify-content:center; gap:8px; }
+        .submit-btn:hover:not(:disabled) { color:rgba(255,255,255,0.90); border-color:rgba(255,255,255,0.30); background:rgba(255,255,255,0.08); }
+        .submit-btn:active:not(:disabled) { transform:scale(0.98); }
+        .submit-btn:disabled { opacity:0.35; }
+        .btn-spinner { width:11px; height:11px; border:2px solid rgba(255,255,255,0.2); border-top-color:white; border-radius:50%; animation:spin 0.7s linear infinite; display:none; }
+        .submit-btn.loading .btn-spinner { display:block; }
+        .submit-btn.loading .btn-label  { opacity:0.4; }
+        @keyframes spin { to { transform:rotate(360deg); } }
 
-        #toast {
-            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.70); border: 1px solid rgba(255,255,255,0.14);
-            backdrop-filter: blur(14px); border-radius: 8px; padding: 10px 18px;
-            font-size: 0.80rem; color: rgba(255,255,255,0.80); white-space: nowrap;
-            opacity: 0; transition: opacity 0.4s ease; pointer-events: none; z-index: 300;
-        }
-        #toast.success { border-color: rgba(100,255,150,0.35); color: rgba(150,255,180,0.90); }
-        #toast.error   { border-color: rgba(255,100,100,0.35); color: rgba(255,150,150,0.90); }
+        #toast { position:fixed; bottom:100px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.70); border:1px solid rgba(255,255,255,0.12); backdrop-filter:blur(18px); border-radius:8px; padding:9px 16px; font-size:clamp(0.72rem,2vw,0.8rem); color:rgba(255,255,255,0.75); opacity:0; transition:opacity 0.4s ease; pointer-events:none; z-index:500; white-space:nowrap; max-width:calc(100vw - 36px); }
+        #toast.success { border-color:rgba(100,255,150,0.35); color:rgba(150,255,180,0.85); }
+        #toast.error   { border-color:rgba(255,100,100,0.35); color:rgba(255,150,150,0.85); }
+
+        .song-title { font-size:clamp(0.72rem,2vw,0.78rem); font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:rgba(255,255,255,0.60) !important; }
+        #music-time { font-size:clamp(0.58rem,1.6vw,0.65rem); color:rgba(255,255,255,0.35) !important; white-space:nowrap; min-width:30px; text-align:right; }
+        #music-progress { background:rgba(255,255,255,0.55) !important; box-shadow:0 0 7px rgba(255,255,255,0.18) !important; }
+
+        .nav-tabs span { font-size:clamp(0.6rem,2vw,0.7rem); letter-spacing:2px; font-weight:bold; opacity:0.40; transition:opacity 0.2s; color:var(--text,white); cursor:pointer; padding:4px 8px; }
+        .nav-tabs span.active { opacity:1; text-shadow:0 0 14px rgba(255,255,255,0.55),0 0 32px rgba(255,255,255,0.18); }
+        .nav-tabs span:hover { opacity:0.72; }
     </style>
 </head>
 <body class="contact-page theme-dark">
 
-    <!-- Background videos — NO autoplay attr; JS triggers play after canplay -->
-    <div id="yt-dark">
-        <video id="vid-dark" muted loop playsinline>
-            <source src="media/dark.webm" type="video/webm">
-        </video>
+    <div id="bg-wrap">
+        <video id="yt-dark" autoplay muted loop playsinline><source src="media/dark.webm" type="video/webm"></video>
+        <video id="yt-light" autoplay muted loop playsinline><source src="media/light.webm" type="video/webm"></video>
     </div>
-    <div id="yt-light">
-        <video id="vid-light" muted loop playsinline>
-            <source src="media/light.webm" type="video/webm">
-        </video>
-    </div>
-    <div id="bg-video-overlay"></div>
+    <div id="bg-vignette"></div>
 
-    <!-- Overlay -->
     <div id="overlay">
         <div class="overlay-blur"></div>
         <div class="enter-button">click to enter...</div>
     </div>
 
-    <!-- Volume -->
     <div class="top-left-wrapper">
         <div class="volume-container">
             <i class="fas fa-volume-up control-icon" id="mute-btn"></i>
@@ -172,10 +147,9 @@
     <audio id="bg-audio" loop><source src="" type="audio/mpeg"></audio>
     <div id="toast"></div>
 
-    <!-- Fixed nav -->
     <div id="fixed-nav">
         <div class="glass-card" style="padding:16px 20px;">
-            <div class="nav-tabs" style="display:flex;justify-content:space-around;">
+            <div class="nav-tabs" style="display:flex;justify-content:space-around;align-items:center;">
                 <span onclick="location.href='/'">OVERVIEW</span>
                 <span onclick="location.href='/about'">ABOUT</span>
                 <span class="active">CONTACT</span>
@@ -183,12 +157,10 @@
         </div>
     </div>
 
-    <!-- Fixed player -->
     <div id="fixed-player">
         <div class="glass-card" style="padding:15px 18px !important;">
             <div style="display:flex;align-items:center;gap:13px;">
-                <img id="music-cover" src="media/music-cover/cry.jpg"
-                     onerror="this.style.display='none';" alt="Cover"
+                <img id="music-cover" src="media/music-cover/cry.jpg" onerror="this.style.display='none';" alt="Cover"
                      style="width:42px;height:42px;border-radius:7px;object-fit:cover;flex-shrink:0;box-shadow:0 0 14px rgba(255,255,255,0.07);">
                 <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;">
                     <div class="song-title">&#8212;</div>
@@ -208,7 +180,6 @@
         </div>
     </div>
 
-    <!-- Main card -->
     <div class="card-container" id="main-content">
         <div class="glass-card">
             <div class="section-label">reach me at</div>
@@ -234,143 +205,87 @@
     </div>
 
     <script>
-    window.addEventListener('load', function () {
+    document.addEventListener('DOMContentLoaded', function () {
         window.startTitleLoop && window.startTitleLoop('Contact', 300);
-
         if (typeof emailjs !== 'undefined') emailjs.init({ publicKey: 'ANitUhHu4kV4-js93' });
+        else window.addEventListener('load',function(){if(typeof emailjs!=='undefined')emailjs.init({publicKey:'ANitUhHu4kV4-js93'});});
 
-        var overlay      = document.getElementById('overlay');
-        var mainContent  = document.getElementById('main-content');
-        var fixedNav     = document.getElementById('fixed-nav');
-        var fixedPlayer  = document.getElementById('fixed-player');
-        var ytDark       = document.getElementById('yt-dark');
-        var ytLight      = document.getElementById('yt-light');
-        var audio        = document.getElementById('bg-audio');
-        var playPauseBtn = document.getElementById('play-pause-btn');
-        var vidDark      = document.getElementById('vid-dark');
-        var vidLight     = document.getElementById('vid-light');
+        var overlay=document.getElementById('overlay');
+        var mainContent=document.getElementById('main-content');
+        var fixedNav=document.getElementById('fixed-nav');
+        var fixedPlayer=document.getElementById('fixed-player');
+        var ytDark=document.getElementById('yt-dark');
+        var ytLight=document.getElementById('yt-light');
 
-        /* ── Videos: snap correct opacity, play after buffer ── */
-        function startVideos() {
-            var isDark = localStorage.getItem('theme') !== 'light';
-            ytDark.style.transition  = 'none';
-            ytLight.style.transition = 'none';
-            ytDark.style.opacity  = isDark ? '1' : '0';
-            ytLight.style.opacity = isDark ? '0' : '1';
-            requestAnimationFrame(function () {
-                requestAnimationFrame(function () {
-                    ytDark.style.transition  = 'opacity 0.65s ease';
-                    ytLight.style.transition = 'opacity 0.65s ease';
-                });
-            });
-            var primary   = isDark ? vidDark : vidLight;
-            var secondary = isDark ? vidLight : vidDark;
-            function playBoth() {
-                primary.play().catch(function(){});
-                secondary.play().catch(function(){});
-            }
-            if (primary.readyState >= 3) {
-                playBoth();
-            } else {
-                primary.addEventListener('canplay', function handler() {
-                    primary.removeEventListener('canplay', handler);
-                    playBoth();
-                });
-            }
-        }
+        (function initVideos(){
+            var dark=localStorage.getItem('theme')!=='light';
+            ytDark.style.transition=ytLight.style.transition='none';
+            ytDark.style.opacity=dark?'1':'0';
+            ytLight.style.opacity=dark?'0':'1';
+            requestAnimationFrame(function(){requestAnimationFrame(function(){
+                ytDark.style.transition=ytLight.style.transition='opacity 0.65s ease';
+            });});
+        })();
 
-        window._syncBgVideos = function (isNowDark) {
-            ytDark.style.opacity  = isNowDark ? '1' : '0';
-            ytLight.style.opacity = isNowDark ? '0' : '1';
-        };
+        window._syncBgVideos=function(dark){ ytDark.style.opacity=dark?'1':'0'; ytLight.style.opacity=dark?'0':'1'; };
 
-        startVideos();
+        function getAudio(){return document.getElementById('bg-audio');}
+        function getPPBtn(){return document.getElementById('play-pause-btn');}
 
-        /* ── Enter site ── */
-        var _entered = false;
-        function enterSite() {
-            if (_entered) return;
-            _entered = true;
-            sessionStorage.setItem('site_entered', '1');
-            audio.play()
-                .then(function () { window._restoreMusicTime && window._restoreMusicTime(); })
-                .catch(function () {
-                    document.addEventListener('click', function () { audio.play().catch(function(){}); }, { once: true });
-                });
-            if (playPauseBtn) playPauseBtn.classList.replace('fa-play', 'fa-pause');
-            overlay.style.opacity = '0';
-            setTimeout(function () {
-                overlay.style.display = 'none';
-                mainContent.classList.add('visible');
-                fixedNav.classList.add('visible');
-                fixedPlayer.classList.add('visible');
-                setTimeout(function () { window._ropeInit && window._ropeInit(); }, 80);
-            }, 800);
-        }
-
-        window._enterSite = enterSite;
-
-        if (sessionStorage.getItem('site_entered')) {
-            overlay.style.transition = 'none';
-            overlay.style.display    = 'none';
+        function showContent(){
             mainContent.classList.add('visible');
             fixedNav.classList.add('visible');
             fixedPlayer.classList.add('visible');
-            audio.play()
-                .then(function () { window._restoreMusicTime && window._restoreMusicTime(); })
-                .catch(function () {
-                    document.addEventListener('click', function () { audio.play().catch(function(){}); }, { once: true });
-                });
-            if (playPauseBtn) playPauseBtn.classList.replace('fa-play', 'fa-pause');
-            setTimeout(function () { window._ropeInit && window._ropeInit(); }, 80);
+            setTimeout(function(){if(window._ropeInit)window._ropeInit();},80);
+        }
+        function playAudio(){
+            var au=getAudio(); if(!au) return;
+            au.play().then(function(){if(window._restoreMusicTime)window._restoreMusicTime();})
+                .catch(function(){document.addEventListener('click',function(){var a=getAudio();if(a)a.play().catch(function(){});},{once:true});});
+            var pp=getPPBtn(); if(pp) pp.classList.replace('fa-play','fa-pause');
+        }
+
+        if(sessionStorage.getItem('site_entered')){
+            showContent(); playAudio();
         } else {
-            overlay.addEventListener('click', enterSite);
+            var _ent=false;
+            function enterSite(){
+                if(_ent)return; _ent=true;
+                sessionStorage.setItem('site_entered','1');
+                playAudio();
+                overlay.style.opacity='0';
+                setTimeout(function(){overlay.style.display='none';showContent();},800);
+            }
+            overlay.addEventListener('click',enterSite);
         }
 
-        /* ── Toast ── */
-        function showToast(msg, type) {
-            var t = document.getElementById('toast');
-            t.textContent = msg; t.className = type || ''; t.style.opacity = '1';
-            setTimeout(function () { t.style.opacity = '0'; t.className = ''; }, 3000);
+        function showToast(msg,type){
+            var t=document.getElementById('toast');
+            t.textContent=msg;t.className=type||'';t.style.opacity='1';
+            setTimeout(function(){t.style.opacity='0';t.className='';},3000);
         }
 
-        /* ── Copy email ── */
-        document.getElementById('copy-btn').addEventListener('click', function () {
+        var cb=document.getElementById('copy-btn');
+        if(cb) cb.addEventListener('click',function(){
             navigator.clipboard.writeText('shub.professional@gmail.com')
-                .then(function () { showToast('Email copied!', 'success'); })
-                .catch(function () { showToast('Could not copy.', 'error'); });
+                .then(function(){showToast('Email copied!','success');})
+                .catch(function(){showToast('Could not copy.','error');});
         });
 
-        /* ── Send message ── */
-        document.getElementById('send-btn').addEventListener('click', function () {
-            var name  = document.getElementById('f-name').value.trim();
-            var email = document.getElementById('f-email').value.trim();
-            var msg   = document.getElementById('f-message').value.trim();
-            if (!name || !email || !msg) { showToast('Please fill in all fields.', 'error'); return; }
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Please enter a valid email.', 'error'); return; }
-
-            var btn = document.getElementById('send-btn');
-            btn.classList.add('loading'); btn.disabled = true;
-            function finish() { btn.classList.remove('loading'); btn.disabled = false; }
-
-            function fallbackMailto() {
-                window.open('mailto:shub.professional@gmail.com?subject='
-                    + encodeURIComponent('Message from ' + name)
-                    + '&body=' + encodeURIComponent('From: ' + name + ' <' + email + '>\n\n' + msg));
-                showToast('Opening mail client...', '');
-            }
-
-            if (typeof emailjs === 'undefined') { fallbackMailto(); finish(); return; }
-
-            emailjs.send('service_wfciems', 'template_srqhd09', { name: name, email: email, message: msg })
-                .then(function () {
-                    showToast('Message sent!', 'success');
-                    ['f-name','f-email','f-message'].forEach(function (id) {
-                        document.getElementById(id).value = '';
-                    });
-                    finish();
-                })
-                .catch(function () { fallbackMailto(); finish(); });
+        var sb=document.getElementById('send-btn');
+        if(sb) sb.addEventListener('click',function(){
+            var n=(document.getElementById('f-name').value||'').trim();
+            var e=(document.getElementById('f-email').value||'').trim();
+            var m=(document.getElementById('f-message').value||'').trim();
+            if(!n||!e||!m){showToast('Please fill in all fields.','error');return;}
+            if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){showToast('Please enter a valid email.','error');return;}
+            sb.classList.add('loading'); sb.disabled=true;
+            function mailto(){window.open('mailto:shub.professional@gmail.com?subject='+encodeURIComponent('Message from '+n)+'&body='+encodeURIComponent('From: '+n+' <'+e+'>\n\n'+m));showToast('Opening mail client...','');}
+            function done(){sb.classList.remove('loading');sb.disabled=false;}
+            if(typeof emailjs==='undefined'){mailto();done();return;}
+            emailjs.send('service_wfciems','template_srqhd09',{name:n,email:e,message:m})
+                .then(function(){showToast('Message sent!','success');['f-name','f-email','f-message'].forEach(function(id){document.getElementById(id).value='';});done();})
+                .catch(function(){mailto();done();});
         });
     });
     </script>

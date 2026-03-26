@@ -2,54 +2,105 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Francisco | </title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/main.css">
     <script src="js/title-typer.js"></script>
-    <script src="js/player.js" defer></script>
+
+    <!-- Instant overlay kill for returning visitors — before first paint -->
     <script>
-    (function() {
-        function syncVid(isDark) {
-            var d = document.getElementById('yt-dark');
-            var l = document.getElementById('yt-light');
-            if (d) d.style.opacity = isDark ? '1' : '0';
-            if (l) l.style.opacity = isDark ? '0' : '1';
-        }
-        window._syncBgVideos = syncVid;
+    if (sessionStorage.getItem('site_entered')) {
         document.addEventListener('DOMContentLoaded', function () {
-            syncVid(localStorage.getItem('theme') !== 'light');
+            var ov = document.getElementById('overlay');
+            if (ov) { ov.style.transition = 'none'; ov.style.display = 'none'; }
         });
-    })();
+    }
     </script>
+
+    <!-- Theme video sync stub -->
+    <script>
+    window._syncBgVideos = function (isDark) {
+        var d = document.getElementById('yt-dark');
+        var l = document.getElementById('yt-light');
+        if (d) d.style.opacity = isDark ? '1' : '0';
+        if (l) l.style.opacity = isDark ? '0' : '1';
+    };
+    </script>
+
     <script src="js/rope-theme.js" defer></script>
+    <script src="js/player.js" defer></script>
+
     <style>
-        /* ── Background videos ── */
-        #yt-dark, #yt-light {
+        *, *::before, *::after { box-sizing: border-box; }
+
+        /* ── Background videos — two layered, opacity switched ── */
+        #bg-wrap {
             position: fixed; inset: 0; z-index: 0;
-            pointer-events: none; overflow: hidden;
-            transition: opacity 0.65s ease;
+            pointer-events: none; overflow: hidden; background: #000;
         }
-        #yt-dark video, #yt-light video {
+        #bg-wrap video {
             position: absolute;
             width: 100vw; height: 56.25vw;
             min-height: 100vh; min-width: 177.78vh;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            object-fit: cover;
+            object-fit: cover; pointer-events: none;
         }
-        #yt-dark  { opacity: 1; }
-        #yt-light { opacity: 0; }
+        #yt-dark  { opacity: 1; z-index: 1; transition: opacity 0.65s ease; }
+        #yt-light { opacity: 0; z-index: 2; transition: opacity 0.65s ease; }
+        #bg-vignette {
+            position: fixed; inset: 0; z-index: 3;
+            background: radial-gradient(ellipse at center, transparent 25%, rgba(0,0,0,0.22) 100%);
+            pointer-events: none;
+        }
+
+        /* ── Entry overlay ── */
+        #overlay {
+            position: fixed; inset: 0; z-index: 9999;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            transition: opacity 0.9s ease;
+        }
+        .overlay-blur {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0.88);
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+        }
+        .enter-button {
+            position: relative; z-index: 10;
+            font-size: clamp(0.78rem,2.5vw,0.92rem);
+            letter-spacing: 3.5px; color: rgba(255,255,255,0.48);
+            cursor: pointer; animation: pulse 2s infinite ease-in-out;
+        }
+        @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:0.85} }
+
+        /* ── Volume — desktop hover, mobile always visible ── */
+        .top-left-wrapper {
+            position: fixed;
+            top: max(18px, env(safe-area-inset-top, 18px));
+            left: max(18px, env(safe-area-inset-left, 18px));
+            z-index: 10;
+        }
+        .volume-container { display: flex; align-items: center; gap: 10px; }
+        .volume-slider    { height: 4px; accent-color: #fff; cursor: pointer; transition: width 0.3s ease, opacity 0.3s ease; }
+        @media (hover: hover) and (pointer: fine) {
+            .volume-slider { width: 0; opacity: 0; }
+            .volume-container:hover .volume-slider { width: 80px; opacity: 1; }
+        }
+        @media (hover: none), (pointer: coarse) {
+            .volume-slider { width: 72px; opacity: 0.80; }
+        }
 
         /* ── Fixed nav ── */
         #fixed-nav {
             position: fixed; top: 20px; left: 50%;
             transform: translateX(-50%);
-            width: calc(100% - 32px); max-width: 450px;
+            width: calc(100% - 32px); max-width: 480px;
             z-index: 200; opacity: 0; visibility: hidden;
-            transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1),
-                        visibility 1.5s cubic-bezier(0.19,1,0.22,1);
+            transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1), visibility 1.5s cubic-bezier(0.19,1,0.22,1);
         }
         #fixed-nav.visible { opacity: 1; visibility: visible; }
 
@@ -57,284 +108,135 @@
         #fixed-player {
             position: fixed; bottom: 20px; left: 50%;
             transform: translateX(-50%);
-            width: calc(100% - 32px); max-width: 450px;
+            width: calc(100% - 32px); max-width: 480px;
             z-index: 200; opacity: 0; visibility: hidden;
-            transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1),
-                        visibility 1.5s cubic-bezier(0.19,1,0.22,1);
+            transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1), visibility 1.5s cubic-bezier(0.19,1,0.22,1);
         }
         #fixed-player.visible { opacity: 1; visibility: visible; }
 
-        /* ── Scrollable middle ── */
+        /* ── Scrollable content ── */
         .card-container {
             position: fixed; inset: 0; z-index: 5;
             display: flex; flex-direction: column; align-items: center;
             overflow-y: auto; overflow-x: hidden;
-            padding: 88px 16px 100px !important;
+            padding: 88px 16px 100px;
             width: 100%; opacity: 0; visibility: hidden;
-            transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1),
-                        visibility 1.5s cubic-bezier(0.19,1,0.22,1);
+            transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1), visibility 1.5s cubic-bezier(0.19,1,0.22,1);
             scrollbar-width: none; -ms-overflow-style: none;
         }
         .card-container::-webkit-scrollbar { display: none; }
         .card-container.visible { opacity: 1; visibility: visible; }
-        .glass-card { width: 100% !important; max-width: 450px; }
+        .glass-card { width: 100% !important; max-width: 480px; }
 
         /* ── Typography ── */
-        .section-label {
-            font-size: 0.60rem; letter-spacing: 3px; font-weight: bold;
-            margin-bottom: 14px; text-transform: uppercase;
-            color: var(--section-label-color, rgba(255,255,255,0.55));
-        }
-        .bio-text {
-            font-size: 0.84rem; line-height: 1.8;
-            color: var(--bio-text-color, rgba(255,255,255,0.75)); margin: 0;
-        }
-        .card-divider {
-            height: 1px; background: var(--divider, rgba(255,255,255,0.07)); margin: 16px 0;
-        }
+        .section-label { font-size:clamp(0.55rem,1.6vw,0.62rem); letter-spacing:3px; font-weight:bold; margin-bottom:12px; text-transform:uppercase; color:var(--section-label-color,rgba(255,255,255,0.45)); }
+        .bio-text      { font-size:clamp(0.78rem,2.2vw,0.85rem); line-height:1.8; color:var(--bio-text-color,rgba(255,255,255,0.55)); margin:0; }
+        .card-divider  { height:1px; background:var(--divider,rgba(255,255,255,0.06)); margin:16px 0; }
 
         /* ── Skills ── */
-        .skills-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
-        .skill-tag {
-            font-size: 0.72rem; letter-spacing: 1px; padding: 5px 12px; border-radius: 6px;
-            background: var(--skill-bg, rgba(255,255,255,0.05));
-            border: 1px solid var(--skill-border, rgba(255,255,255,0.09));
-            color: var(--skill-text, rgba(255,255,255,0.70));
-            transition: all 0.2s ease;
-        }
-        .skill-tag:hover { background: rgba(255,255,255,0.11); border-color: rgba(255,255,255,0.26); color: white; }
+        .skills-grid { display:flex; flex-wrap:wrap; gap:7px; margin-top:4px; }
+        .skill-tag   { font-size:clamp(0.65rem,1.8vw,0.72rem); letter-spacing:1px; padding:5px 11px; border-radius:6px; background:var(--skill-bg,rgba(255,255,255,0.04)); border:1px solid var(--skill-border,rgba(255,255,255,0.09)); color:var(--skill-text,rgba(255,255,255,0.55)); transition:all 0.22s ease; }
+        .skill-tag:hover { background:rgba(255,255,255,0.09); border-color:rgba(255,255,255,0.22); color:rgba(255,255,255,0.85); }
 
-        /* ── PROJECTS BUTTON ── */
+        /* ── Projects button ── */
         #projects-btn {
-            width: 100%; padding: 11px 16px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.09);
-            border-radius: 9px;
-            color: rgba(255,255,255,0.55);
-            font-family: 'Inter', sans-serif;
-            font-size: 0.70rem; letter-spacing: 2.5px;
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 9px;
-            transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s;
-            position: relative; overflow: hidden;
+            width:100%; padding:11px 16px;
+            background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.09);
+            border-radius:9px; color:rgba(255,255,255,0.55);
+            font-family:'Inter',sans-serif; font-size:clamp(0.65rem,1.8vw,0.70rem); letter-spacing:2.5px;
+            cursor:pointer; display:flex; align-items:center; justify-content:center; gap:9px;
+            transition:background 0.2s,border-color 0.2s,color 0.2s,transform 0.15s;
+            position:relative; overflow:hidden;
         }
-        /* shimmer on hover */
         #projects-btn::after {
-            content: '';
-            position: absolute; inset: 0;
-            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%);
-            transform: translateX(-100%);
-            transition: transform 0.55s ease;
+            content:''; position:absolute; inset:0;
+            background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.06) 50%,transparent 100%);
+            transform:translateX(-100%); transition:transform 0.55s ease;
         }
-        #projects-btn:hover::after { transform: translateX(100%); }
-        #projects-btn:hover {
-            background: rgba(255,255,255,0.08);
-            border-color: rgba(255,255,255,0.20);
-            color: rgba(255,255,255,0.88);
-        }
-        #projects-btn:active { transform: scale(0.985); }
-        #projects-btn .btn-chevron {
-            font-size: 0.58rem;
-            color: rgba(255,255,255,0.30);
-            transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1), color 0.2s;
-        }
-        #projects-btn.open .btn-chevron {
-            transform: rotate(180deg);
-            color: rgba(255,255,255,0.60);
-        }
+        #projects-btn:hover::after { transform:translateX(100%); }
+        #projects-btn:hover { background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.20); color:rgba(255,255,255,0.88); }
+        #projects-btn:active { transform:scale(0.985); }
+        #projects-btn .btn-chevron { font-size:0.58rem; color:rgba(255,255,255,0.30); transition:transform 0.32s cubic-bezier(0.34,1.56,0.64,1),color 0.2s; }
+        #projects-btn.open .btn-chevron { transform:rotate(180deg); color:rgba(255,255,255,0.60); }
 
-        /* ── PROJECTS PANEL (desktop: side card) ── */
+        /* ── Projects panel — NO backdrop-filter (prevents transparency shift) ── */
         #projects-panel {
-            position: fixed;
-            /* vertically centered, positioned to the right of the main card */
-            top: 50%;
-            left: calc(50% + 244px);
-            transform: translateY(-50%) translateX(24px);
-            width: 252px;
-            max-height: calc(100vh - 160px);
-            background: rgba(4,4,8,0.68);
-            border: 1px solid rgba(255,255,255,0.10);
-            border-radius: 14px;
-            backdrop-filter: blur(32px);
-            -webkit-backdrop-filter: blur(32px);
-            box-shadow:
-                0 0 0 1px rgba(255,255,255,0.04),
-                0 28px 56px rgba(0,0,0,0.65),
-                inset 0 1px 0 rgba(255,255,255,0.07);
-            z-index: 300;
-            opacity: 0; visibility: hidden;
-            display: flex; flex-direction: column;
-            transition:
-                opacity   0.30s ease,
-                visibility 0.30s,
-                transform  0.38s cubic-bezier(0.34,1.56,0.64,1);
-            pointer-events: none;
+            position:fixed;
+            top:50%; left:calc(50% + 252px);
+            transform:translateY(-50%) translateX(24px);
+            width:256px; max-height:calc(100vh - 160px);
+            background:rgba(8,8,14,0.94);
+            border:1px solid rgba(255,255,255,0.10);
+            border-radius:14px;
+            box-shadow:0 0 0 1px rgba(255,255,255,0.04),0 28px 56px rgba(0,0,0,0.72),inset 0 1px 0 rgba(255,255,255,0.07);
+            z-index:300; opacity:0; visibility:hidden;
+            display:flex; flex-direction:column;
+            transition:opacity 0.28s ease,visibility 0.28s,transform 0.36s cubic-bezier(0.34,1.56,0.64,1);
+            pointer-events:none; will-change:transform,opacity;
         }
-        #projects-panel.open {
-            opacity: 1; visibility: visible;
-            transform: translateY(-50%) translateX(0);
-            pointer-events: auto;
-        }
+        #projects-panel.open { opacity:1; visibility:visible; transform:translateY(-50%) translateX(0); pointer-events:auto; }
 
-        /* ── Panel header ── */
-        .panel-header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 13px 15px 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-            flex-shrink: 0;
-        }
-        .panel-title {
-            font-size: 0.58rem; letter-spacing: 3px; font-weight: bold;
-            text-transform: uppercase; color: rgba(255,255,255,0.40);
-        }
-        .panel-close {
-            font-size: 0.68rem; color: rgba(255,255,255,0.22);
-            cursor: pointer; padding: 3px 5px; border-radius: 4px;
-            transition: color 0.2s, background 0.2s;
-        }
-        .panel-close:hover { color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.06); }
+        .panel-drag-handle { display:none; width:36px; height:4px; background:rgba(255,255,255,0.18); border-radius:10px; margin:8px auto 0; flex-shrink:0; }
+        .panel-header { display:flex; align-items:center; justify-content:space-between; padding:13px 15px 10px; border-bottom:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
+        .panel-title  { font-size:0.58rem; letter-spacing:3px; font-weight:bold; text-transform:uppercase; color:rgba(255,255,255,0.40); }
+        .panel-close  { font-size:0.68rem; color:rgba(255,255,255,0.22); cursor:pointer; padding:3px 5px; border-radius:4px; transition:color 0.2s,background 0.2s; }
+        .panel-close:hover { color:rgba(255,255,255,0.75); background:rgba(255,255,255,0.06); }
+        .panel-body   { overflow-y:auto; overflow-x:hidden; flex:1; padding:10px 10px 12px; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.10) transparent; }
+        .panel-body::-webkit-scrollbar { width:3px; }
+        .panel-body::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.10); border-radius:10px; }
 
-        /* ── Panel scrollable body ── */
-        .panel-body {
-            overflow-y: auto; overflow-x: hidden;
-            flex: 1; padding: 10px 10px 12px;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255,255,255,0.10) transparent;
-        }
-        .panel-body::-webkit-scrollbar { width: 3px; }
-        .panel-body::-webkit-scrollbar-track { background: transparent; }
-        .panel-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius: 10px; }
-
-        /* ── Repo rows inside panel ── */
-        .repo-card {
-            display: flex; align-items: center; gap: 9px;
-            padding: 9px 11px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 8px; text-decoration: none; color: inherit;
-            margin-bottom: 6px;
-            transition: background 0.18s, border-color 0.18s, transform 0.12s;
-        }
-        .repo-card:last-child { margin-bottom: 0; }
-        .repo-card:hover {
-            background: rgba(255,255,255,0.07);
-            border-color: rgba(255,255,255,0.16);
-            transform: translateX(2px);
-        }
-        .repo-card:active { transform: translateX(2px) scale(0.985); }
-        .repo-left { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
-        .repo-icon { font-size: 0.72rem; color: rgba(255,255,255,0.22); flex-shrink: 0; }
-        .repo-name {
-            font-size: 0.73rem; font-weight: 600;
-            color: rgba(255,255,255,0.78);
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .repo-lang-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-        .repo-arrow { font-size: 0.54rem; color: rgba(255,255,255,0.16); transition: color 0.18s; flex-shrink: 0; }
-        .repo-card:hover .repo-arrow { color: rgba(255,255,255,0.55); }
-
-        /* Skeleton shimmer */
-        .repo-skeleton {
-            height: 38px; background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 8px; margin-bottom: 6px;
-            animation: skPulse 1.6s ease-in-out infinite;
-        }
-        .repo-skeleton:nth-child(2) { animation-delay: 0.15s; }
-        .repo-skeleton:nth-child(3) { animation-delay: 0.30s; }
+        .repo-card { display:flex; align-items:center; gap:9px; padding:9px 11px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; text-decoration:none; color:inherit; margin-bottom:6px; transition:background 0.18s,border-color 0.18s,transform 0.12s; }
+        .repo-card:last-child { margin-bottom:0; }
+        .repo-card:hover { background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.16); transform:translateX(2px); }
+        .repo-left { display:flex; align-items:center; gap:8px; min-width:0; flex:1; }
+        .repo-icon { font-size:0.72rem; color:rgba(255,255,255,0.22); flex-shrink:0; }
+        .repo-name { font-size:0.73rem; font-weight:600; color:rgba(255,255,255,0.78); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .repo-lang-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+        .repo-arrow { font-size:0.54rem; color:rgba(255,255,255,0.16); transition:color 0.18s; flex-shrink:0; }
+        .repo-card:hover .repo-arrow { color:rgba(255,255,255,0.55); }
+        .repo-skeleton { height:38px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:8px; margin-bottom:6px; animation:skPulse 1.6s ease-in-out infinite; }
+        .repo-skeleton:nth-child(2){ animation-delay:0.15s; }
+        .repo-skeleton:nth-child(3){ animation-delay:0.30s; }
         @keyframes skPulse { 0%,100%{opacity:0.18} 50%{opacity:0.50} }
-        .repo-error {
-            font-size: 0.70rem; color: rgba(255,255,255,0.28);
-            letter-spacing: 0.5px; padding: 6px 0;
+        .repo-error { font-size:0.70rem; color:rgba(255,255,255,0.28); padding:6px 0; }
+
+        #panel-backdrop { display:none; position:fixed; inset:0; z-index:299; background:rgba(0,0,0,0.45); opacity:0; visibility:hidden; transition:opacity 0.28s,visibility 0.28s; }
+        #panel-backdrop.open { opacity:1; visibility:visible; }
+        @media (max-width:700px) {
+            #projects-panel { top:auto !important; left:50% !important; width:calc(100% - 32px) !important; max-width:480px !important; max-height:52vh !important; bottom:90px; transform:translateX(-50%) translateY(110%) !important; transition:opacity 0.28s ease,visibility 0.28s,transform 0.38s cubic-bezier(0.25,1.4,0.5,1) !important; }
+            #projects-panel.open { transform:translateX(-50%) translateY(0) !important; opacity:1; visibility:visible; }
+            #panel-backdrop { display:block; }
+            .panel-drag-handle { display:block; }
         }
 
-        /* ── MOBILE: bottom sheet ── */
-        @media (max-width: 700px) {
-            #projects-panel {
-                /* reset desktop */
-                top: auto !important;
-                left: 50% !important;
-                width: calc(100% - 32px) !important;
-                max-width: 450px !important;
-                max-height: 52vh !important;
-                bottom: 90px;
-                /* bottom-sheet slide up */
-                transform: translateX(-50%) translateY(110%) !important;
-                border-radius: 14px;
-                transition:
-                    opacity   0.30s ease,
-                    visibility 0.30s,
-                    transform  0.40s cubic-bezier(0.25,1.4,0.5,1) !important;
-            }
-            #projects-panel.open {
-                transform: translateX(-50%) translateY(0) !important;
-                opacity: 1; visibility: visible;
-            }
-            /* show backdrop on mobile */
-            #panel-backdrop { display: block; }
-            /* drag handle visual cue */
-            .panel-drag-handle { display: block; }
-        }
+        /* ── Music ── */
+        .song-title     { font-size:clamp(0.72rem,2vw,0.78rem); font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:rgba(255,255,255,0.60) !important; }
+        #music-time     { font-size:clamp(0.58rem,1.6vw,0.65rem); color:rgba(255,255,255,0.35) !important; white-space:nowrap; min-width:30px; text-align:right; }
+        #music-progress { background:rgba(255,255,255,0.55) !important; box-shadow:0 0 7px rgba(255,255,255,0.18) !important; }
 
-        /* Drag handle (mobile only) */
-        .panel-drag-handle {
-            display: none;
-            width: 36px; height: 4px;
-            background: rgba(255,255,255,0.18);
-            border-radius: 10px;
-            margin: 8px auto 0;
-            flex-shrink: 0;
-        }
-
-        /* Mobile tap-to-close backdrop */
-        #panel-backdrop {
-            display: none;
-            position: fixed; inset: 0; z-index: 299;
-            background: rgba(0,0,0,0.40);
-            backdrop-filter: blur(3px);
-            opacity: 0; visibility: hidden;
-            transition: opacity 0.30s, visibility 0.30s;
-        }
-        #panel-backdrop.open { opacity: 1; visibility: visible; }
-
-        /* ── Music player ── */
-        .song-title {
-            font-size: 0.78rem; font-weight: bold; white-space: nowrap;
-            overflow: hidden; text-overflow: ellipsis;
-            color: rgba(255,255,255,0.65) !important;
-        }
-        #music-time {
-            font-size: 0.65rem; opacity: 0.45; white-space: nowrap;
-            min-width: 32px; text-align: right; color: var(--text, white);
-        }
-        #music-progress {
-            background: rgba(255,255,255,0.55) !important;
-            box-shadow: 0 0 7px rgba(255,255,255,0.18) !important;
-        }
+        /* ── Nav tabs ── */
+        .nav-tabs span { font-size:clamp(0.6rem,2vw,0.7rem); letter-spacing:2px; font-weight:bold; opacity:0.40; transition:opacity 0.2s; color:var(--text,white); cursor:pointer; padding:4px 8px; }
+        .nav-tabs span.active { opacity:1; text-shadow:0 0 14px rgba(255,255,255,0.55),0 0 32px rgba(255,255,255,0.18); }
+        .nav-tabs span:hover { opacity:0.72; }
     </style>
 </head>
 <body class="about-page theme-dark">
 
-    <!-- Background videos — NO autoplay attr; JS triggers play after canplay -->
-    <div id="yt-dark">
-        <video id="vid-dark" muted loop playsinline>
+    <div id="bg-wrap">
+        <video id="yt-dark" autoplay muted loop playsinline>
             <source src="media/dark.webm" type="video/webm">
         </video>
-    </div>
-    <div id="yt-light">
-        <video id="vid-light" muted loop playsinline>
+        <video id="yt-light" autoplay muted loop playsinline>
             <source src="media/light.webm" type="video/webm">
         </video>
     </div>
-    <div id="bg-video-overlay"></div>
+    <div id="bg-vignette"></div>
 
-    <!-- Entry overlay -->
     <div id="overlay">
         <div class="overlay-blur"></div>
         <div class="enter-button">click to enter...</div>
     </div>
 
-    <!-- Volume -->
     <div class="top-left-wrapper">
         <div class="volume-container">
             <i class="fas fa-volume-up control-icon" id="mute-btn"></i>
@@ -344,10 +246,24 @@
 
     <audio id="bg-audio" loop><source src="" type="audio/mpeg"></audio>
 
-    <!-- Fixed nav -->
+    <div id="panel-backdrop"></div>
+
+    <div id="projects-panel">
+        <div class="panel-drag-handle"></div>
+        <div class="panel-header">
+            <span class="panel-title">projects</span>
+            <i class="fas fa-times panel-close" id="panel-close-btn"></i>
+        </div>
+        <div class="panel-body" id="repo-list">
+            <div class="repo-skeleton"></div>
+            <div class="repo-skeleton"></div>
+            <div class="repo-skeleton"></div>
+        </div>
+    </div>
+
     <div id="fixed-nav">
         <div class="glass-card" style="padding:16px 20px;">
-            <div class="nav-tabs" style="display:flex;justify-content:space-around;">
+            <div class="nav-tabs" style="display:flex;justify-content:space-around;align-items:center;">
                 <span onclick="location.href='/'">OVERVIEW</span>
                 <span class="active">ABOUT</span>
                 <span onclick="location.href='/contact'">CONTACT</span>
@@ -355,7 +271,6 @@
         </div>
     </div>
 
-    <!-- Fixed player -->
     <div id="fixed-player">
         <div class="glass-card" style="padding:15px 18px !important;">
             <div style="display:flex;align-items:center;gap:13px;">
@@ -380,29 +295,11 @@
         </div>
     </div>
 
-    <!-- Mobile backdrop -->
-    <div id="panel-backdrop"></div>
-
-    <!-- Projects panel -->
-    <div id="projects-panel">
-        <div class="panel-drag-handle"></div>
-        <div class="panel-header">
-            <span class="panel-title">projects</span>
-            <i class="fas fa-times panel-close" id="panel-close-btn"></i>
-        </div>
-        <div class="panel-body" id="repo-list">
-            <div class="repo-skeleton"></div>
-            <div class="repo-skeleton"></div>
-            <div class="repo-skeleton"></div>
-        </div>
-    </div>
-
-    <!-- Main scrollable card -->
     <div class="card-container" id="main-content">
         <div class="glass-card">
             <div class="section-label">who i am</div>
             <p class="bio-text">
-                Hey, I'm Francisco — a CS student with a passion for building things that feel
+                Hey, I'm Francisco &#8212; a CS student with a passion for building things that feel
                 alive. I gravitate toward dark aesthetics, atmospheric design, and code that
                 has personality. When I'm not writing software, I'm probably listening to music
                 that nobody else has heard of.
@@ -422,7 +319,7 @@
                 <span class="skill-tag">C++</span>
             </div>
             <div class="card-divider"></div>
-            <!-- Single button — no section label, no repo list inline -->
+            <div class="section-label">projects</div>
             <button id="projects-btn">
                 <i class="fab fa-github" style="font-size:0.78rem;opacity:0.50;"></i>
                 VIEW PROJECTS
@@ -431,236 +328,129 @@
         </div>
     </div>
 
-    <!-- ═══════════════════════════════ GITHUB FETCH ══════════════════════════════ -->
+    <!-- GitHub fetch -->
     <script>
     (function () {
-        var GITHUB_USER = 'ZetsuoNoShub';
-        var list        = document.getElementById('repo-list');
-        var fetched     = false;
-
-        var LANG_COLORS = {
-            'JavaScript':'#f1e05a','TypeScript':'#3178c6','Python':'#3572A5',
-            'HTML':'#e34c26','CSS':'#563d7c','Java':'#b07219',
-            'C++':'#f34b7d','C':'#555555','C#':'#178600',
-            'Shell':'#89e051','Rust':'#dea584','Go':'#00ADD8',
-            'Ruby':'#701516','PHP':'#4F5D95','Swift':'#F05138',
-            'Kotlin':'#A97BFF','Dart':'#00B4AB'
-        };
-
-        function buildCard(repo) {
-            var a = document.createElement('a');
-            a.className = 'repo-card';
-            a.href = repo.html_url; a.target = '_blank'; a.rel = 'noopener noreferrer';
-            a.title = repo.description || repo.name;
-
-            var left = document.createElement('div');
-            left.className = 'repo-left';
-            var icon = document.createElement('i');
-            icon.className = 'fab fa-github repo-icon';
-            var name = document.createElement('span');
-            name.className = 'repo-name'; name.textContent = repo.name;
-            left.appendChild(icon); left.appendChild(name);
-            a.appendChild(left);
-
-            if (repo.language) {
-                var dot = document.createElement('span');
-                dot.className = 'repo-lang-dot';
-                dot.style.background = LANG_COLORS[repo.language] || 'rgba(255,255,255,0.28)';
-                dot.title = repo.language;
-                a.appendChild(dot);
-            }
-
-            var arrow = document.createElement('i');
-            arrow.className = 'fas fa-arrow-up-right-from-square repo-arrow';
-            a.appendChild(arrow);
+        var GH = 'ZetsuoNoShub';
+        var list = document.getElementById('repo-list');
+        var fetched = false;
+        var LC = {'JavaScript':'#f1e05a','TypeScript':'#3178c6','Python':'#3572A5','HTML':'#e34c26','CSS':'#563d7c','Java':'#b07219','C++':'#f34b7d','C':'#555555','C#':'#178600','Shell':'#89e051','Rust':'#dea584','Go':'#00ADD8','Ruby':'#701516','PHP':'#4F5D95','Swift':'#F05138','Kotlin':'#A97BFF','Dart':'#00B4AB'};
+        function makeCard(r) {
+            var a=document.createElement('a'); a.className='repo-card'; a.href=r.html_url; a.target='_blank'; a.rel='noopener noreferrer'; a.title=r.description||r.name;
+            var l=document.createElement('div'); l.className='repo-left';
+            var ic=document.createElement('i'); ic.className='fab fa-github repo-icon';
+            var nm=document.createElement('span'); nm.className='repo-name'; nm.textContent=r.name;
+            l.appendChild(ic); l.appendChild(nm); a.appendChild(l);
+            if(r.language){var d=document.createElement('span');d.className='repo-lang-dot';d.style.background=LC[r.language]||'rgba(255,255,255,0.28)';d.title=r.language;a.appendChild(d);}
+            var ar=document.createElement('i'); ar.className='fas fa-arrow-up-right-from-square repo-arrow'; a.appendChild(ar);
             return a;
         }
-
         window._fetchRepos = function () {
-            if (fetched) return;
-            fetched = true;
-
-            fetch('https://api.github.com/users/' + GITHUB_USER + '/repos?per_page=100&sort=updated')
-                .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-                .then(function (repos) {
-                    var sorted = repos
-                        .filter(function (r) { return !r.fork; })
-                        .sort(function (a, b) {
-                            if (b.stargazers_count !== a.stargazers_count)
-                                return b.stargazers_count - a.stargazers_count;
-                            return new Date(b.updated_at) - new Date(a.updated_at);
-                        });
-                    list.innerHTML = '';
-                    if (!sorted.length) {
-                        var msg = document.createElement('span');
-                        msg.className = 'repo-error';
-                        msg.textContent = 'No public repositories yet.';
-                        list.appendChild(msg); return;
-                    }
-                    sorted.forEach(function (repo) { list.appendChild(buildCard(repo)); });
+            if (fetched) return; fetched = true;
+            fetch('https://api.github.com/users/'+GH+'/repos?per_page=100&sort=updated')
+                .then(function(r){if(!r.ok)throw r;return r.json();})
+                .then(function(repos){
+                    repos=repos.filter(function(r){return!r.fork;}).sort(function(a,b){return b.stargazers_count!==a.stargazers_count?b.stargazers_count-a.stargazers_count:new Date(b.updated_at)-new Date(a.updated_at);});
+                    list.innerHTML='';
+                    if(!repos.length){var m=document.createElement('span');m.className='repo-error';m.textContent='No public repositories yet.';list.appendChild(m);return;}
+                    repos.forEach(function(r){list.appendChild(makeCard(r));});
                 })
-                .catch(function () {
-                    list.innerHTML = '';
-                    var fb = document.createElement('a');
-                    fb.className = 'repo-card';
-                    fb.href = 'https://github.com/' + GITHUB_USER;
-                    fb.target = '_blank'; fb.rel = 'noopener noreferrer';
-                    fb.innerHTML = '<div class="repo-left"><i class="fab fa-github repo-icon"></i>'
-                        + '<span class="repo-name">View GitHub profile</span></div>'
-                        + '<i class="fas fa-arrow-up-right-from-square repo-arrow"></i>';
+                .catch(function(){
+                    list.innerHTML='';
+                    var fb=document.createElement('a');fb.className='repo-card';fb.href='https://github.com/'+GH;fb.target='_blank';fb.rel='noopener noreferrer';
+                    fb.innerHTML='<div class="repo-left"><i class="fab fa-github repo-icon"></i><span class="repo-name">View GitHub profile</span></div><i class="fas fa-arrow-up-right-from-square repo-arrow"></i>';
                     list.appendChild(fb);
                 });
         };
     })();
     </script>
 
-    <!-- ═══════════════════════════ PANEL TOGGLE ══════════════════════════════ -->
+    <!-- Panel toggle -->
     <script>
-    (function () {
-        var btn      = document.getElementById('projects-btn');
-        var panel    = document.getElementById('projects-panel');
-        var closeBtn = document.getElementById('panel-close-btn');
-        var backdrop = document.getElementById('panel-backdrop');
-        var open     = false;
-
-        function openPanel() {
-            open = true;
-            panel.classList.add('open');
-            btn.classList.add('open');
-            backdrop.classList.add('open');
-            window._fetchRepos && window._fetchRepos();
+    (function(){
+        var btn=document.getElementById('projects-btn');
+        var panel=document.getElementById('projects-panel');
+        var cBtn=document.getElementById('panel-close-btn');
+        var bd=document.getElementById('panel-backdrop');
+        var open=false;
+        function openPanel() {open=true; panel.classList.add('open');btn.classList.add('open');if(bd)bd.classList.add('open');window._fetchRepos&&window._fetchRepos();}
+        function closePanel(){open=false;panel.classList.remove('open');btn.classList.remove('open');if(bd)bd.classList.remove('open');}
+        if(btn)  btn.addEventListener('click',function(){open?closePanel():openPanel();});
+        if(cBtn) cBtn.addEventListener('click',closePanel);
+        if(bd)   bd.addEventListener('click',closePanel);
+        document.addEventListener('keydown',function(e){if(e.key==='Escape'&&open)closePanel();});
+        var sy=0;
+        if(panel){
+            panel.addEventListener('touchstart',function(e){sy=e.touches[0].clientY;},{passive:true});
+            panel.addEventListener('touchend',function(e){if(e.changedTouches[0].clientY-sy>55)closePanel();},{passive:true});
         }
-        function closePanel() {
-            open = false;
-            panel.classList.remove('open');
-            btn.classList.remove('open');
-            backdrop.classList.remove('open');
-        }
-
-        btn.addEventListener('click', function () { open ? closePanel() : openPanel(); });
-        closeBtn.addEventListener('click', closePanel);
-        backdrop.addEventListener('click', closePanel);
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape' && open) closePanel();
-        });
-
-        // Mobile: swipe down on panel to dismiss
-        var swipeStartY = 0;
-        panel.addEventListener('touchstart', function (e) {
-            swipeStartY = e.touches[0].clientY;
-        }, { passive: true });
-        panel.addEventListener('touchend', function (e) {
-            if (e.changedTouches[0].clientY - swipeStartY > 55) closePanel();
-        }, { passive: true });
     })();
     </script>
 
-    <!-- ═══════════════════════════ SITE ENTER / VIDEOS ════════════════════════ -->
+    <!-- Site enter / video init -->
     <script>
-    window.addEventListener('load', function () {
+    document.addEventListener('DOMContentLoaded', function () {
         window.startTitleLoop && window.startTitleLoop('About', 300);
 
-        var overlay      = document.getElementById('overlay');
-        var mainContent  = document.getElementById('main-content');
-        var fixedNav     = document.getElementById('fixed-nav');
-        var fixedPlayer  = document.getElementById('fixed-player');
-        var ytDark       = document.getElementById('yt-dark');
-        var ytLight      = document.getElementById('yt-light');
-        var audio        = document.getElementById('bg-audio');
-        var playPauseBtn = document.getElementById('play-pause-btn');
-        var vidDark      = document.getElementById('vid-dark');
-        var vidLight     = document.getElementById('vid-light');
+        var overlay     = document.getElementById('overlay');
+        var mainContent = document.getElementById('main-content');
+        var fixedNav    = document.getElementById('fixed-nav');
+        var fixedPlayer = document.getElementById('fixed-player');
+        var ytDark      = document.getElementById('yt-dark');
+        var ytLight     = document.getElementById('yt-light');
 
-        /* ── Correct video shown immediately; play after buffer ── */
-        function startVideos() {
-            var isDark = localStorage.getItem('theme') !== 'light';
+        /* Sync video opacity to theme, suppress transition on first paint */
+        (function initVideos() {
+            var dark = localStorage.getItem('theme') !== 'light';
+            ytDark.style.transition = ytLight.style.transition = 'none';
+            ytDark.style.opacity  = dark ? '1' : '0';
+            ytLight.style.opacity = dark ? '0' : '1';
+            requestAnimationFrame(function(){requestAnimationFrame(function(){
+                ytDark.style.transition = ytLight.style.transition = 'opacity 0.65s ease';
+            });});
+        })();
 
-            // Snap opacity with no transition to avoid flash
-            ytDark.style.transition  = 'none';
-            ytLight.style.transition = 'none';
-            ytDark.style.opacity  = isDark ? '1' : '0';
-            ytLight.style.opacity = isDark ? '0' : '1';
-
-            // Re-enable crossfade transition on next frame
-            requestAnimationFrame(function () {
-                requestAnimationFrame(function () {
-                    ytDark.style.transition  = 'opacity 0.65s ease';
-                    ytLight.style.transition = 'opacity 0.65s ease';
-                });
-            });
-
-            var primary   = isDark ? vidDark : vidLight;
-            var secondary = isDark ? vidLight : vidDark;
-
-            function playBoth() {
-                primary.play().catch(function(){});
-                secondary.play().catch(function(){});
-            }
-
-            // readyState >= 3 = HAVE_FUTURE_DATA: enough buffered to play
-            if (primary.readyState >= 3) {
-                playBoth();
-            } else {
-                primary.addEventListener('canplay', function handler() {
-                    primary.removeEventListener('canplay', handler);
-                    playBoth();
-                });
-            }
-        }
-
-        // rope-theme.js calls this on every toggle
-        window._syncBgVideos = function (isNowDark) {
-            ytDark.style.opacity  = isNowDark ? '1' : '0';
-            ytLight.style.opacity = isNowDark ? '0' : '1';
+        window._syncBgVideos = function(dark){
+            ytDark.style.opacity  = dark ? '1' : '0';
+            ytLight.style.opacity = dark ? '0' : '1';
         };
 
-        startVideos();
+        function getAudio()  { return document.getElementById('bg-audio'); }
+        function getPPBtn()  { return document.getElementById('play-pause-btn'); }
 
-        /* ── Enter site ── */
-        var _entered = false;
-        function enterSite() {
-            if (_entered) return;
-            _entered = true;
-            sessionStorage.setItem('site_entered', '1');
-
-            audio.play()
-                .then(function () { window._restoreMusicTime && window._restoreMusicTime(); })
-                .catch(function () {
-                    document.addEventListener('click', function () {
-                        audio.play().catch(function(){});
-                    }, { once: true });
-                });
-            if (playPauseBtn) playPauseBtn.classList.replace('fa-play', 'fa-pause');
-
-            overlay.style.opacity = '0';
-            setTimeout(function () {
-                overlay.style.display = 'none';
-                mainContent.classList.add('visible');
-                fixedNav.classList.add('visible');
-                fixedPlayer.classList.add('visible');
-                setTimeout(function () { window._ropeInit && window._ropeInit(); }, 80);
-            }, 800);
-        }
-
-        window._enterSite = enterSite;
-
-        if (sessionStorage.getItem('site_entered')) {
-            // Returning visitor — kill overlay with zero delay, no fade flash
-            overlay.style.transition = 'none';
-            overlay.style.display    = 'none';
+        function showContent() {
             mainContent.classList.add('visible');
             fixedNav.classList.add('visible');
             fixedPlayer.classList.add('visible');
-            audio.play()
-                .then(function () { window._restoreMusicTime && window._restoreMusicTime(); })
-                .catch(function () {
-                    document.addEventListener('click', function () {
-                        audio.play().catch(function(){});
-                    }, { once: true });
-                });
-            if (playPauseBtn) playPauseBtn.classList.replace('fa-play', 'fa-pause');
-            setTimeout(function () { window._ropeInit && window._ropeInit(); }, 80);
+            setTimeout(function(){ if(window._ropeInit) window._ropeInit(); }, 80);
+        }
+
+        function playAudio() {
+            var au = getAudio();
+            if (!au) return;
+            au.play()
+                .then(function(){ if(window._restoreMusicTime) window._restoreMusicTime(); })
+                .catch(function(){ document.addEventListener('click', function(){ var a=getAudio();if(a)a.play().catch(function(){}); }, {once:true}); });
+            var pp = getPPBtn();
+            if (pp) pp.classList.replace('fa-play','fa-pause');
+        }
+
+        if (sessionStorage.getItem('site_entered')) {
+            /* Overlay already hidden by pre-paint script in <head> */
+            showContent();
+            playAudio();
         } else {
+            var _ent = false;
+            function enterSite() {
+                if (_ent) return; _ent = true;
+                sessionStorage.setItem('site_entered','1');
+                playAudio();
+                overlay.style.opacity = '0';
+                setTimeout(function(){
+                    overlay.style.display = 'none';
+                    showContent();
+                }, 800);
+            }
             overlay.addEventListener('click', enterSite);
         }
     });

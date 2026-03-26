@@ -10,202 +10,138 @@
     <script src="js/title-typer.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script src="js/player.js" defer></script>
+
+    <!-- Instant overlay kill for returning visitors — runs before first paint -->
     <script>
-    // _syncBgVideos stub — rope-theme.js (deferred) may call this before main script runs.
-    // The real implementation is set in DOMContentLoaded below.
-    (function() {
-        window._syncBgVideos = function (isDark) {
-            var d = document.getElementById('yt-dark');
-            var l = document.getElementById('yt-light');
-            if (d) d.style.opacity = isDark ? '1' : '0';
-            if (l) l.style.opacity = isDark ? '0' : '1';
-        };
-    })();
+    if (sessionStorage.getItem('site_entered')) {
+        document.addEventListener('DOMContentLoaded', function () {
+            var ov = document.getElementById('overlay');
+            if (ov) { ov.style.transition = 'none'; ov.style.display = 'none'; }
+        });
+    }
     </script>
+
+    <!-- Theme video sync stub so rope-theme.js (deferred) can call it immediately -->
+    <script>
+    window._syncBgVideos = function (isDark) {
+        var d = document.getElementById('yt-dark');
+        var l = document.getElementById('yt-light');
+        if (d) d.style.opacity = isDark ? '1' : '0';
+        if (l) l.style.opacity = isDark ? '0' : '1';
+    };
+    </script>
+
     <script src="js/rope-theme.js" defer></script>
+
     <style>
         *, *::before, *::after { box-sizing: border-box; }
 
-        /* ══════════════════════════════════════════════════
-           BACKGROUND VIDEO SYSTEM
-           Both iframes are ALWAYS in the DOM (never display:none)
-           so YouTube keeps buffering both streams.
-           Visibility is controlled by opacity only.
-           z-index ordering: bg-wrap(0) < vignette(3) < content(5)
-        ══════════════════════════════════════════════════ */
+        /* ── Background video system ── */
         #bg-wrap {
-            position: fixed;
-            inset: 0;
-            z-index: 0;
-            pointer-events: none;
-            overflow: hidden;
-            background: #000;
+            position: fixed; inset: 0; z-index: 0;
+            pointer-events: none; overflow: hidden; background: #000;
         }
-        /* Local webm background videos */
         #bg-wrap video {
             position: absolute;
-            width: 100vw;
-            height: 56.25vw;     /* maintain 16:9 */
-            min-height: 100vh;
-            min-width: 177.78vh; /* 16:9 inverted — covers portrait */
-            top: 50%;
-            left: 50%;
+            width: 100vw; height: 56.25vw;
+            min-height: 100vh; min-width: 177.78vh;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            object-fit: cover;
-            pointer-events: none;
+            object-fit: cover; pointer-events: none;
             transition: opacity 0.65s ease;
         }
-        /* Dark is always layer 1, light crossfades on top */
         #yt-dark  { opacity: 1; z-index: 1; }
         #yt-light { opacity: 0; z-index: 2; }
-
-        /* Subtle vignette */
         #bg-vignette {
-            position: fixed;
-            inset: 0;
-            z-index: 3;
+            position: fixed; inset: 0; z-index: 3;
             background: radial-gradient(ellipse at center, transparent 25%, rgba(0,0,0,0.22) 100%);
             pointer-events: none;
         }
 
-        /* ══════════════════════════════════════════════════
-           LOADING / ENTRY OVERLAY
-        ══════════════════════════════════════════════════ */
+        /* ── Entry overlay ── */
         #overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            position: fixed; inset: 0; z-index: 9999;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
             transition: opacity 0.9s ease;
         }
         #overlay-bg {
-            position: absolute;
-            inset: 0;
+            position: absolute; inset: 0;
             background: rgba(0,0,0,0.88);
             backdrop-filter: blur(32px);
             -webkit-backdrop-filter: blur(32px);
         }
         #loader-card {
-            position: relative;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 22px;
+            position: relative; z-index: 10;
+            display: flex; flex-direction: column;
+            align-items: center; gap: 22px;
             width: min(320px, 86vw);
         }
-        /* Animated monogram */
         #loader-mono {
-            font-family: 'Inter', sans-serif;
-            font-size: clamp(2rem, 8vw, 2.8rem);
-            font-weight: 700;
-            letter-spacing: 8px;
-            color: rgba(255,255,255,0.10);
-            text-transform: uppercase;
-            user-select: none;
+            font-size: clamp(2rem, 8vw, 2.8rem); font-weight: 700;
+            letter-spacing: 8px; color: rgba(255,255,255,0.10);
+            text-transform: uppercase; user-select: none;
             animation: monoGlow 3s ease-in-out infinite;
         }
         @keyframes monoGlow {
             0%,100% { color: rgba(255,255,255,0.10); text-shadow: none; }
             50%      { color: rgba(255,255,255,0.50); text-shadow: 0 0 28px rgba(255,255,255,0.22); }
         }
-        /* Entry text */
         #enter-prompt {
-            font-family: 'Inter', sans-serif;
             font-size: clamp(0.78rem, 2.5vw, 0.92rem);
-            letter-spacing: 3.5px;
-            color: rgba(255,255,255,0.48);
-            cursor: pointer;
-            animation: pulse 2s infinite ease-in-out;
+            letter-spacing: 3.5px; color: rgba(255,255,255,0.48);
+            cursor: pointer; animation: pulse 2s infinite ease-in-out;
         }
 
-        /* ══════════════════════════════════════════════════
-           FIXED NAV + FIXED PLAYER LAYOUT
-           Nav pinned top, player pinned bottom.
-           .card-container scrolls only the middle content.
-        ══════════════════════════════════════════════════ */
-
-        /* Fixed top nav */
+        /* ── Fixed nav ── */
         #fixed-nav {
-            position: fixed;
-            top: 20px;
-            left: 50%;
+            position: fixed; top: 20px; left: 50%;
             transform: translateX(-50%);
-            width: calc(100% - 32px);
-            max-width: 480px;
-            z-index: 200;
-            opacity: 0;
-            visibility: hidden;
+            width: calc(100% - 32px); max-width: 480px;
+            z-index: 200; opacity: 0; visibility: hidden;
             transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1),
                         visibility 1.5s cubic-bezier(0.19,1,0.22,1);
         }
         #fixed-nav.visible { opacity: 1; visibility: visible; }
 
-        /* Fixed bottom player */
+        /* ── Fixed player ── */
         #fixed-player {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
+            position: fixed; bottom: 20px; left: 50%;
             transform: translateX(-50%);
-            width: calc(100% - 32px);
-            max-width: 480px;
-            z-index: 200;
-            opacity: 0;
-            visibility: hidden;
+            width: calc(100% - 32px); max-width: 480px;
+            z-index: 200; opacity: 0; visibility: hidden;
             transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1),
                         visibility 1.5s cubic-bezier(0.19,1,0.22,1);
         }
         #fixed-player.visible { opacity: 1; visibility: visible; }
 
-        /* Scrollable middle */
+        /* ── Scrollable middle ── */
         .card-container {
-            position: fixed;
-            inset: 0;
-            z-index: 5;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: 88px 16px 100px !important;
-            width: 100%;
-            opacity: 0;
-            visibility: hidden;
+            position: fixed; inset: 0; z-index: 5;
+            display: flex; flex-direction: column; align-items: center;
+            overflow-y: auto; overflow-x: hidden;
+            padding: 88px 16px 100px;
+            width: 100%; opacity: 0; visibility: hidden;
             transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1),
                         visibility 1.5s cubic-bezier(0.19,1,0.22,1);
-            scrollbar-width: none;
-            -ms-overflow-style: none;
+            scrollbar-width: none; -ms-overflow-style: none;
         }
         .card-container::-webkit-scrollbar { display: none; }
         .card-container.visible { opacity: 1; visibility: visible; }
         .glass-card { width: 100% !important; max-width: 480px; }
 
-        /* Tab panels */
+        /* ── Tab panels — NO animation on initial load ── */
         .tab-panel { display: none; width: 100%; max-width: 480px; }
-        .tab-panel.active {
-            display: flex; flex-direction: column;
-            align-items: center;
-            width: 100%; max-width: 480px;
-        }
-        /* Only animate after first user-triggered tab switch (not on initial load) */
-        .tab-panel.animate-in {
-            animation: cardFadeIn 0.28s ease forwards;
-        }
+        .tab-panel.active { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 480px; }
+        /* Animation only applied by JS on user-triggered switch */
+        .tab-panel.tab-animate { animation: cardFadeIn 0.28s ease forwards; }
         @keyframes cardFadeIn {
             from { opacity: 0; transform: translateY(8px); }
             to   { opacity: 1; transform: translateY(0); }
         }
-        .panel-content {
-            display: flex; flex-direction: column;
-            align-items: center; gap: 12px; width: 100%;
-        }
-        /* panel-player inside panels is superseded by #fixed-player */
-        .panel-player { display: none !important; }
+        .panel-content { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
 
-        /* Typewriter cursor */
+        /* ── Typewriter cursor ── */
         @keyframes twBlink { 0%,100%{opacity:1} 50%{opacity:0} }
         #tw-cursor {
             display: inline-block; width: 2px; height: 0.82em;
@@ -214,7 +150,7 @@
             animation: twBlink 0.8s step-end infinite;
         }
 
-        /* Nav tabs */
+        /* ── Nav tabs ── */
         .nav-tab {
             opacity: 0.40; color: white;
             transition: opacity 0.2s, text-shadow 0.2s;
@@ -222,25 +158,18 @@
             letter-spacing: 2px; font-weight: bold;
             cursor: pointer; padding: 4px 8px; white-space: nowrap;
         }
-        .nav-tab:hover  { opacity: 0.72; }
-        .nav-tab.active {
-            opacity: 1;
-            text-shadow: 0 0 14px rgba(255,255,255,0.55), 0 0 32px rgba(255,255,255,0.18);
-        }
+        .nav-tab:hover { opacity: 0.72; }
+        .nav-tab.active { opacity: 1; text-shadow: 0 0 14px rgba(255,255,255,0.55), 0 0 32px rgba(255,255,255,0.18); }
 
-        /* Typography */
-        #display-name {
-            color: white;
-            font-size: clamp(1.8rem,6vw,2.6rem);
-            text-shadow: 0 0 22px rgba(255,255,255,0.65), 0 0 50px rgba(255,255,255,0.18) !important;
-        }
-        .subtitle-text  { font-size:clamp(0.7rem,2vw,0.78rem); color:rgba(255,255,255,0.40); margin-top:5px; letter-spacing:1.5px; }
-        .views-row      { display:flex; align-items:center; justify-content:center; gap:5px; margin-top:8px; font-size:clamp(0.62rem,1.8vw,0.7rem); color:rgba(255,255,255,0.35); letter-spacing:1px; }
-        .section-label  { font-size:clamp(0.55rem,1.6vw,0.62rem); letter-spacing:3px; font-weight:bold; margin-bottom:12px; text-transform:uppercase; color:rgba(255,255,255,0.45); }
-        .bio-text       { font-size:clamp(0.78rem,2.2vw,0.85rem); line-height:1.8; color:rgba(255,255,255,0.55); margin:0; }
-        .card-divider   { height:1px; background:rgba(255,255,255,0.06); margin:16px 0; }
+        /* ── Typography ── */
+        #display-name { color:white; font-size:clamp(1.8rem,6vw,2.6rem); text-shadow:0 0 22px rgba(255,255,255,0.65),0 0 50px rgba(255,255,255,0.18) !important; }
+        .subtitle-text { font-size:clamp(0.7rem,2vw,0.78rem); color:rgba(255,255,255,0.40); margin-top:5px; letter-spacing:1.5px; }
+        .views-row     { display:flex; align-items:center; justify-content:center; gap:5px; margin-top:8px; font-size:clamp(0.62rem,1.8vw,0.7rem); color:rgba(255,255,255,0.35); letter-spacing:1px; }
+        .section-label { font-size:clamp(0.55rem,1.6vw,0.62rem); letter-spacing:3px; font-weight:bold; margin-bottom:12px; text-transform:uppercase; color:rgba(255,255,255,0.45); }
+        .bio-text      { font-size:clamp(0.78rem,2.2vw,0.85rem); line-height:1.8; color:rgba(255,255,255,0.55); margin:0; }
+        .card-divider  { height:1px; background:rgba(255,255,255,0.06); margin:16px 0; }
 
-        /* Discord */
+        /* ── Discord ── */
         .discord-skeleton { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.025); border-radius:10px; padding:14px; margin-top:18px; }
         .skeleton-avatar  { width:42px; height:42px; border-radius:50%; background:rgba(255,255,255,0.06); flex-shrink:0; animation:skPulse 1.6s ease-in-out infinite; }
         .skeleton-lines   { display:flex; flex-direction:column; gap:8px; flex:1; }
@@ -261,40 +190,114 @@
         #discord-status, #discord-status a { font-size:clamp(0.65rem,1.8vw,0.72rem); margin-top:3px; color:rgba(255,255,255,0.50) !important; text-decoration:none; }
         #discord-activity { font-size:clamp(0.60rem,1.6vw,0.68rem); margin-top:2px; color:rgba(255,255,255,0.35); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
 
-        /* Skills */
+        /* ── Skills ── */
         .skills-grid { display:flex; flex-wrap:wrap; gap:7px; margin-top:4px; }
         .skill-tag   { font-size:clamp(0.65rem,1.8vw,0.72rem); letter-spacing:1px; padding:5px 11px; border-radius:6px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.09); color:rgba(255,255,255,0.55); transition:all 0.22s ease; }
         .skill-tag:hover { background:rgba(255,255,255,0.09); border-color:rgba(255,255,255,0.22); color:rgba(255,255,255,0.85); }
 
-        /* Under process */
-        .under-process      { display:flex; align-items:center; gap:10px; padding:11px 15px; background:rgba(255,255,255,0.025); border:1px solid rgba(255,255,255,0.06); border-radius:9px; }
-        .under-process-dot  { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.30); flex-shrink:0; animation:upDotPulse 2s ease-in-out infinite; }
-        @keyframes upDotPulse { 0%,100%{opacity:0.30;transform:scale(1)} 50%{opacity:0.90;transform:scale(1.35)} }
-        .under-process-text { font-size:clamp(0.62rem,1.8vw,0.7rem); letter-spacing:2px; color:rgba(255,255,255,0.35); }
+        /* ── Projects button ── */
+        #projects-btn {
+            width:100%; padding:11px 16px;
+            background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.09);
+            border-radius:9px; color:rgba(255,255,255,0.55);
+            font-family:'Inter',sans-serif; font-size:clamp(0.65rem,1.8vw,0.70rem); letter-spacing:2.5px;
+            cursor:pointer; display:flex; align-items:center; justify-content:center; gap:9px;
+            transition:background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s;
+            position:relative; overflow:hidden;
+        }
+        #projects-btn::after {
+            content:''; position:absolute; inset:0;
+            background:linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%);
+            transform:translateX(-100%); transition:transform 0.55s ease;
+        }
+        #projects-btn:hover::after { transform:translateX(100%); }
+        #projects-btn:hover { background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.20); color:rgba(255,255,255,0.88); }
+        #projects-btn:active { transform:scale(0.985); }
+        #projects-btn .btn-chevron { font-size:0.58rem; color:rgba(255,255,255,0.30); transition:transform 0.32s cubic-bezier(0.34,1.56,0.64,1), color 0.2s; }
+        #projects-btn.open .btn-chevron { transform:rotate(180deg); color:rgba(255,255,255,0.60); }
 
-        /* Socials */
-        .social-links     { display:flex; justify-content:center; flex-wrap:wrap; gap:18px; margin-top:18px; }
-        .social-links a   { display:flex; align-items:center; justify-content:center; width:24px; height:24px; text-decoration:none; transition:0.3s; }
-        .social-links i   { color:rgba(255,255,255,0.60); font-size:18px; filter:drop-shadow(0 0 5px rgba(255,255,255,0.4)); transition:0.3s; }
+        /* ── Projects side panel
+           IMPORTANT: NO backdrop-filter here — it creates a new GPU compositing
+           layer that causes all glass-card backdrop-filters behind it to repaint
+           and visibly shift transparency. Use a solid-opaque background instead. ── */
+        #projects-panel {
+            position:fixed;
+            top:50%; left:calc(50% + 252px);
+            transform:translateY(-50%) translateX(24px);
+            width:256px; max-height:calc(100vh - 160px);
+            background:rgba(8,8,14,0.94);
+            border:1px solid rgba(255,255,255,0.10);
+            border-radius:14px;
+            box-shadow:0 0 0 1px rgba(255,255,255,0.04), 0 28px 56px rgba(0,0,0,0.72), inset 0 1px 0 rgba(255,255,255,0.07);
+            z-index:300; opacity:0; visibility:hidden;
+            display:flex; flex-direction:column;
+            transition:opacity 0.28s ease, visibility 0.28s, transform 0.36s cubic-bezier(0.34,1.56,0.64,1);
+            pointer-events:none; will-change:transform, opacity;
+        }
+        #projects-panel.open { opacity:1; visibility:visible; transform:translateY(-50%) translateX(0); pointer-events:auto; }
+
+        .panel-drag-handle { display:none; width:36px; height:4px; background:rgba(255,255,255,0.18); border-radius:10px; margin:8px auto 0; flex-shrink:0; }
+        .panel-header { display:flex; align-items:center; justify-content:space-between; padding:13px 15px 10px; border-bottom:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
+        .panel-title  { font-size:0.58rem; letter-spacing:3px; font-weight:bold; text-transform:uppercase; color:rgba(255,255,255,0.40); }
+        .panel-close  { font-size:0.68rem; color:rgba(255,255,255,0.22); cursor:pointer; padding:3px 5px; border-radius:4px; transition:color 0.2s, background 0.2s; }
+        .panel-close:hover { color:rgba(255,255,255,0.75); background:rgba(255,255,255,0.06); }
+        .panel-body   { overflow-y:auto; overflow-x:hidden; flex:1; padding:10px 10px 12px; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.10) transparent; }
+        .panel-body::-webkit-scrollbar { width:3px; }
+        .panel-body::-webkit-scrollbar-track { background:transparent; }
+        .panel-body::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.10); border-radius:10px; }
+
+        .repo-card { display:flex; align-items:center; gap:9px; padding:9px 11px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; text-decoration:none; color:inherit; margin-bottom:6px; transition:background 0.18s, border-color 0.18s, transform 0.12s; }
+        .repo-card:last-child { margin-bottom:0; }
+        .repo-card:hover { background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.16); transform:translateX(2px); }
+        .repo-card:active { transform:translateX(2px) scale(0.985); }
+        .repo-left { display:flex; align-items:center; gap:8px; min-width:0; flex:1; }
+        .repo-icon  { font-size:0.72rem; color:rgba(255,255,255,0.22); flex-shrink:0; }
+        .repo-name  { font-size:0.73rem; font-weight:600; color:rgba(255,255,255,0.78); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .repo-lang-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+        .repo-arrow { font-size:0.54rem; color:rgba(255,255,255,0.16); transition:color 0.18s; flex-shrink:0; }
+        .repo-card:hover .repo-arrow { color:rgba(255,255,255,0.55); }
+        .repo-skeleton { height:38px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:8px; margin-bottom:6px; animation:skPulse 1.6s ease-in-out infinite; }
+        .repo-skeleton:nth-child(2) { animation-delay:0.15s; }
+        .repo-skeleton:nth-child(3) { animation-delay:0.30s; }
+        .repo-error { font-size:0.70rem; color:rgba(255,255,255,0.28); letter-spacing:0.5px; padding:6px 0; }
+
+        /* Mobile bottom sheet for panel */
+        #panel-backdrop { display:none; position:fixed; inset:0; z-index:299; background:rgba(0,0,0,0.45); opacity:0; visibility:hidden; transition:opacity 0.28s, visibility 0.28s; }
+        #panel-backdrop.open { opacity:1; visibility:visible; }
+        @media (max-width:700px) {
+            #projects-panel {
+                top:auto !important; left:50% !important;
+                width:calc(100% - 32px) !important; max-width:480px !important;
+                max-height:52vh !important; bottom:90px;
+                transform:translateX(-50%) translateY(110%) !important;
+                transition:opacity 0.28s ease, visibility 0.28s, transform 0.38s cubic-bezier(0.25,1.4,0.5,1) !important;
+            }
+            #projects-panel.open { transform:translateX(-50%) translateY(0) !important; opacity:1; visibility:visible; }
+            #panel-backdrop { display:block; }
+            .panel-drag-handle { display:block; }
+        }
+
+        /* ── Socials ── */
+        .social-links   { display:flex; justify-content:center; flex-wrap:wrap; gap:18px; margin-top:18px; }
+        .social-links a { display:flex; align-items:center; justify-content:center; width:24px; height:24px; text-decoration:none; transition:0.3s; }
+        .social-links i { color:rgba(255,255,255,0.60); font-size:18px; filter:drop-shadow(0 0 5px rgba(255,255,255,0.4)); transition:0.3s; }
         .social-links a:hover   { transform:scale(1.2); }
         .social-links a:hover i { color:white; filter:drop-shadow(0 0 10px #fff); }
 
-        /* Music player */
+        /* ── Music player ── */
         .music-player-card img { width:42px; height:42px; border-radius:7px; object-fit:cover; flex-shrink:0; box-shadow:0 0 14px rgba(255,255,255,0.07); }
-        #cover-fallback        { display:none; width:42px; height:42px; border-radius:7px; background:rgba(255,255,255,0.05); flex-shrink:0; align-items:center; justify-content:center; font-size:0.9rem; color:rgba(255,255,255,0.25); }
-        .song-title            { font-size:clamp(0.72rem,2vw,0.78rem); font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:rgba(255,255,255,0.60) !important; }
-        #music-time            { font-size:clamp(0.58rem,1.6vw,0.65rem); color:rgba(255,255,255,0.35) !important; white-space:nowrap; min-width:30px; text-align:right; }
-        #music-progress        { background:rgba(255,255,255,0.55) !important; box-shadow:0 0 7px rgba(255,255,255,0.18) !important; }
-        .tab-music-progress    { background:rgba(255,255,255,0.55) !important; box-shadow:0 0 7px rgba(255,255,255,0.18) !important; }
-        .tab-music-time        { font-size:clamp(0.58rem,1.6vw,0.65rem); color:rgba(255,255,255,0.35); white-space:nowrap; min-width:30px; text-align:right; }
+        #cover-fallback { display:none; width:42px; height:42px; border-radius:7px; background:rgba(255,255,255,0.05); flex-shrink:0; align-items:center; justify-content:center; font-size:0.9rem; color:rgba(255,255,255,0.25); }
+        .song-title     { font-size:clamp(0.72rem,2vw,0.78rem); font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:rgba(255,255,255,0.60) !important; }
+        #music-time     { font-size:clamp(0.58rem,1.6vw,0.65rem); color:rgba(255,255,255,0.35) !important; white-space:nowrap; min-width:30px; text-align:right; }
+        #music-progress { background:rgba(255,255,255,0.55) !important; box-shadow:0 0 7px rgba(255,255,255,0.18) !important; }
 
-        /* Contact form */
+        /* ── Contact form ── */
         .email-row   { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:11px 14px; font-size:clamp(0.78rem,2.2vw,0.85rem); color:rgba(255,255,255,0.55); word-break:break-all; }
         .email-row i { opacity:0.40; flex-shrink:0; }
         #email-display { flex:1; }
-        .email-copy    { margin-left:auto; opacity:0.30; transition:opacity 0.2s; font-size:0.8rem; cursor:pointer; flex-shrink:0; }
+        .email-copy { margin-left:auto; opacity:0.30; transition:opacity 0.2s; font-size:0.8rem; cursor:pointer; flex-shrink:0; }
         .email-copy:hover { opacity:0.85; }
-        .form-group    { display:flex; flex-direction:column; gap:10px; }
+        .form-group   { display:flex; flex-direction:column; gap:10px; }
         .form-input, .form-textarea { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:11px 14px; font-family:'Inter',sans-serif; font-size:clamp(0.76rem,2vw,0.82rem); color:rgba(255,255,255,0.75); outline:none; transition:border-color 0.2s, background 0.2s; width:100%; }
         .form-input::placeholder, .form-textarea::placeholder { color:rgba(255,255,255,0.25); }
         .form-input:focus, .form-textarea:focus { border-color:rgba(255,255,255,0.28); background:rgba(255,255,255,0.06); }
@@ -311,51 +314,49 @@
         .submit-btn.loading .btn-label  { opacity:0.4; }
         @keyframes spin { to { transform:rotate(360deg); } }
 
-        /* Toast */
+        /* ── Volume — desktop hover, mobile always visible ── */
+        .top-left-wrapper { position:fixed; top:max(18px,env(safe-area-inset-top,18px)); left:max(18px,env(safe-area-inset-left,18px)); z-index:10; }
+        .volume-container { display:flex; align-items:center; gap:10px; }
+        .volume-slider    { height:4px; accent-color:#fff; cursor:pointer; transition:width 0.3s ease, opacity 0.3s ease; }
+        /* Desktop with real hover support: hide until hovered */
+        @media (hover: hover) and (pointer: fine) {
+            .volume-slider { width:0; opacity:0; }
+            .volume-container:hover .volume-slider { width:80px; opacity:1; }
+        }
+        /* Touch / mobile: always visible */
+        @media (hover: none), (pointer: coarse) {
+            .volume-slider { width:72px; opacity:0.80; }
+        }
+
+        /* ── Toast ── */
         #toast { position:fixed; bottom:24px; left:18px; background:rgba(0,0,0,0.70); border:1px solid rgba(255,255,255,0.12); backdrop-filter:blur(18px); border-radius:8px; padding:9px 16px; font-size:clamp(0.72rem,2vw,0.8rem); color:rgba(255,255,255,0.75); opacity:0; transition:opacity 0.4s ease; pointer-events:none; z-index:500; max-width:calc(100vw - 36px); }
         #toast.success { border-color:rgba(100,255,150,0.35); color:rgba(150,255,180,0.85); }
         #toast.error   { border-color:rgba(255,100,100,0.35); color:rgba(255,150,150,0.85); }
 
-        /* Safe areas */
-        .top-left-wrapper { top:max(18px,env(safe-area-inset-top,18px)); left:max(18px,env(safe-area-inset-left,18px)); }
-        @supports (padding-bottom:env(safe-area-inset-bottom)) {
-            .panel-player { padding-bottom:max(0px,env(safe-area-inset-bottom)); }
-        }
+        @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:0.8} }
         @media (max-width:319px) { #rope-canvas, #rope-hit { display:none !important; } }
     </style>
 </head>
 <body class="theme-dark">
 
-    <!-- ══════════════════════════════════════════════════
-         BACKGROUND VIDEOS (local .webm)
-         dark  = media/dark.webm
-         light = media/light.webm
-         Both videos stay in DOM; switching is opacity-only.
-    ══════════════════════════════════════════════════ -->
     <div id="bg-wrap">
-        <!-- Layer 1: dark mode video -->
-        <video id="yt-dark" class="bg-video" autoplay muted loop playsinline>
+        <video id="yt-dark" autoplay muted loop playsinline>
             <source src="media/dark.webm" type="video/webm">
         </video>
-        <!-- Layer 2: light mode video (starts hidden, fades in on light theme) -->
-        <video id="yt-light" class="bg-video" autoplay muted loop playsinline>
+        <video id="yt-light" autoplay muted loop playsinline>
             <source src="media/light.webm" type="video/webm">
         </video>
     </div>
     <div id="bg-vignette"></div>
 
-    <!-- ══════════════════════════════════════════════════
-         LOADING / ENTRY OVERLAY
-    ══════════════════════════════════════════════════ -->
     <div id="overlay">
         <div id="overlay-bg"></div>
         <div id="loader-card">
             <div id="loader-mono">F</div>
-            <div id="enter-prompt" class="show">click to enter...</div>
+            <div id="enter-prompt">click to enter...</div>
         </div>
     </div>
 
-    <!-- Volume (top-left) -->
     <div class="top-left-wrapper">
         <div class="volume-container">
             <i class="fas fa-volume-up control-icon" id="mute-btn"></i>
@@ -366,9 +367,23 @@
     <audio id="bg-audio" loop><source src="" type="audio/mpeg"></audio>
     <div id="toast"></div>
 
-    <!-- ══════════════════════════════════════════════════
-         FIXED NAV (top)
-    ══════════════════════════════════════════════════ -->
+    <!-- Projects panel backdrop (mobile) -->
+    <div id="panel-backdrop"></div>
+
+    <!-- Projects side panel -->
+    <div id="projects-panel">
+        <div class="panel-drag-handle"></div>
+        <div class="panel-header">
+            <span class="panel-title">projects</span>
+            <i class="fas fa-times panel-close" id="panel-close-btn"></i>
+        </div>
+        <div class="panel-body" id="repo-list">
+            <div class="repo-skeleton"></div>
+            <div class="repo-skeleton"></div>
+            <div class="repo-skeleton"></div>
+        </div>
+    </div>
+
     <div id="fixed-nav">
         <div class="glass-card" style="padding:16px 20px;">
             <div style="display:flex;justify-content:space-around;align-items:center;">
@@ -379,9 +394,6 @@
         </div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════
-         FIXED PLAYER (bottom)
-    ══════════════════════════════════════════════════ -->
     <div id="fixed-player">
         <div class="glass-card music-player-card" style="padding:15px 18px !important;">
             <div style="display:flex;align-items:center;gap:13px;">
@@ -406,12 +418,9 @@
         </div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════
-         SCROLLABLE MIDDLE CONTENT
-    ══════════════════════════════════════════════════ -->
     <div class="card-container" id="main-content">
 
-        <!-- ════════ OVERVIEW ════════ -->
+        <!-- OVERVIEW -->
         <div class="tab-panel active" id="panel-overview">
             <div class="panel-content">
                 <div class="glass-card">
@@ -424,7 +433,6 @@
                             <i class="fas fa-eye"></i>
                             <span class="visit-count-val">1.1k</span>&nbsp;visitors
                         </div>
-                        <!-- Discord -->
                         <div class="discord-skeleton" id="discord-skeleton">
                             <div class="skeleton-avatar"></div>
                             <div class="skeleton-lines">
@@ -443,21 +451,20 @@
                                 <div id="discord-activity"></div>
                             </div>
                         </div>
-                        <!-- Socials -->
                         <div class="social-links">
                             <a href="https://linkedin.com/in/c3o"             target="_blank" rel="noopener"><i class="fab fa-linkedin"></i></a>
                             <a href="https://instagram.com/shub.is.a.sailor/" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
                             <a href="https://pinterest.com/shubflexin"        target="_blank" rel="noopener"><i class="fab fa-pinterest"></i></a>
                             <a href="https://youtube.com/@Tarnished_Shubh"    target="_blank" rel="noopener"><i class="fab fa-youtube"></i></a>
                             <a href="https://x.com/ZetsuoNoShub"              target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i></a>
-                            <a href="/cdn-cgi/l/email-protection#bac9d2cfd894cac8d5dcdfc9c9d3d5d4dbd6faddd7dbd3d694d9d5d7" rel="noopener"><i class="fas fa-envelope"></i></a>
+                            <a href="mailto:shub.professional@gmail.com"      rel="noopener"><i class="fas fa-envelope"></i></a>
                         </div>
                     </div>
                 </div>
             </div>
-        </div><!-- /panel-overview -->
+        </div>
 
-        <!-- ════════ ABOUT ════════ -->
+        <!-- ABOUT -->
         <div class="tab-panel" id="panel-about">
             <div class="panel-content">
                 <div class="glass-card">
@@ -484,22 +491,23 @@
                     </div>
                     <div class="card-divider"></div>
                     <div class="section-label">projects</div>
-                    <div class="under-process">
-                        <div class="under-process-dot"></div>
-                        <span class="under-process-text">UNDER PROCESS</span>
-                    </div>
+                    <button id="projects-btn">
+                        <i class="fab fa-github" style="font-size:0.78rem;opacity:0.50;"></i>
+                        VIEW PROJECTS
+                        <i class="fas fa-chevron-down btn-chevron"></i>
+                    </button>
                 </div>
             </div>
-        </div><!-- /panel-about -->
+        </div>
 
-        <!-- ════════ CONTACT ════════ -->
+        <!-- CONTACT -->
         <div class="tab-panel" id="panel-contact">
             <div class="panel-content">
                 <div class="glass-card">
                     <div class="section-label">reach me at</div>
                     <div class="email-row">
                         <i class="fas fa-envelope"></i>
-                        <span id="email-display"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="05766d70672b75776a636076766c6a6b6469456268646c692b666a68">[email&#160;protected]</a></span>
+                        <span id="email-display">shub.professional@gmail.com</span>
                         <i class="fas fa-copy email-copy" id="copy-btn" title="Copy email"></i>
                     </div>
                     <div class="card-divider"></div>
@@ -517,13 +525,12 @@
                     </div>
                 </div>
             </div>
-        </div><!-- /panel-contact -->
+        </div>
 
-    </div><!-- /card-container -->
+    </div>
 
-    <!-- ══════════════════════════════════════════════════
-         DISCORD
-    ══════════════════════════════════════════════════ --><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    <!-- Discord -->
+    <script>
     (function () {
         var DISCORD_ID = '748831508776878110';
         var USERNAME   = 'shub.is.a.sailor';
@@ -536,371 +543,256 @@
         var activityEl = document.getElementById('discord-activity');
         var dotEl      = document.getElementById('discord-dot');
         if (!skeletonEl || !cardEl) return;
-        var STATUS_CLASS = { online:'ds-online', idle:'ds-idle', dnd:'ds-dnd', offline:'ds-offline', streaming:'ds-streaming' };
-        var STATUS_LABEL = { online:'Online', idle:'Idle', dnd:'Do Not Disturb', offline:'Offline', streaming:'Live' };
-        function render(avatarSrc, data) {
-            pfpEl.src = avatarSrc;
-            pfpEl.onerror = function () {
-                pfpEl.style.background = 'linear-gradient(135deg,#5865F2,#7289da)';
-                pfpEl.removeAttribute('src');
-            };
-            var status = (data && data.discord_status) || 'offline';
-            dotEl.className = 'discord-status-dot ' + (STATUS_CLASS[status] || 'ds-offline');
+        var SC = { online:'ds-online', idle:'ds-idle', dnd:'ds-dnd', offline:'ds-offline', streaming:'ds-streaming' };
+        var SL = { online:'Online', idle:'Idle', dnd:'Do Not Disturb', offline:'Offline', streaming:'Live' };
+        function render(av, data) {
+            pfpEl.src = av;
+            pfpEl.onerror = function () { pfpEl.style.background = 'linear-gradient(135deg,#5865F2,#7289da)'; pfpEl.removeAttribute('src'); };
+            var s = (data && data.discord_status) || 'offline';
+            dotEl.className = 'discord-status-dot ' + (SC[s] || 'ds-offline');
             nameEl.textContent = (data && data.discord_user && data.discord_user.global_name) || DISPLAY;
-            statusEl.innerHTML = '<a href="https://discord.com/users/' + DISCORD_ID + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">'
-                + (STATUS_LABEL[status] || 'Offline') + ' \u00b7 @' + USERNAME + '</a>';
-            var acts = (data && data.activities) || [], actText = '';
+            statusEl.innerHTML = '<a href="https://discord.com/users/' + DISCORD_ID + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">' + (SL[s] || 'Offline') + ' \u00b7 @' + USERNAME + '</a>';
+            var acts = (data && data.activities) || [], txt = '';
             for (var i = 0; i < acts.length; i++) {
                 var a = acts[i];
-                if (a.type === 2 && a.details) { actText = '\ud83c\udfb5 ' + a.details + (a.state ? ' \u2014 ' + a.state : ''); break; }
-                if (a.type === 0 && a.name && !actText) actText = '\ud83c\udfae Playing ' + a.name;
-                if (a.type === 4 && a.state && !actText) actText = a.state;
+                if (a.type === 2 && a.details) { txt = '\ud83c\udfb5 ' + a.details + (a.state ? ' \u2014 ' + a.state : ''); break; }
+                if (a.type === 0 && a.name && !txt) txt = '\ud83c\udfae Playing ' + a.name;
+                if (a.type === 4 && a.state && !txt) txt = a.state;
             }
-            if (activityEl) activityEl.textContent = actText;
+            if (activityEl) activityEl.textContent = txt;
             skeletonEl.style.display = 'none';
             cardEl.classList.add('loaded');
         }
-        var defaultAvatar = 'https://cdn.discordapp.com/embed/avatars/' + (parseInt(DISCORD_ID.slice(-4)) % 6) + '.png';
+        var defAv = 'https://cdn.discordapp.com/embed/avatars/' + (parseInt(DISCORD_ID.slice(-4)) % 6) + '.png';
         var done = false;
-        var fallbackTimer = setTimeout(function () { if (!done) { done = true; render(defaultAvatar, null); } }, 4000);
+        var ft = setTimeout(function () { if (!done) { done = true; render(defAv, null); } }, 4000);
         fetch('https://api.lanyard.rest/v1/users/' + DISCORD_ID)
             .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
-            .then(function (json) {
-                clearTimeout(fallbackTimer);
-                if (done) return;
-                done = true;
-                var d = json && json.data, user = d && d.discord_user, av = defaultAvatar;
-                if (user && user.avatar) {
-                    av = 'https://cdn.discordapp.com/avatars/' + DISCORD_ID + '/' + user.avatar
-                       + (user.avatar.startsWith('a_') ? '.gif' : '.webp') + '?size=128';
-                }
+            .then(function (j) {
+                clearTimeout(ft); if (done) return; done = true;
+                var d = j && j.data, u = d && d.discord_user, av = defAv;
+                if (u && u.avatar) av = 'https://cdn.discordapp.com/avatars/' + DISCORD_ID + '/' + u.avatar + (u.avatar.startsWith('a_') ? '.gif' : '.webp') + '?size=128';
                 render(av, d);
             })
-            .catch(function () { clearTimeout(fallbackTimer); if (!done) { done = true; render(defaultAvatar, null); } });
+            .catch(function () { clearTimeout(ft); if (!done) { done = true; render(defAv, null); } });
     })();
     </script>
 
-    <!-- ══════════════════════════════════════════════════
-         MAIN SCRIPT
-    ══════════════════════════════════════════════════ -->
+    <!-- GitHub fetch -->
+    <script>
+    (function () {
+        var GH = 'ZetsuoNoShub';
+        var list = document.getElementById('repo-list');
+        var fetched = false;
+        var LC = { 'JavaScript':'#f1e05a','TypeScript':'#3178c6','Python':'#3572A5','HTML':'#e34c26','CSS':'#563d7c','Java':'#b07219','C++':'#f34b7d','C':'#555555','C#':'#178600','Shell':'#89e051','Rust':'#dea584','Go':'#00ADD8','Ruby':'#701516','PHP':'#4F5D95','Swift':'#F05138','Kotlin':'#A97BFF','Dart':'#00B4AB' };
+        function card(r) {
+            var a = document.createElement('a');
+            a.className = 'repo-card'; a.href = r.html_url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.title = r.description || r.name;
+            var l = document.createElement('div'); l.className = 'repo-left';
+            var ic = document.createElement('i'); ic.className = 'fab fa-github repo-icon';
+            var nm = document.createElement('span'); nm.className = 'repo-name'; nm.textContent = r.name;
+            l.appendChild(ic); l.appendChild(nm); a.appendChild(l);
+            if (r.language) { var d = document.createElement('span'); d.className = 'repo-lang-dot'; d.style.background = LC[r.language] || 'rgba(255,255,255,0.28)'; d.title = r.language; a.appendChild(d); }
+            var ar = document.createElement('i'); ar.className = 'fas fa-arrow-up-right-from-square repo-arrow'; a.appendChild(ar);
+            return a;
+        }
+        window._fetchRepos = function () {
+            if (fetched) return; fetched = true;
+            fetch('https://api.github.com/users/' + GH + '/repos?per_page=100&sort=updated')
+                .then(function (r) { if (!r.ok) throw r; return r.json(); })
+                .then(function (repos) {
+                    repos = repos.filter(function (r) { return !r.fork; })
+                        .sort(function (a, b) { return b.stargazers_count !== a.stargazers_count ? b.stargazers_count - a.stargazers_count : new Date(b.updated_at) - new Date(a.updated_at); });
+                    list.innerHTML = '';
+                    if (!repos.length) { var m = document.createElement('span'); m.className = 'repo-error'; m.textContent = 'No public repositories yet.'; list.appendChild(m); return; }
+                    repos.forEach(function (r) { list.appendChild(card(r)); });
+                })
+                .catch(function () {
+                    list.innerHTML = '';
+                    var fb = document.createElement('a'); fb.className = 'repo-card'; fb.href = 'https://github.com/' + GH; fb.target = '_blank'; fb.rel = 'noopener noreferrer';
+                    fb.innerHTML = '<div class="repo-left"><i class="fab fa-github repo-icon"></i><span class="repo-name">View GitHub profile</span></div><i class="fas fa-arrow-up-right-from-square repo-arrow"></i>';
+                    list.appendChild(fb);
+                });
+        };
+    })();
+    </script>
+
+    <!-- Projects panel toggle -->
+    <script>
+    (function () {
+        var btn  = document.getElementById('projects-btn');
+        var panel= document.getElementById('projects-panel');
+        var cBtn = document.getElementById('panel-close-btn');
+        var bd   = document.getElementById('panel-backdrop');
+        var open = false;
+        function openPanel()  { open=true;  panel.classList.add('open');    btn.classList.add('open');    if(bd)bd.classList.add('open');    window._fetchRepos&&window._fetchRepos(); }
+        function closePanel() { open=false; panel.classList.remove('open'); btn.classList.remove('open'); if(bd)bd.classList.remove('open'); }
+        if(btn)  btn.addEventListener('click', function(){ open?closePanel():openPanel(); });
+        if(cBtn) cBtn.addEventListener('click', closePanel);
+        if(bd)   bd.addEventListener('click', closePanel);
+        document.addEventListener('keydown', function(e){ if(e.key==='Escape'&&open) closePanel(); });
+        var sy=0;
+        if(panel){
+            panel.addEventListener('touchstart',function(e){sy=e.touches[0].clientY;},{passive:true});
+            panel.addEventListener('touchend',  function(e){if(e.changedTouches[0].clientY-sy>55)closePanel();},{passive:true});
+        }
+    })();
+    </script>
+
+    <!-- Main script -->
     <script>
     document.addEventListener('DOMContentLoaded', function () {
 
-        /* ── Instantly hide overlay for returning visitors BEFORE any paint ── */
-        if (sessionStorage.getItem('site_entered')) {
-            var ov = document.getElementById('overlay');
-            if (ov) { ov.style.transition = 'none'; ov.style.display = 'none'; }
-        }
-
         /* EmailJS */
-        if (typeof emailjs !== 'undefined') {
-            emailjs.init({ publicKey: 'ANitUhHu4kV4-js93' });
-        } else {
-            window.addEventListener('load', function () {
-                if (typeof emailjs !== 'undefined') emailjs.init({ publicKey: 'ANitUhHu4kV4-js93' });
-            });
-        }
+        if (typeof emailjs !== 'undefined') emailjs.init({ publicKey: 'ANitUhHu4kV4-js93' });
+        else window.addEventListener('load', function () { if (typeof emailjs !== 'undefined') emailjs.init({ publicKey: 'ANitUhHu4kV4-js93' }); });
 
         var ytDark      = document.getElementById('yt-dark');
         var ytLight     = document.getElementById('yt-light');
         var mainContent = document.getElementById('main-content');
         var overlay     = document.getElementById('overlay');
 
-        /* ══════════════════════════════════════════════
-           VIDEO THEME SWITCHING
-           Rule: NEVER use display:none on yt-dark / yt-light.
-           Only toggle opacity so both streams stay alive.
-           rope-theme.js calls window._syncBgVideos(isDark) on toggle.
-        ══════════════════════════════════════════════ */
-        function applyVideoTheme(isDark) {
-            ytDark.style.opacity  = isDark ? '1' : '0';
-            ytLight.style.opacity = isDark ? '0' : '1';
-        }
-
+        /* Video theme */
+        function applyVideoTheme(dark) { ytDark.style.opacity = dark?'1':'0'; ytLight.style.opacity = dark?'0':'1'; }
         function initVideos() {
-            var isDark = localStorage.getItem('theme') !== 'light';
-            /* Suppress transition on initial paint so there's no flash */
-            ytDark.style.transition  = 'none';
-            ytLight.style.transition = 'none';
-            applyVideoTheme(isDark);
-            requestAnimationFrame(function () {
-                requestAnimationFrame(function () {
-                    ytDark.style.transition  = 'opacity 0.65s ease';
-                    ytLight.style.transition = 'opacity 0.65s ease';
-                });
-            });
+            var dark = localStorage.getItem('theme') !== 'light';
+            ytDark.style.transition = ytLight.style.transition = 'none';
+            applyVideoTheme(dark);
+            requestAnimationFrame(function(){requestAnimationFrame(function(){
+                ytDark.style.transition = ytLight.style.transition = 'opacity 0.65s ease';
+            });});
         }
-
-        /* Called by rope-theme.js every time the theme toggles */
-        window._syncBgVideos = function (isNowDark) {
-            applyVideoTheme(isNowDark);
-        };
-
-        /* ── Sync video immediately so correct one plays behind the overlay blur ── */
+        window._syncBgVideos = function(dark){ applyVideoTheme(dark); };
         initVideos();
 
-        /* Audio helpers — player.js is deferred so we use getters */
-        function getAudio() { return document.getElementById('bg-audio'); }
-        function getPPBtn()  { return document.getElementById('play-pause-btn'); }
+        function getAudio(){ return document.getElementById('bg-audio'); }
+        function getPPBtn() { return document.getElementById('play-pause-btn'); }
 
-        /* ── Secondary player sync ── */
-        function syncSecondaryPlayers() {
-            var suffixes = ['about', 'contact'];
+        /* Tab switching */
+        var SUFFIX = { overview:'Portfolio', about:'About', contact:'Contact' };
+        var TAB_ORDER = ['overview','about','contact'];
+        var cur = 'overview';
 
-            setTimeout(function () {
-                var mc = document.getElementById('music-cover');
-                var mt = document.querySelector('#panel-overview .song-title');
-                document.querySelectorAll('.tab-music-cover').forEach(function (el) {
-                    if (mc && mc.src) el.src = mc.src;
-                });
-                document.querySelectorAll('.tab-panel:not(#panel-overview) .song-title').forEach(function (el) {
-                    if (mt) el.textContent = mt.textContent;
-                });
-            }, 300);
-
-            suffixes.forEach(function (suffix) {
-                var pp = document.getElementById('play-pause-btn-' + suffix);
-                var pr = document.getElementById('music-progress-' + suffix);
-                var ti = document.getElementById('music-time-' + suffix);
-                var pc = document.getElementById('progress-container-' + suffix);
-
-                (function syncIcon() {
-                    var audio = getAudio();
-                    if (!audio || !pp) return;
-                    if (audio.paused) pp.classList.replace('fa-pause', 'fa-play');
-                    else              pp.classList.replace('fa-play',  'fa-pause');
-                })();
-
-                setInterval(function () {
-                    var audio = getAudio();
-                    if (!audio || !audio.duration || !isFinite(audio.duration)) return;
-                    if (pr) pr.style.width = (audio.currentTime / audio.duration * 100) + '%';
-                    if (ti) {
-                        var rem = audio.duration - audio.currentTime;
-                        var m = Math.floor(rem / 60), s = Math.floor(rem % 60);
-                        ti.textContent = '-' + m + ':' + (s < 10 ? '0' : '') + s;
-                    }
-                }, 250);
-
-                if (pp) pp.addEventListener('click', function () {
-                    var a = getAudio();
-                    if (!a) return;
-                    if (a.paused) a.play().catch(function(){});
-                    else          a.pause();
-                });
-
-                var prevB = document.getElementById('prev-btn-' + suffix);
-                var nextB = document.getElementById('next-btn-' + suffix);
-                if (prevB) prevB.addEventListener('click', function () { var b = document.getElementById('prev-btn'); if (b) b.click(); });
-                if (nextB) nextB.addEventListener('click', function () { var b = document.getElementById('next-btn'); if (b) b.click(); });
-
-                if (pc) pc.addEventListener('click', function (e) {
-                    var audio = getAudio();
-                    if (!audio || !audio.duration || !isFinite(audio.duration)) return;
-                    var rect = pc.getBoundingClientRect();
-                    audio.currentTime = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)) * audio.duration;
-                });
-            });
-
-            var audio = getAudio();
-            if (audio) {
-                audio.addEventListener('play', function () {
-                    suffixes.forEach(function (s) {
-                        var pp = document.getElementById('play-pause-btn-' + s);
-                        if (pp) pp.classList.replace('fa-play', 'fa-pause');
-                    });
-                    var mc = document.getElementById('music-cover');
-                    var mt = document.querySelector('#panel-overview .song-title');
-                    document.querySelectorAll('.tab-music-cover').forEach(function (el) { if (mc) el.src = mc.src; });
-                    document.querySelectorAll('.tab-panel:not(#panel-overview) .song-title').forEach(function (el) { if (mt) el.textContent = mt.textContent; });
-                });
-                audio.addEventListener('pause', function () {
-                    suffixes.forEach(function (s) {
-                        var pp = document.getElementById('play-pause-btn-' + s);
-                        if (pp) pp.classList.replace('fa-pause', 'fa-play');
-                    });
-                });
-            }
-        }
-
-        /* ── Tab switching ── */
-        var SUFFIX    = { overview: 'Portfolio', about: 'About', contact: 'Contact' };
-        var TAB_ORDER = ['overview', 'about', 'contact'];
-        var currentTab = 'overview';
-
-        window.switchTab = function (tab, noAnimate) {
-            if (tab === currentTab || !document.getElementById('panel-' + tab)) return;
-            document.getElementById('tab-' + currentTab).classList.remove('active');
-            document.getElementById('tab-'   + tab).classList.add('active');
-            var prevPanel = document.getElementById('panel-' + currentTab);
-            var nextPanel = document.getElementById('panel-' + tab);
-            prevPanel.classList.remove('active', 'animate-in');
-            nextPanel.classList.remove('animate-in');
-            nextPanel.classList.add('active');
-            if (!noAnimate) {
-                // Trigger reflow so animation restarts cleanly
-                void nextPanel.offsetWidth;
-                nextPanel.classList.add('animate-in');
-            }
+        window.switchTab = function(tab) {
+            if (tab === cur || !document.getElementById('panel-'+tab)) return;
+            document.getElementById('tab-'+cur).classList.remove('active');
+            document.getElementById('tab-'+tab).classList.add('active');
+            var oldP = document.getElementById('panel-'+cur);
+            var newP = document.getElementById('panel-'+tab);
+            oldP.classList.remove('active','tab-animate');
+            newP.classList.remove('tab-animate');
+            newP.classList.add('active');
+            void newP.offsetWidth; /* force reflow so animation replays */
+            newP.classList.add('tab-animate');
             mainContent.scrollTop = 0;
             if (window.startTitleLoop) window.startTitleLoop(SUFFIX[tab], 0);
-            history.pushState({ tab: tab }, '', tab === 'overview' ? '/' : '/' + tab);
-            currentTab = tab;
+            history.pushState({tab:tab},'', tab==='overview'?'/':'/'+tab);
+            cur = tab;
         };
-
-        window.addEventListener('popstate', function (e) {
-            if (e.state && e.state.tab) window.switchTab(e.state.tab, false);
+        window.addEventListener('popstate',function(e){ if(e.state&&e.state.tab) window.switchTab(e.state.tab); });
+        document.addEventListener('keydown',function(e){
+            var t=document.activeElement&&document.activeElement.tagName;
+            if(t==='INPUT'||t==='TEXTAREA') return;
+            var i=TAB_ORDER.indexOf(cur);
+            if(e.key==='ArrowRight'||e.key==='ArrowDown'){e.preventDefault();window.switchTab(TAB_ORDER[(i+1)%TAB_ORDER.length]);}
+            else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();window.switchTab(TAB_ORDER[(i-1+TAB_ORDER.length)%TAB_ORDER.length]);}
         });
 
-        document.addEventListener('keydown', function (e) {
-            var tag = document.activeElement && document.activeElement.tagName;
-            if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-            var idx = TAB_ORDER.indexOf(currentTab);
-            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-                e.preventDefault(); window.switchTab(TAB_ORDER[(idx + 1) % TAB_ORDER.length]);
-            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-                e.preventDefault(); window.switchTab(TAB_ORDER[(idx - 1 + TAB_ORDER.length) % TAB_ORDER.length]);
-            }
-        });
-
-        /* ── Name typewriter ── */
-        var nameEl = document.getElementById('display-name');
-        var twName = 'Francisco', twIdx = 0, twErasing = false, twTimer = null;
-        function twTick() {
-            if (!twErasing) {
-                nameEl.textContent = twName.slice(0, ++twIdx);
-                if (twIdx === twName.length) { twErasing = true; twTimer = setTimeout(twTick, 2400); return; }
-                twTimer = setTimeout(twTick, 100);
-            } else {
-                nameEl.textContent = twName.slice(0, --twIdx);
-                if (twIdx === 0) { twErasing = false; twTimer = setTimeout(twTick, 500); return; }
-                twTimer = setTimeout(twTick, 55);
-            }
+        /* Name typewriter */
+        var nameEl=document.getElementById('display-name');
+        var twName='Francisco',twI=0,twE=false,twT=null;
+        function twTick(){
+            if(!twE){ nameEl.textContent=twName.slice(0,++twI); if(twI===twName.length){twE=true;twT=setTimeout(twTick,2400);return;} twT=setTimeout(twTick,100); }
+            else { nameEl.textContent=twName.slice(0,--twI); if(twI===0){twE=false;twT=setTimeout(twTick,500);return;} twT=setTimeout(twTick,55); }
         }
-        window._startNameTypewriter = function () {
-            clearTimeout(twTimer); twIdx = 0; twErasing = false;
-            nameEl.textContent = ''; setTimeout(twTick, 600);
-        };
+        window._startNameTypewriter=function(){ clearTimeout(twT);twI=0;twE=false;nameEl.textContent='';setTimeout(twTick,600); };
 
-        /* ── View counter ── */
-        var viewEl = document.querySelector('.visit-count-val');
-        if (viewEl) {
-            var SEED = 1100;
-            function fmt(n) { return n >= 1000 ? (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1) + 'k' : String(n); }
-            if (!localStorage.getItem('unique_views')) localStorage.setItem('unique_views', SEED);
-            var count = parseInt(localStorage.getItem('unique_views'), 10);
-            if (isNaN(count) || count < SEED) { count = SEED; localStorage.setItem('unique_views', SEED); }
-            viewEl.textContent = fmt(count);
-            fetch('https://api.ipify.org?format=json')
-                .then(function (r) { return r.json(); })
-                .then(function (j) {
-                    var today = new Date().toDateString();
-                    if (localStorage.getItem('visitor_ip') !== j.ip || localStorage.getItem('visitor_date') !== today) {
-                        count++;
-                        localStorage.setItem('unique_views', count);
-                        localStorage.setItem('visitor_ip', j.ip);
-                        localStorage.setItem('visitor_date', today);
-                        viewEl.textContent = fmt(count);
-                    }
-                }).catch(function () {});
+        /* View counter */
+        var vEl=document.querySelector('.visit-count-val');
+        if(vEl){
+            var SEED=1100;
+            function fmt(n){return n>=1000?(n/1000).toFixed(n%1000===0?0:1)+'k':String(n);}
+            if(!localStorage.getItem('unique_views')) localStorage.setItem('unique_views',SEED);
+            var cnt=parseInt(localStorage.getItem('unique_views'),10);
+            if(isNaN(cnt)||cnt<SEED){cnt=SEED;localStorage.setItem('unique_views',SEED);}
+            vEl.textContent=fmt(cnt);
+            fetch('https://api.ipify.org?format=json').then(function(r){return r.json();}).then(function(j){
+                var today=new Date().toDateString();
+                if(localStorage.getItem('visitor_ip')!==j.ip||localStorage.getItem('visitor_date')!==today){
+                    cnt++;localStorage.setItem('unique_views',cnt);localStorage.setItem('visitor_ip',j.ip);localStorage.setItem('visitor_date',today);vEl.textContent=fmt(cnt);
+                }
+            }).catch(function(){});
         }
 
-        /* ══════════════════════════════════════════════
-           ENTER SITE
-        ══════════════════════════════════════════════ */
-        var _entered = false;
-        function enterSite() {
-            if (_entered) return;
-            _entered = true;
-            sessionStorage.setItem('site_entered', '1');
-            var audio = getAudio(), ppBtn = getPPBtn();
-            if (audio) audio.play().catch(function () {
-                document.addEventListener('click', function () {
-                    var a = getAudio(); if (a) a.play().catch(function(){});
-                }, { once: true });
-            });
-            if (ppBtn) ppBtn.classList.replace('fa-play', 'fa-pause');
-            overlay.style.opacity = '0';
-            setTimeout(function () {
-                overlay.style.display = 'none';
+        /* Enter site */
+        var _ent=false;
+        function enterSite(){
+            if(_ent) return; _ent=true;
+            sessionStorage.setItem('site_entered','1');
+            var au=getAudio(),pp=getPPBtn();
+            if(au) au.play().catch(function(){ document.addEventListener('click',function(){ var a=getAudio();if(a)a.play().catch(function(){}); },{once:true}); });
+            if(pp) pp.classList.replace('fa-play','fa-pause');
+            overlay.style.opacity='0';
+            setTimeout(function(){
+                overlay.style.display='none';
                 mainContent.classList.add('visible');
                 document.getElementById('fixed-nav').classList.add('visible');
                 document.getElementById('fixed-player').classList.add('visible');
                 window._startNameTypewriter();
-                if (window.startTitleLoop) window.startTitleLoop('Portfolio', 300);
-                setTimeout(function () { if (window._ropeInit) window._ropeInit(); }, 80);
-                syncSecondaryPlayers();
-            }, 800);
+                if(window.startTitleLoop) window.startTitleLoop('Portfolio',300);
+                setTimeout(function(){if(window._ropeInit)window._ropeInit();},80);
+            },800);
         }
+        window._enterSite=enterSite;
 
-        /* Already visited this session — skip loader entirely */
-        window._enterSite = enterSite;
-        if (sessionStorage.getItem('site_entered')) {
-            /* Kill overlay instantly — no fade, no flash */
-            overlay.style.transition = 'none';
-            overlay.style.opacity    = '0';
-            overlay.style.display    = 'none';
+        if(sessionStorage.getItem('site_entered')){
+            /* overlay already hidden by pre-paint script */
+            _ent=true;
             mainContent.classList.add('visible');
             document.getElementById('fixed-nav').classList.add('visible');
             document.getElementById('fixed-player').classList.add('visible');
-            var audio = getAudio(), ppBtn = getPPBtn();
-            if (audio) audio.play().catch(function () {
-                document.addEventListener('click', function () {
-                    var a = getAudio(); if (a) a.play().catch(function(){});
-                }, { once: true });
-            });
-            if (ppBtn) ppBtn.classList.replace('fa-play', 'fa-pause');
+            var au=getAudio(),pp=getPPBtn();
+            if(au) au.play().catch(function(){ document.addEventListener('click',function(){ var a=getAudio();if(a)a.play().catch(function(){}); },{once:true}); });
+            if(pp) pp.classList.replace('fa-play','fa-pause');
             window._startNameTypewriter();
-            if (window.startTitleLoop) window.startTitleLoop('Portfolio', 400);
-            setTimeout(function () { if (window._ropeInit) window._ropeInit(); }, 80);
-            syncSecondaryPlayers();
-
+            if(window.startTitleLoop) window.startTitleLoop('Portfolio',400);
+            setTimeout(function(){if(window._ropeInit)window._ropeInit();},80);
         } else {
-            /* Simple click-to-enter */
             overlay.addEventListener('click', enterSite);
         }
 
-        /* ── Toast ── */
-        function showToast(msg, type) {
-            var t = document.getElementById('toast');
-            t.textContent = msg; t.className = type || ''; t.style.opacity = '1';
-            setTimeout(function () { t.style.opacity = '0'; t.className = ''; }, 3000);
+        /* Toast */
+        function showToast(msg,type){
+            var t=document.getElementById('toast');
+            t.textContent=msg; t.className=type||''; t.style.opacity='1';
+            setTimeout(function(){t.style.opacity='0';t.className='';},3000);
         }
 
-        /* ── Copy email ── */
-        var copyBtn = document.getElementById('copy-btn');
-        if (copyBtn) copyBtn.addEventListener('click', function () {
+        /* Copy email */
+        var cb=document.getElementById('copy-btn');
+        if(cb) cb.addEventListener('click',function(){
             navigator.clipboard.writeText('shub.professional@gmail.com')
-                .then(function () { showToast('Email copied!', 'success'); })
-                .catch(function () { showToast('Could not copy.', 'error'); });
+                .then(function(){showToast('Email copied!','success');})
+                .catch(function(){showToast('Could not copy.','error');});
         });
 
-        /* ── Send message ── */
-        var sendBtn = document.getElementById('send-btn');
-        if (sendBtn) sendBtn.addEventListener('click', function () {
-            var name  = (document.getElementById('f-name').value  || '').trim();
-            var email = (document.getElementById('f-email').value || '').trim();
-            var msg   = (document.getElementById('f-message').value || '').trim();
-            if (!name || !email || !msg) { showToast('Please fill in all fields.', 'error'); return; }
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Please enter a valid email.', 'error'); return; }
-
-            sendBtn.classList.add('loading'); sendBtn.disabled = true;
-
-            function fallbackMailto(n, e, m) {
-                window.open('mailto:shub.professional@gmail.com?subject='
-                    + encodeURIComponent('Message from ' + n)
-                    + '&body=' + encodeURIComponent('From: ' + n + ' <' + e + '>\n\n' + m));
-                showToast('Opening mail client...', '');
-            }
-
-            function finish() { sendBtn.classList.remove('loading'); sendBtn.disabled = false; }
-
-            if (typeof emailjs === 'undefined') {
-                fallbackMailto(name, email, msg); finish(); return;
-            }
-
-            emailjs.send('service_wfciems', 'template_srqhd09', { name: name, email: email, message: msg })
-                .then(function () {
-                    showToast('Message sent!', 'success');
-                    ['f-name','f-email','f-message'].forEach(function (id) {
-                        document.getElementById(id).value = '';
+        /* Send message */
+        var sb=document.getElementById('send-btn');
+        if(sb) sb.addEventListener('click',function(){
+            var n=(document.getElementById('f-name').value||'').trim();
+            var e=(document.getElementById('f-email').value||'').trim();
+            var m=(document.getElementById('f-message').value||'').trim();
+            if(!n||!e||!m){showToast('Please fill in all fields.','error');return;}
+            if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){showToast('Please enter a valid email.','error');return;}
+            sb.classList.add('loading'); sb.disabled=true;
+            function mailto(){window.open('mailto:shub.professional@gmail.com?subject='+encodeURIComponent('Message from '+n)+'&body='+encodeURIComponent('From: '+n+' <'+e+'>\n\n'+m));showToast('Opening mail client...','');}
+            function done(){sb.classList.remove('loading');sb.disabled=false;}
+            if(typeof emailjs==='undefined'){mailto();done();return;}
+            emailjs.send('service_wfciems','template_srqhd09',{name:n,email:e,message:m})
+                .then(function(){showToast('Message sent!','success');['f-name','f-email','f-message'].forEach(function(id){document.getElementById(id).value='';});done();})
+                .catch(function(){mailto();done();});
+        });
+    });
+    </script>
+</body>
+</html>
