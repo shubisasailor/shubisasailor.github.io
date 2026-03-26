@@ -869,4 +869,17 @@
             emailjs.send('service_wfciems', 'template_srqhd09', { name: name, email: email, message: msg })
                 .then(function () {
                     showToast('Message sent!', 'success');
-                    ['f-name','f-email','f-message'].forEach(function (id) {
+                    ['f-name','f-email','f-message'].forEach(function (id) {                        document.getElementById(id).value = '';
+                    });
+                    finish();
+                })
+                .catch(function () {
+                    fallbackMailto(name, email, msg);
+                    finish();
+                });
+        });
+
+    });
+    </script>
+</body>
+</html>

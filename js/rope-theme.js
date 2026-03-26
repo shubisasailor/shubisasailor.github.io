@@ -488,11 +488,8 @@
 
     window._ropeInit = buildRope;
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function () { setTimeout(buildRope, 60); });
-    } else {
-        setTimeout(buildRope, 60);
-    }
+    // Rope is initialised by _ropeInit (called from enterSite after overlay dismisses).
+    // Do NOT auto-build on load — the hitDiv would intercept overlay clicks.
 
     window.ropeTheme = {
         toggle:  function () { isDark = !isDark; localStorage.setItem('theme', isDark ? 'dark' : 'light'); applyTheme(isDark); },
