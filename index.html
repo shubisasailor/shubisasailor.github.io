@@ -513,11 +513,6 @@
 
     </div><!-- /card-container -->
 
-    <!-- switchTab stub: available immediately so inline onclick attrs never throw -->
-    <script>
-    window.switchTab = window.switchTab || function(){};
-    </script>
-
     <!-- ══════════════════════════════════════════════════
          DISCORD
     ══════════════════════════════════════════════════ -->
@@ -790,6 +785,7 @@
            ENTER SITE
         ══════════════════════════════════════════════ */
         var _entered = false;
+
         function enterSite() {
             if (_entered) return;
             _entered = true;
@@ -812,9 +808,9 @@
                 syncSecondaryPlayers();
             }, 800);
         }
-        window._enterSite = enterSite;
 
         /* Already visited this session — skip loader entirely */
+        window._enterSite = enterSite;
         if (sessionStorage.getItem('site_entered')) {
             overlay.style.display = 'none';
             mainContent.classList.add('visible');

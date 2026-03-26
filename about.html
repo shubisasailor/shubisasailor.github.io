@@ -204,13 +204,15 @@
         };
 
         var _entered = false;
+
+
         function enterSite() {
             if (_entered) return;
             _entered = true;
             sessionStorage.setItem('site_entered', '1');
             audio.play()
                 .then(function () { window._restoreMusicTime && window._restoreMusicTime(); })
-                .catch(function () { document.addEventListener('click', function () { audio.play().then(function(){ window._restoreMusicTime && window._restoreMusicTime(); }).catch(function(){}); }, { once: true }); });
+                .catch(function () { document.addEventListener('click', function () { audio.play(); }, { once: true }); });
             if (playPauseBtn) playPauseBtn.classList.replace('fa-play', 'fa-pause');
             overlay.style.opacity = '0';
             setTimeout(function () {
@@ -220,15 +222,15 @@
                 setTimeout(function () { window._ropeInit && window._ropeInit(); }, 80);
             }, 800);
         }
-        window._enterSite = enterSite;
 
+        window._enterSite = enterSite;
         if (sessionStorage.getItem('site_entered')) {
             overlay.style.display = 'none';
             mainContent.classList.add('visible');
             startVideos();
             audio.play()
                 .then(function () { window._restoreMusicTime && window._restoreMusicTime(); })
-                .catch(function () { document.addEventListener('click', function () { audio.play().then(function(){ window._restoreMusicTime && window._restoreMusicTime(); }).catch(function(){}); }, { once: true }); });
+                .catch(function () { document.addEventListener('click', function () { audio.play(); }, { once: true }); });
             if (playPauseBtn) playPauseBtn.classList.replace('fa-play', 'fa-pause');
             setTimeout(function () { window._ropeInit && window._ropeInit(); }, 80);
         } else {

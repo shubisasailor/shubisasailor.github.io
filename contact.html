@@ -121,6 +121,7 @@
             <source src="media/light.webm" type="video/webm">
         </video>
     </div>
+
     <div id="bg-video-overlay"></div>
 
     <div id="overlay" onclick="if(window._enterSite)window._enterSite()">
@@ -224,13 +225,15 @@
         };
 
         var _entered = false;
+
+
         function enterSite() {
             if (_entered) return;
             _entered = true;
             sessionStorage.setItem('site_entered', '1');
             audio.play()
                 .then(function () { window._restoreMusicTime && window._restoreMusicTime(); })
-                .catch(function () { document.addEventListener('click', function () { audio.play().catch(function(){}); }, { once: true }); });
+                .catch(function () { document.addEventListener('click', function () { audio.play(); }, { once: true }); });
             if (playPauseBtn) playPauseBtn.classList.replace('fa-play', 'fa-pause');
             overlay.style.opacity = '0';
             setTimeout(function () {
@@ -248,7 +251,7 @@
             startVideos();
             audio.play()
                 .then(function () { window._restoreMusicTime && window._restoreMusicTime(); })
-                .catch(function () { document.addEventListener('click', function () { audio.play().catch(function(){}); }, { once: true }); });
+                .catch(function () { document.addEventListener('click', function () { audio.play(); }, { once: true }); });
             if (playPauseBtn) playPauseBtn.classList.replace('fa-play', 'fa-pause');
             setTimeout(function () { window._ropeInit && window._ropeInit(); }, 80);
         } else {
