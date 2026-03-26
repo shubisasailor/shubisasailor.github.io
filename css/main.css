@@ -4,7 +4,7 @@
 
 /* --- 0. Custom Cursor --- */
 *, *::before, *::after {
-    cursor: url('../media/cursor/cursor.webp'), auto !important;
+    cursor: url('../media/cursor/cursor.webp') 0 0, auto !important;
     box-sizing: border-box;
 }
 

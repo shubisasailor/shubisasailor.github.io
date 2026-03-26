@@ -110,18 +110,20 @@
 </head>
 <body class="contact-page theme-dark">
 
-    <!-- YouTube backgrounds -->
-    <div class="yt-bg-wrap" id="yt-dark">
-        <iframe src="https://www.youtube.com/embed/Kt5llcrBaPs?autoplay=1&mute=1&loop=1&playlist=Kt5llcrBaPs&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1"
-            allow="autoplay; encrypted-media" allowfullscreen title="background"></iframe>
+    <!-- Local webm backgrounds (same as index.html) -->
+    <div id="yt-dark" style="position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;transition:opacity 0.6s ease;">
+        <video autoplay muted loop playsinline style="position:absolute;width:100vw;height:56.25vw;min-height:100vh;min-width:177.78vh;top:50%;left:50%;transform:translate(-50%,-50%);object-fit:cover;">
+            <source src="media/dark.webm" type="video/webm">
+        </video>
     </div>
-    <div class="yt-bg-wrap" id="yt-light">
-        <iframe src="https://www.youtube.com/embed/t9h226JE3UA?autoplay=1&mute=1&loop=1&playlist=t9h226JE3UA&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1"
-            allow="autoplay; encrypted-media" allowfullscreen title="background"></iframe>
+    <div id="yt-light" style="position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;opacity:0;transition:opacity 0.6s ease;">
+        <video autoplay muted loop playsinline style="position:absolute;width:100vw;height:56.25vw;min-height:100vh;min-width:177.78vh;top:50%;left:50%;transform:translate(-50%,-50%);object-fit:cover;">
+            <source src="media/light.webm" type="video/webm">
+        </video>
     </div>
     <div id="bg-video-overlay"></div>
 
-    <div id="overlay">
+    <div id="overlay" onclick="if(window._enterSite)window._enterSite()">
         <div class="overlay-blur"></div>
         <div class="enter-button">click to enter...</div>
     </div>
@@ -221,12 +223,15 @@
             ytLight.style.opacity = isNowDark ? '0' : '1';
         };
 
+        var _entered = false;
         function enterSite() {
+            if (_entered) return;
+            _entered = true;
             sessionStorage.setItem('site_entered', '1');
             audio.play()
                 .then(function () { window._restoreMusicTime && window._restoreMusicTime(); })
-                .catch(function () { document.addEventListener('click', function () { audio.play(); }, { once: true }); });
-            playPauseBtn.classList.replace('fa-play', 'fa-pause');
+                .catch(function () { document.addEventListener('click', function () { audio.play().then(function(){ window._restoreMusicTime && window._restoreMusicTime(); }).catch(function(){}); }, { once: true }); });
+            if (playPauseBtn) playPauseBtn.classList.replace('fa-play', 'fa-pause');
             overlay.style.opacity = '0';
             setTimeout(function () {
                 overlay.style.display = 'none';
@@ -235,6 +240,7 @@
                 setTimeout(function () { window._ropeInit && window._ropeInit(); }, 80);
             }, 800);
         }
+        window._enterSite = enterSite;
 
         if (sessionStorage.getItem('site_entered')) {
             overlay.style.display = 'none';
@@ -242,11 +248,11 @@
             startVideos();
             audio.play()
                 .then(function () { window._restoreMusicTime && window._restoreMusicTime(); })
-                .catch(function () { document.addEventListener('click', function () { audio.play(); }, { once: true }); });
-            playPauseBtn.classList.replace('fa-play', 'fa-pause');
+                .catch(function () { document.addEventListener('click', function () { audio.play().then(function(){ window._restoreMusicTime && window._restoreMusicTime(); }).catch(function(){}); }, { once: true }); });
+            if (playPauseBtn) playPauseBtn.classList.replace('fa-play', 'fa-pause');
             setTimeout(function () { window._ropeInit && window._ropeInit(); }, 80);
         } else {
-            overlay.addEventListener('click', enterSite, { once: true });
+            overlay.addEventListener('click', enterSite);
         }
 
         function showToast(msg, type) {
@@ -289,12 +295,4 @@
                     showToast('Message sent!', 'success');
                     document.getElementById('f-name').value    = '';
                     document.getElementById('f-email').value   = '';
-                    document.getElementById('f-message').value = '';
-                })
-                .catch(function () { fallbackMailto(); })
-                .finally(function () { btn.classList.remove('loading'); btn.disabled = false; });
-        });
-    });
-    </script>
-</body>
-</html>
+                    document.getElementById('f-message')

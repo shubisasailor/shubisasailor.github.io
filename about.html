@@ -100,7 +100,7 @@
     </div>
     <div id="bg-video-overlay"></div>
 
-    <div id="overlay">
+    <div id="overlay" onclick="if(window._enterSite)window._enterSite()">
         <div class="overlay-blur"></div>
         <div class="enter-button">click to enter...</div>
     </div>
@@ -203,12 +203,15 @@
             ytLight.style.opacity = isNowDark ? '0' : '1';
         };
 
+        var _entered = false;
         function enterSite() {
+            if (_entered) return;
+            _entered = true;
             sessionStorage.setItem('site_entered', '1');
             audio.play()
                 .then(function () { window._restoreMusicTime && window._restoreMusicTime(); })
-                .catch(function () { document.addEventListener('click', function () { audio.play(); }, { once: true }); });
-            playPauseBtn.classList.replace('fa-play', 'fa-pause');
+                .catch(function () { document.addEventListener('click', function () { audio.play().then(function(){ window._restoreMusicTime && window._restoreMusicTime(); }).catch(function(){}); }, { once: true }); });
+            if (playPauseBtn) playPauseBtn.classList.replace('fa-play', 'fa-pause');
             overlay.style.opacity = '0';
             setTimeout(function () {
                 overlay.style.display = 'none';
@@ -217,6 +220,7 @@
                 setTimeout(function () { window._ropeInit && window._ropeInit(); }, 80);
             }, 800);
         }
+        window._enterSite = enterSite;
 
         if (sessionStorage.getItem('site_entered')) {
             overlay.style.display = 'none';
@@ -224,11 +228,11 @@
             startVideos();
             audio.play()
                 .then(function () { window._restoreMusicTime && window._restoreMusicTime(); })
-                .catch(function () { document.addEventListener('click', function () { audio.play(); }, { once: true }); });
-            playPauseBtn.classList.replace('fa-play', 'fa-pause');
+                .catch(function () { document.addEventListener('click', function () { audio.play().then(function(){ window._restoreMusicTime && window._restoreMusicTime(); }).catch(function(){}); }, { once: true }); });
+            if (playPauseBtn) playPauseBtn.classList.replace('fa-play', 'fa-pause');
             setTimeout(function () { window._ropeInit && window._ropeInit(); }, 80);
         } else {
-            overlay.addEventListener('click', enterSite, { once: true });
+            overlay.addEventListener('click', enterSite);
         }
     });
     </script>

@@ -3,6 +3,15 @@
 //  Song title shown as filename with .mp3 extension
 // ═══════════════════════════════════════════════════════════════════
 
+// Define _restoreMusicTime immediately so enterSite can call it safely
+// even if it fires before the rest of player.js finishes executing.
+window._restoreMusicTime = function () {
+    var audio = document.getElementById('bg-audio');
+    if (!audio) return;
+    var t = parseFloat(sessionStorage.getItem('music_time') || '0');
+    if (t > 0 && isFinite(t)) audio.currentTime = t;
+};
+
 var SONGS = [
     { src: 'audio/cry.mp3',               cover: 'media/music-cover/cry.jpg',               title: 'cry.mp3' },
     { src: 'audio/the-night-we-met.mp3',  cover: 'media/music-cover/the-night-we-met.jpg',  title: 'the-night-we-met.mp3' }
@@ -165,7 +174,8 @@ if (progressContainer) {
 }
 
 // ── Restore position across page navigations ──────────────────────
+// (already defined at top of file — update the reference here)
 window._restoreMusicTime = function () {
     var t = parseFloat(sessionStorage.getItem('music_time') || '0');
-    if (t > 0 && isFinite(t)) audio.currentTime = t;
+    if (t > 0 && isFinite(t) && audio) audio.currentTime = t;
 };

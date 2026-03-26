@@ -261,7 +261,8 @@
             'border-radius:50%',
             'z-index:201',
             'transform:translate(-50%,-50%)',
-            'touch-action:none'
+            'touch-action:none',
+            'cursor:grab'
         ].join(';');
         document.body.appendChild(hitDiv);
 
