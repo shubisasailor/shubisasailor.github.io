@@ -224,7 +224,8 @@
             'position:fixed','width:'+hs+'px','height:'+hs+'px',
             'border-radius:50%','z-index:201',
             'transform:translate(-50%,-50%)',
-            'touch-action:none','cursor:grab'
+            'touch-action:none','cursor:grab',
+            'left:-400px','top:-400px'
         ].join(';');
         document.body.appendChild(hitDiv);
 
@@ -254,6 +255,7 @@
         function onEnd() {
             if (!dragging) return;
             dragging=false; tuggedDown=0; ballVy=-3; ballVx=0;
+            didToggle=false;
         }
 
         hitDiv.addEventListener('mousedown',  onStart);
@@ -345,13 +347,13 @@
         ctx.lineTo(ballX,ballY);
         ctx.strokeStyle=ropeColor; ctx.lineWidth=1.8; ctx.stroke();
 
-        if (tuggedDown>8) {
+        if (tuggedDown>8 && dragging) {
             var t=Math.min(tuggedDown/MAX_PULL,1);
             ctx.beginPath();
             ctx.moveTo(nodes[0].x,nodes[0].y);
             for (var i=1; i<nodes.length; i++) ctx.lineTo(nodes[i].x,nodes[i].y);
             ctx.lineTo(ballX,ballY);
-            ctx.strokeStyle='rgba(255,'+Math.round(80*(1-t))+','+Math.round(80*(1-t))+','+(t*0.6)+')';
+            ctx.strokeStyle='rgba(255,'+Math.round(80*(1-t))+','+Math.round(80*(1-t))+','+(t*0.5)+')';
             ctx.lineWidth=1.8; ctx.stroke();
         }
 

@@ -2,9 +2,31 @@
    main.css — Francisco Portfolio
    ================================================================ */
 
-/* --- 0. Custom Cursor --- */
+/* --- 0. Custom Cursor — desktop only (mobile uses touch-fx canvas) --- */
+@media (hover: hover) and (pointer: fine) {
+    *, *::before, *::after {
+        cursor: url('../media/cursor/cursor.webp') 0 0, auto !important;
+    }
+}
+
+/* --- 0b. Global no-select, no-callout --- */
+html, body {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    overscroll-behavior: none;
+    touch-action: pan-y;
+}
+/* Allow selection inside form fields */
+input, textarea, [contenteditable] {
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    user-select: text !important;
+    -webkit-touch-callout: default !important;
+}
+
 *, *::before, *::after {
-    cursor: url('../media/cursor/cursor.webp') 0 0, auto !important;
     box-sizing: border-box;
 }
 
@@ -285,3 +307,86 @@ html, body {
 
 .nav-tab:hover,
 .nav-tabs span:hover { opacity: 0.72; }
+/* --- 11. Fun micro-interactions --- */
+
+/* Skill tags: shimmer on hover */
+.skill-tag {
+    position: relative;
+    overflow: hidden;
+}
+.skill-tag::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%);
+    transform: translateX(-100%);
+    transition: transform 0.4s ease;
+}
+.skill-tag:hover::after {
+    transform: translateX(100%);
+}
+
+/* Nav tabs: subtle bounce on active switch */
+@keyframes navBounce {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.15); }
+    70%  { transform: scale(0.95); }
+    100% { transform: scale(1); }
+}
+.nav-tab.active { animation: navBounce 0.35s cubic-bezier(0.34,1.56,0.64,1); }
+
+/* Stat cards: lift on hover */
+.stat-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s;
+}
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+    border-color: rgba(255,255,255,0.14) !important;
+}
+
+/* Social links: staggered glow on parent hover */
+.social-links:hover a { opacity: 0.45; }
+.social-links a:hover  { opacity: 1 !important; }
+
+/* Repo cards: slide right + glow */
+.repo-card {
+    transition: background 0.18s, border-color 0.18s, transform 0.18s, box-shadow 0.18s;
+}
+.repo-card:hover {
+    box-shadow: 0 0 16px rgba(255,255,255,0.06);
+}
+
+/* Discord card pulse when online */
+.ds-online {
+    animation: onlinePulse 2.5s ease-in-out infinite;
+}
+@keyframes onlinePulse {
+    0%,100% { box-shadow: 0 0 4px rgba(35,165,90,0.6); }
+    50%      { box-shadow: 0 0 10px rgba(35,165,90,0.95); }
+}
+
+/* Glass card subtle tilt on hover (desktop) */
+@media (hover: hover) and (pointer: fine) {
+    .glass-card {
+        transition: border-color 0.3s, box-shadow 0.3s, background 0.4s, transform 0.3s;
+    }
+    .glass-card:hover {
+        transform: perspective(800px) rotateX(0.6deg);
+    }
+}
+
+/* Progress bar glow */
+#music-progress {
+    box-shadow: 0 0 8px rgba(255,255,255,0.30) !important;
+}
+
+/* Player cover spin when playing */
+@keyframes coverSpin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+#music-cover.spinning {
+    animation: coverSpin 12s linear infinite;
+    border-radius: 50% !important;
+}

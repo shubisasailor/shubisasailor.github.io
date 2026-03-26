@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Francisco | Portfolio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -35,6 +35,26 @@
 
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ── Prevent zoom, text selection, touch callout globally ── */
+        html {
+            touch-action: pan-y;
+            -ms-touch-action: pan-y;
+        }
+        body {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+            overscroll-behavior: none;
+        }
+        /* Allow selection only in form inputs */
+        input, textarea {
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            user-select: text !important;
+            -webkit-touch-callout: default !important;
+        }
 
         /* ── Backgrounds ── */
         #bg-wrap {
@@ -355,6 +375,73 @@
         /* ── Touch FX canvas ── */
         #touch-fx { position:fixed; inset:0; pointer-events:none; z-index:9997; }
 
+        /* ── Player expanded (double-click) ── */
+        #fixed-player.expanded {
+            width: calc(100% - 28px) !important;
+            max-width: 100vw !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            transform: none !important;
+            border-radius: 20px 20px 0 0 !important;
+            z-index: 400;
+        }
+        #fixed-player.expanded .glass-card {
+            border-radius: 20px 20px 0 0 !important;
+            padding: 20px 22px 28px !important;
+        }
+        #player-expand-hint {
+            text-align: center;
+            font-size: 0.54rem;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.18);
+            margin-bottom: 8px;
+            user-select: none;
+        }
+        #fixed-player.expanded #player-expand-hint { display: none; }
+        #player-collapse-btn {
+            display: none;
+            width: 34px; height: 4px;
+            background: rgba(255,255,255,0.18);
+            border-radius: 10px;
+            margin: 0 auto 12px;
+            cursor: pointer;
+        }
+        #fixed-player.expanded #player-collapse-btn { display: block; }
+
+        /* ── Projects panel draggable (desktop) ── */
+        #projects-panel { user-select: none; }
+        #projects-panel.dragging { transition: none !important; cursor: grabbing; }
+        .panel-drag-bar {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 0 4px;
+            cursor: grab;
+            flex-shrink: 0;
+        }
+        .panel-drag-bar-inner {
+            width: 34px; height: 4px;
+            background: rgba(255,255,255,0.16);
+            border-radius: 10px;
+        }
+        @media (min-width: 701px) {
+            .panel-drag-bar { display: flex; }
+        }
+
+        /* ── Send animation ── */
+        @keyframes sendPaperPlane {
+            0%   { transform: translateX(0) translateY(0) rotate(0deg) scale(1); opacity: 1; }
+            60%  { transform: translateX(120px) translateY(-60px) rotate(-20deg) scale(0.7); opacity: 0.6; }
+            100% { transform: translateX(220px) translateY(-130px) rotate(-35deg) scale(0.3); opacity: 0; }
+        }
+        @keyframes sendSuccess {
+            0%   { transform: scale(0.6); opacity: 0; }
+            60%  { transform: scale(1.15); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .send-flying { animation: sendPaperPlane 0.65s cubic-bezier(0.36, 0, 0.66, -0.56) forwards; }
+        .send-done   { animation: sendSuccess 0.4s ease forwards; }
         @media (max-width:319px) { #rope-canvas, #rope-hit { display:none !important; } }
     </style>
 </head>
@@ -414,6 +501,8 @@
 <!-- Player -->
 <div id="fixed-player">
     <div class="glass-card music-player-card" style="padding:14px 16px !important;">
+        <div id="player-collapse-btn"></div>
+        <div id="player-expand-hint">DOUBLE-CLICK TO EXPAND</div>
         <div style="display:flex;align-items:center;gap:12px;">
             <div class="music-cover-wrap">
                 <img id="music-cover" src="media/music-cover/cry.jpg"
@@ -487,7 +576,7 @@
                 <a href="https://pinterest.com/shubflexin"        target="_blank" rel="noopener"><i class="fab fa-pinterest"></i></a>
                 <a href="https://youtube.com/@Tarnished_Shubh"    target="_blank" rel="noopener"><i class="fab fa-youtube"></i></a>
                 <a href="https://x.com/ZetsuoNoShub"              target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i></a>
-                <a href="mailto:shub.professional@gmail.com"      rel="noopener"><i class="fas fa-envelope"></i></a>
+                <a href="/cdn-cgi/l/email-protection#285b405d4a06585a474e4d5b5b4147464944684f45494144064b4745" rel="noopener"><i class="fas fa-envelope"></i></a>
             </div>
         </div>
 
@@ -548,7 +637,7 @@
             <div class="section-label">reach me at</div>
             <div class="email-row">
                 <i class="fas fa-envelope"></i>
-                <span id="email-display">shub.professional@gmail.com</span>
+                <span id="email-display"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="0b78637e69257b79646d6e78786264656a674b6c666a626725686466">[email&#160;protected]</a></span>
                 <i class="fas fa-copy email-copy" id="copy-btn" title="Copy email"></i>
             </div>
             <div class="card-divider"></div>
@@ -561,6 +650,7 @@
                 <textarea class="form-textarea" id="f-message" placeholder="Message..."></textarea>
                 <button class="submit-btn" id="send-btn">
                     <div class="btn-spinner"></div>
+                    <i class="fas fa-paper-plane" id="send-plane-icon" style="font-size:0.78rem;"></i>
                     <span class="btn-label">SEND MESSAGE</span>
                 </button>
             </div>
@@ -572,7 +662,7 @@
 <!-- ══════════ SCRIPTS ══════════ -->
 
 <!-- Player (self-contained) -->
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 (function () {
     'use strict';
     var SONGS = [
@@ -684,10 +774,12 @@
     audio.addEventListener('play', function () {
         if (ppBtn) { ppBtn.classList.remove('fa-play'); ppBtn.classList.add('fa-pause'); }
         if (badgeEl) badgeEl.classList.remove('paused');
+        if (coverImg) coverImg.classList.add('spinning');
     });
     audio.addEventListener('pause', function () {
         if (ppBtn) { ppBtn.classList.remove('fa-pause'); ppBtn.classList.add('fa-play'); }
         if (badgeEl) badgeEl.classList.add('paused');
+        if (coverImg) coverImg.classList.remove('spinning');
     });
 
     if (prevBtn) prevBtn.addEventListener('click', function () { loadSong(idx-1, !audio.paused); });
@@ -986,7 +1078,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .catch(function(){window.showToast('Could not copy.','error');});
     });
 
-    /* Contact form */
+    /* Contact form — with paper plane send animation */
     var sb=document.getElementById('send-btn');
     if(sb) sb.addEventListener('click',function(){
         var n=(document.getElementById('f-name').value||'').trim();
@@ -994,122 +1086,217 @@ document.addEventListener('DOMContentLoaded', function () {
         var m=(document.getElementById('f-message').value||'').trim();
         if(!n||!e||!m){window.showToast('Please fill in all fields.','error');return;}
         if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){window.showToast('Enter a valid email.','error');return;}
-        sb.classList.add('loading'); sb.disabled=true;
-        function mailto(){ window.open('mailto:shub.professional@gmail.com?subject='+encodeURIComponent('Message from '+n)+'&body='+encodeURIComponent('From: '+n+' <'+e+'>\n\n'+m)); window.showToast('Opening mail client...',''); }
-        function done(){ sb.classList.remove('loading'); sb.disabled=false; }
-        if(typeof emailjs==='undefined'){mailto();done();return;}
-        emailjs.send('service_wfciems','template_srqhd09',{name:n,email:e,message:m})
-            .then(function(){
-                window.showToast('Message sent! ✓','success'); done();
-                document.getElementById('f-name').value='';
-                document.getElementById('f-email').value='';
-                document.getElementById('f-message').value='';
-            })
-            .catch(function(){mailto();done();});
+
+        /* Paper plane animation */
+        var planeEl=document.getElementById('send-plane-icon');
+        var labelEl=sb.querySelector('.btn-label');
+        sb.disabled=true;
+        if(planeEl){ planeEl.classList.add('send-flying'); }
+        if(labelEl){ labelEl.style.opacity='0.3'; }
+
+        function showSuccess(){
+            sb.style.borderColor='rgba(100,255,150,0.40)';
+            sb.style.color='rgba(140,255,170,0.90)';
+            if(planeEl){ planeEl.classList.remove('send-flying'); planeEl.className='fas fa-check send-done'; }
+            if(labelEl){ labelEl.textContent='SENT!'; labelEl.style.opacity='1'; }
+            window.showToast('Message sent! ✓','success');
+            document.getElementById('f-name').value='';
+            document.getElementById('f-email').value='';
+            document.getElementById('f-message').value='';
+            setTimeout(resetBtn, 3000);
+        }
+        function showFail(){
+            if(planeEl){ planeEl.classList.remove('send-flying'); planeEl.className='fas fa-paper-plane'; }
+            if(labelEl){ labelEl.style.opacity='1'; }
+            sb.disabled=false;
+        }
+        function resetBtn(){
+            sb.disabled=false;
+            sb.style.borderColor=''; sb.style.color='';
+            if(planeEl){ planeEl.className='fas fa-paper-plane'; }
+            if(labelEl){ labelEl.textContent='SEND MESSAGE'; labelEl.style.opacity='1'; }
+        }
+        function mailto(){
+            window.open('mailto:shub.professional@gmail.com?subject='+encodeURIComponent('Message from '+n)+'&body='+encodeURIComponent('From: '+n+' <'+e+'>\n\n'+m));
+            window.showToast('Opening mail client...','');
+            setTimeout(resetBtn, 2000);
+        }
+
+        if(typeof emailjs==='undefined'){ setTimeout(function(){ mailto(); showFail(); },650); return; }
+        setTimeout(function(){
+            emailjs.send('service_wfciems','template_srqhd09',{name:n,email:e,message:m})
+                .then(showSuccess)
+                .catch(function(){ mailto(); showFail(); });
+        }, 650); /* let the plane animation play first */
     });
 
-});
-</script>
+    /* ── Music player double-click expand (PC) ── */
+    var fixedPlayer = document.getElementById('fixed-player');
+    var collapseBtn = document.getElementById('player-collapse-btn');
+    if(fixedPlayer){
+        var lastClick=0;
+        fixedPlayer.addEventListener('click', function(e){
+            /* ignore clicks on controls */
+            if(e.target.closest('#play-pause-btn,#prev-btn,#next-btn,#mute-btn,#volume-bar,#progress-container,#player-collapse-btn')) return;
+            var now=Date.now();
+            if(now-lastClick<350){
+                fixedPlayer.classList.toggle('expanded');
+            }
+            lastClick=now;
+        });
+        if(collapseBtn){
+            collapseBtn.addEventListener('click',function(e){
+                e.stopPropagation();
+                fixedPlayer.classList.remove('expanded');
+            });
+        }
+        /* Close expanded on Escape */
+        document.addEventListener('keydown',function(e){ if(e.key==='Escape') fixedPlayer.classList.remove('expanded'); });
+    }
 
-<!-- Touch FX — fast canvas ripple, only on touch devices -->
+    /* ── Draggable projects panel (desktop) ── */
+    var pPanel=document.getElementById('projects-panel');
+    if(pPanel && window.matchMedia('(min-width:701px)').matches){
+        var dragBar=pPanel.querySelector('.panel-drag-bar');
+        if(!dragBar){
+            dragBar=document.createElement('div');
+            dragBar.className='panel-drag-bar';
+            dragBar.innerHTML='<div class="panel-drag-bar-inner"></div>';
+            pPanel.insertBefore(dragBar, pPanel.firstChild);
+        }
+        var pdx=0,pdy=0,pox=0,poy=0,pdragging=false;
+        dragBar.style.cursor='grab';
+        dragBar.addEventListener('mousedown',function(e){
+            pdragging=true;
+            pPanel.classList.add('dragging');
+            dragBar.style.cursor='grabbing';
+            var rect=pPanel.getBoundingClientRect();
+            pox=e.clientX-rect.left; poy=e.clientY-rect.top;
+            e.preventDefault();
+        });
+        window.addEventListener('mousemove',function(e){
+            if(!pdragging) return;
+            pdx=e.clientX-pox; pdy=e.clientY-poy;
+            /* Clamp inside viewport */
+            pdx=Math.max(0,Math.min(window.innerWidth-pPanel.offsetWidth,pdx));
+            pdy=Math.max(0,Math.min(window.innerHeight-pPanel.offsetHeight,pdy));
+            pPanel.style.cssText+='position:fixed!important;left:'+pdx+'px!important;top:'+pdy+'px!important;transform:none!important;bottom:auto!important;';
+        });
+        window.addEventListener('mouseup',function(){
+            if(!pdragging) return;
+            pdragging=false;
+            pPanel.classList.remove('dragging');
+            dragBar.style.cursor='grab';
+        });
+    }
+
+}); — zero-lag canvas dot + ripple directly under finger -->
 <script>
 (function () {
     if (!('ontouchstart' in window) && navigator.maxTouchPoints < 1) return;
 
     var canvas = document.getElementById('touch-fx');
     var ctx    = canvas.getContext('2d');
-    var W = canvas.width  = window.innerWidth;
-    var H = canvas.height = window.innerHeight;
-    window.addEventListener('resize', function () {
-        W = canvas.width  = window.innerWidth;
-        H = canvas.height = window.innerHeight;
-    }, {passive:true});
+    var dpr    = window.devicePixelRatio || 1;
+    var W, H;
+    function resize() {
+        W = window.innerWidth; H = window.innerHeight;
+        canvas.width  = W * dpr; canvas.height = H * dpr;
+        canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+        ctx.scale(dpr, dpr);
+    }
+    resize();
+    window.addEventListener('resize', resize, {passive:true});
 
-    var fingers = {}; /* id -> {x,y} */
+    var fingers = {}; /* id -> {x,y,px,py} — px/py are "previous" for lerp */
     var ripples = []; /* {x,y,r,maxR,a,da} */
-    var hasActivity = false;
+    var raf = null;
 
     function addRipple(x, y, big) {
-        ripples.push({x:x, y:y, r:big?8:3, maxR:big?55:30, a:0.50, da:big?0.025:0.035});
-        hasActivity = true;
+        ripples.push({x:x, y:y, r:big?6:2, maxR:big?44:22, a:0.45, da:big?0.022:0.032});
+    }
+
+    function schedDraw() {
+        if (raf) return;
+        raf = requestAnimationFrame(draw);
     }
 
     document.addEventListener('touchstart', function(e){
         for (var i=0; i<e.changedTouches.length; i++){
             var t=e.changedTouches[i];
-            fingers[t.identifier]={x:t.clientX,y:t.clientY};
-            addRipple(t.clientX,t.clientY,false);
+            fingers[t.identifier]={x:t.clientX, y:t.clientY, px:t.clientX, py:t.clientY};
+            addRipple(t.clientX, t.clientY, false);
         }
-        hasActivity=true;
+        schedDraw();
     },{passive:true});
 
     document.addEventListener('touchmove', function(e){
         for (var i=0; i<e.changedTouches.length; i++){
             var t=e.changedTouches[i];
-            if(fingers[t.identifier]){ fingers[t.identifier].x=t.clientX; fingers[t.identifier].y=t.clientY; }
+            var f=fingers[t.identifier];
+            if(f){ f.px=f.x; f.py=f.y; f.x=t.clientX; f.y=t.clientY; }
         }
-        hasActivity=true;
+        schedDraw();
     },{passive:true});
 
     document.addEventListener('touchend', function(e){
         for (var i=0; i<e.changedTouches.length; i++){
             var t=e.changedTouches[i];
-            addRipple(t.clientX,t.clientY,true);
+            addRipple(t.clientX, t.clientY, true);
             delete fingers[t.identifier];
         }
+        schedDraw();
     },{passive:true});
 
     document.addEventListener('touchcancel', function(e){
         for (var i=0; i<e.changedTouches.length; i++) delete fingers[e.changedTouches[i].identifier];
     },{passive:true});
 
-    var ids, i, f, r;
     function draw() {
-        requestAnimationFrame(draw);
+        raf = null;
+        ctx.clearRect(0, 0, W, H);
 
         var fingerIds = Object.keys(fingers);
-        if (fingerIds.length === 0 && ripples.length === 0) {
-            if (!hasActivity) return; /* skip clear if nothing to do */
-            hasActivity = false;
-            ctx.clearRect(0,0,W,H);
-            return;
-        }
-        hasActivity = true;
-        ctx.clearRect(0,0,W,H);
 
-        /* Finger rings */
-        for (i=0; i<fingerIds.length; i++) {
-            f = fingers[fingerIds[i]];
-            /* Glow ring */
+        /* ── Finger: small sharp dot directly under fingertip ── */
+        for (var i=0; i<fingerIds.length; i++) {
+            var f = fingers[fingerIds[i]];
+            /* Tiny center dot — right at touch point, zero lag */
             ctx.beginPath();
-            ctx.arc(f.x, f.y, 18, 0, 6.2832);
-            ctx.strokeStyle = 'rgba(255,255,255,0.50)';
-            ctx.lineWidth   = 1.5;
-            ctx.shadowColor = 'rgba(255,255,255,0.35)';
-            ctx.shadowBlur  = 8;
-            ctx.stroke();
-            ctx.shadowBlur  = 0;
-            /* Center dot */
-            ctx.beginPath();
-            ctx.arc(f.x, f.y, 2.5, 0, 6.2832);
-            ctx.fillStyle = 'rgba(255,255,255,0.70)';
+            ctx.arc(f.x, f.y, 3.5, 0, 6.2832);
+            ctx.fillStyle = 'rgba(255,255,255,0.85)';
+            ctx.shadowColor = 'rgba(255,255,255,0.9)';
+            ctx.shadowBlur = 10;
             ctx.fill();
+            ctx.shadowBlur = 0;
+            /* Thin ring around it */
+            ctx.beginPath();
+            ctx.arc(f.x, f.y, 11, 0, 6.2832);
+            ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
         }
 
-        /* Ripples */
-        for (i=ripples.length-1; i>=0; i--) {
-            r=ripples[i];
-            r.r += (r.maxR - r.r) * 0.13;
+        /* ── Ripples ── */
+        var alive = false;
+        for (var j=ripples.length-1; j>=0; j--) {
+            var r=ripples[j];
+            r.r += (r.maxR - r.r) * 0.16;
             r.a -= r.da;
-            if (r.a <= 0){ ripples.splice(i,1); continue; }
+            if (r.a <= 0){ ripples.splice(j,1); continue; }
+            alive = true;
             ctx.beginPath();
             ctx.arc(r.x, r.y, r.r, 0, 6.2832);
-            ctx.strokeStyle = 'rgba(255,255,255,' + r.a.toFixed(3) + ')';
-            ctx.lineWidth   = 1.0;
+            ctx.strokeStyle = 'rgba(255,255,255,' + r.a + ')';
+            ctx.lineWidth = 1.2;
             ctx.stroke();
         }
+
+        /* Keep animating only if there are ripples or active fingers */
+        if (ripples.length > 0 || fingerIds.length > 0) {
+            raf = requestAnimationFrame(draw);
+        }
     }
-    draw();
 })();
 </script>
 
