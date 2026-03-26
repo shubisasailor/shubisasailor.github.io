@@ -113,22 +113,91 @@
         }
         .skill-tag:hover { background: rgba(255,255,255,0.11); border-color: rgba(255,255,255,0.26); color: white; }
 
-        .under-process {
-            display: flex; align-items: center; gap: 10px;
-            padding: 12px 16px;
-            background: var(--under-process-bg, rgba(255,255,255,0.03));
-            border: 1px solid var(--under-process-border, rgba(255,255,255,0.07));
-            border-radius: 10px;
+        /* ── GitHub repos ── */
+        .repo-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
-        .under-process-dot {
-            width: 7px; height: 7px; border-radius: 50%;
-            background: var(--under-process-dot, rgba(255,255,255,0.35));
-            animation: upDotPulse 2s ease-in-out infinite; flex-shrink: 0;
+        .repo-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 11px 14px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 9px;
+            text-decoration: none;
+            color: inherit;
+            transition: background 0.2s, border-color 0.2s, transform 0.15s;
         }
-        @keyframes upDotPulse { 0%,100%{opacity:0.35;transform:scale(1)} 50%{opacity:1;transform:scale(1.3)} }
-        .under-process-text {
-            font-size: 0.70rem; letter-spacing: 2px;
-            color: var(--under-process-text, rgba(255,255,255,0.40));
+        .repo-card:hover {
+            background: rgba(255,255,255,0.07);
+            border-color: rgba(255,255,255,0.18);
+            transform: translateX(3px);
+        }
+        .repo-card:active { transform: translateX(3px) scale(0.99); }
+        .repo-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+            flex: 1;
+        }
+        .repo-icon {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.28);
+            flex-shrink: 0;
+        }
+        .repo-name {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.80);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            letter-spacing: 0.3px;
+        }
+        .repo-lang {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.64rem;
+            color: rgba(255,255,255,0.28);
+            letter-spacing: 0.4px;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+        .repo-lang-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .repo-arrow {
+            font-size: 0.60rem;
+            color: rgba(255,255,255,0.20);
+            flex-shrink: 0;
+            transition: color 0.2s;
+        }
+        .repo-card:hover .repo-arrow { color: rgba(255,255,255,0.55); }
+
+        /* Skeleton */
+        .repo-skeleton {
+            height: 42px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 9px;
+            animation: skPulse 1.6s ease-in-out infinite;
+        }
+        .repo-skeleton:nth-child(2) { animation-delay: 0.15s; }
+        .repo-skeleton:nth-child(3) { animation-delay: 0.30s; }
+        @keyframes skPulse { 0%,100%{opacity:0.25} 50%{opacity:0.60} }
+
+        .repo-error {
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.28);
+            letter-spacing: 1px;
         }
 
         .song-title   { font-size: 0.78rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: rgba(255,255,255,0.65) !important; }
@@ -140,10 +209,10 @@
 
     <!-- Background videos -->
     <div id="yt-dark">
-        <video autoplay muted loop playsinline><source src="media/dark.webm" type="video/webm"></video>
+        <video id="vid-dark" muted loop playsinline><source src="media/dark.webm" type="video/webm"></video>
     </div>
     <div id="yt-light">
-        <video autoplay muted loop playsinline><source src="media/light.webm" type="video/webm"></video>
+        <video id="vid-light" muted loop playsinline><source src="media/light.webm" type="video/webm"></video>
     </div>
     <div id="bg-video-overlay"></div>
 
@@ -225,13 +294,134 @@
             </div>
             <div class="card-divider"></div>
             <div class="section-label">projects</div>
-            <div class="under-process">
-                <div class="under-process-dot"></div>
-                <span class="under-process-text">UNDER PROCESS</span>
+            <!-- Repo cards injected by JS below -->
+            <div class="repo-grid" id="repo-grid">
+                <div class="repo-skeleton"></div>
+                <div class="repo-skeleton"></div>
+                <div class="repo-skeleton"></div>
             </div>
         </div>
     </div>
 
+    <!-- ── GitHub public repos ─────────────────────────────────── -->
+    <script>
+    (function () {
+        var GITHUB_USER = 'ZetsuoNoShub';
+        var grid = document.getElementById('repo-grid');
+
+        var LANG_COLORS = {
+            'JavaScript': '#f1e05a',
+            'TypeScript': '#3178c6',
+            'Python':     '#3572A5',
+            'HTML':       '#e34c26',
+            'CSS':        '#563d7c',
+            'Java':       '#b07219',
+            'C++':        '#f34b7d',
+            'C':          '#555555',
+            'C#':         '#178600',
+            'Shell':      '#89e051',
+            'Rust':       '#dea584',
+            'Go':         '#00ADD8',
+            'Ruby':       '#701516',
+            'PHP':        '#4F5D95',
+            'Swift':      '#F05138',
+            'Kotlin':     '#A97BFF',
+            'Dart':       '#00B4AB'
+        };
+
+        function buildCard(repo) {
+            var a = document.createElement('a');
+            a.className    = 'repo-card';
+            a.href         = repo.html_url;
+            a.target       = '_blank';
+            a.rel          = 'noopener noreferrer';
+            a.title        = repo.description || repo.name;
+
+            // Left: icon + name
+            var left = document.createElement('div');
+            left.className = 'repo-left';
+
+            var icon = document.createElement('i');
+            icon.className = 'fab fa-github repo-icon';
+            left.appendChild(icon);
+
+            var name = document.createElement('span');
+            name.className   = 'repo-name';
+            name.textContent = repo.name;
+            left.appendChild(name);
+
+            a.appendChild(left);
+
+            // Middle: language badge
+            if (repo.language) {
+                var lang = document.createElement('span');
+                lang.className = 'repo-lang';
+
+                var dot = document.createElement('span');
+                dot.className = 'repo-lang-dot';
+                dot.style.background = LANG_COLORS[repo.language] || 'rgba(255,255,255,0.30)';
+                lang.appendChild(dot);
+                lang.appendChild(document.createTextNode(repo.language));
+                a.appendChild(lang);
+            }
+
+            // Right: arrow
+            var arrow = document.createElement('i');
+            arrow.className = 'fas fa-arrow-up-right-from-square repo-arrow';
+            a.appendChild(arrow);
+
+            return a;
+        }
+
+        fetch('https://api.github.com/users/' + GITHUB_USER + '/repos?per_page=100&sort=updated')
+            .then(function (r) {
+                if (!r.ok) throw new Error('GitHub ' + r.status);
+                return r.json();
+            })
+            .then(function (repos) {
+                // Exclude forks; sort by stars desc, then last-updated desc
+                var sorted = repos
+                    .filter(function (r) { return !r.fork; })
+                    .sort(function (a, b) {
+                        if (b.stargazers_count !== a.stargazers_count)
+                            return b.stargazers_count - a.stargazers_count;
+                        return new Date(b.updated_at) - new Date(a.updated_at);
+                    });
+
+                grid.innerHTML = '';
+
+                if (!sorted.length) {
+                    var msg = document.createElement('span');
+                    msg.className   = 'repo-error';
+                    msg.textContent = 'No public repositories yet.';
+                    grid.appendChild(msg);
+                    return;
+                }
+
+                sorted.forEach(function (repo) {
+                    grid.appendChild(buildCard(repo));
+                });
+            })
+            .catch(function () {
+                // Graceful fallback: link to profile
+                grid.innerHTML = '';
+                var fallback = document.createElement('a');
+                fallback.className = 'repo-card';
+                fallback.href      = 'https://github.com/' + GITHUB_USER;
+                fallback.target    = '_blank';
+                fallback.rel       = 'noopener noreferrer';
+                fallback.innerHTML =
+                    '<div class="repo-left">'
+                    + '<i class="fab fa-github repo-icon"></i>'
+                    + '<span class="repo-name">View GitHub profile</span>'
+                    + '</div>'
+                    + '<i class="fas fa-arrow-up-right-from-square repo-arrow"></i>';
+                grid.appendChild(fallback);
+            });
+    })();
+    </script>
+
+    <!-- ── Site enter / video logic ───────────────────────────── -->
     <script>
     window.addEventListener('load', function () {
         window.startTitleLoop && window.startTitleLoop('About', 300);
@@ -244,9 +434,12 @@
         var ytLight      = document.getElementById('yt-light');
         var audio        = document.getElementById('bg-audio');
         var playPauseBtn = document.getElementById('play-pause-btn');
+        var vidDark      = document.getElementById('vid-dark');
+        var vidLight     = document.getElementById('vid-light');
 
-        function initVideos() {
-            var isDark = localStorage.getItem('theme') !== 'light';
+        // ── Videos: play only once buffered ──────────────────────
+        function startVideos() {
+            var isDark    = localStorage.getItem('theme') !== 'light';
             ytDark.style.transition  = 'none';
             ytLight.style.transition = 'none';
             ytDark.style.opacity  = isDark ? '1' : '0';
@@ -257,6 +450,19 @@
                     ytLight.style.transition = 'opacity 0.65s ease';
                 });
             });
+            var primary   = isDark ? vidDark  : vidLight;
+            var secondary = isDark ? vidLight : vidDark;
+            function playSecondary() { secondary.play().catch(function(){}); }
+            if (primary.readyState >= 3) {
+                primary.play().catch(function(){});
+                playSecondary();
+            } else {
+                primary.addEventListener('canplay', function onReady() {
+                    primary.removeEventListener('canplay', onReady);
+                    primary.play().catch(function(){});
+                    playSecondary();
+                });
+            }
         }
 
         window._syncBgVideos = function (isNowDark) {
@@ -264,8 +470,9 @@
             ytLight.style.opacity = isNowDark ? '0' : '1';
         };
 
-        initVideos();
+        startVideos();
 
+        // ── Enter site ────────────────────────────────────────────
         var _entered = false;
         function enterSite() {
             if (_entered) return;
@@ -288,7 +495,9 @@
         window._enterSite = enterSite;
 
         if (sessionStorage.getItem('site_entered')) {
-            overlay.style.display = 'none';
+            // Already entered this session — kill overlay instantly, no fade
+            overlay.style.transition = 'none';
+            overlay.style.display    = 'none';
             mainContent.classList.add('visible');
             fixedNav.classList.add('visible');
             fixedPlayer.classList.add('visible');

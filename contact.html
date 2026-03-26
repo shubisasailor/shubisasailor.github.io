@@ -162,10 +162,10 @@
 
     <!-- Background videos -->
     <div id="yt-dark">
-        <video autoplay muted loop playsinline><source src="media/dark.webm" type="video/webm"></video>
+        <video id="vid-dark" muted loop playsinline><source src="media/dark.webm" type="video/webm"></video>
     </div>
     <div id="yt-light">
-        <video autoplay muted loop playsinline><source src="media/light.webm" type="video/webm"></video>
+        <video id="vid-light" muted loop playsinline><source src="media/light.webm" type="video/webm"></video>
     </div>
     <div id="bg-video-overlay"></div>
 
@@ -263,8 +263,11 @@
         var ytLight      = document.getElementById('yt-light');
         var audio        = document.getElementById('bg-audio');
         var playPauseBtn = document.getElementById('play-pause-btn');
+        var vidDark      = document.getElementById('vid-dark');
+        var vidLight     = document.getElementById('vid-light');
 
-        function initVideos() {
+        // ── Videos: play only once buffered ──────────────────────
+        function startVideos() {
             var isDark = localStorage.getItem('theme') !== 'light';
             ytDark.style.transition  = 'none';
             ytLight.style.transition = 'none';
@@ -276,6 +279,19 @@
                     ytLight.style.transition = 'opacity 0.65s ease';
                 });
             });
+            var primary   = isDark ? vidDark  : vidLight;
+            var secondary = isDark ? vidLight : vidDark;
+            function playSecondary() { secondary.play().catch(function(){}); }
+            if (primary.readyState >= 3) {
+                primary.play().catch(function(){});
+                playSecondary();
+            } else {
+                primary.addEventListener('canplay', function onReady() {
+                    primary.removeEventListener('canplay', onReady);
+                    primary.play().catch(function(){});
+                    playSecondary();
+                });
+            }
         }
 
         window._syncBgVideos = function (isNowDark) {
@@ -283,8 +299,9 @@
             ytLight.style.opacity = isNowDark ? '0' : '1';
         };
 
-        initVideos();
+        startVideos();
 
+        // ── Enter site ────────────────────────────────────────────
         var _entered = false;
         function enterSite() {
             if (_entered) return;
@@ -307,7 +324,9 @@
         window._enterSite = enterSite;
 
         if (sessionStorage.getItem('site_entered')) {
-            overlay.style.display = 'none';
+            // Already entered this session — kill overlay instantly, no fade
+            overlay.style.transition = 'none';
+            overlay.style.display    = 'none';
             mainContent.classList.add('visible');
             fixedNav.classList.add('visible');
             fixedPlayer.classList.add('visible');
@@ -320,18 +339,21 @@
             overlay.addEventListener('click', enterSite);
         }
 
+        // ── Toast ─────────────────────────────────────────────────
         function showToast(msg, type) {
             var t = document.getElementById('toast');
             t.textContent = msg; t.className = type || ''; t.style.opacity = '1';
             setTimeout(function () { t.style.opacity = '0'; t.className = ''; }, 3000);
         }
 
+        // ── Copy email ────────────────────────────────────────────
         document.getElementById('copy-btn').addEventListener('click', function () {
             navigator.clipboard.writeText('shub.professional@gmail.com')
                 .then(function () { showToast('Email copied!', 'success'); })
                 .catch(function () { showToast('Could not copy.', 'error'); });
         });
 
+        // ── Send message ──────────────────────────────────────────
         document.getElementById('send-btn').addEventListener('click', function () {
             var name  = document.getElementById('f-name').value.trim();
             var email = document.getElementById('f-email').value.trim();
@@ -361,9 +383,11 @@
                     });
                     finish();
                 })
-                .catch(function () { fallbackMailto(); finish(); });
+                .catch(function () {
+                    fallbackMailto();
+                    finish();
+                });
         });
-
     });
     </script>
 </body>
