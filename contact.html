@@ -41,53 +41,35 @@
         #yt-dark  { opacity: 1; }
         #yt-light { opacity: 0; }
 
-        /* ── Fixed nav (top) ── */
         #fixed-nav {
-            position: fixed;
-            top: 20px;
-            left: 50%;
+            position: fixed; top: 20px; left: 50%;
             transform: translateX(-50%);
-            width: calc(100% - 32px);
-            max-width: 450px;
-            z-index: 200;
-            opacity: 0; visibility: hidden;
+            width: calc(100% - 32px); max-width: 450px;
+            z-index: 200; opacity: 0; visibility: hidden;
             transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1),
                         visibility 1.5s cubic-bezier(0.19,1,0.22,1);
         }
         #fixed-nav.visible { opacity: 1; visibility: visible; }
 
-        /* ── Fixed player (bottom) ── */
         #fixed-player {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
+            position: fixed; bottom: 20px; left: 50%;
             transform: translateX(-50%);
-            width: calc(100% - 32px);
-            max-width: 450px;
-            z-index: 200;
-            opacity: 0; visibility: hidden;
+            width: calc(100% - 32px); max-width: 450px;
+            z-index: 200; opacity: 0; visibility: hidden;
             transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1),
                         visibility 1.5s cubic-bezier(0.19,1,0.22,1);
         }
         #fixed-player.visible { opacity: 1; visibility: visible; }
 
-        /* ── Scrollable middle ── */
         .card-container {
-            position: fixed;
-            inset: 0;
-            z-index: 5;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow-y: auto;
-            overflow-x: hidden;
+            position: fixed; inset: 0; z-index: 5;
+            display: flex; flex-direction: column; align-items: center;
+            overflow-y: auto; overflow-x: hidden;
             padding: 88px 16px 100px !important;
-            width: 100%;
-            opacity: 0; visibility: hidden;
+            width: 100%; opacity: 0; visibility: hidden;
             transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1),
                         visibility 1.5s cubic-bezier(0.19,1,0.22,1);
-            scrollbar-width: none;
-            -ms-overflow-style: none;
+            scrollbar-width: none; -ms-overflow-style: none;
         }
         .card-container::-webkit-scrollbar { display: none; }
         .card-container.visible { opacity: 1; visibility: visible; }
@@ -107,7 +89,7 @@
             word-break: break-all;
         }
         .email-row i { opacity: 0.45; }
-        .email-copy  { margin-left: auto; opacity: 0.35; transition: opacity 0.2s; font-size: 0.8rem; cursor: pointer; flex-shrink: 0; }
+        .email-copy { margin-left: auto; opacity: 0.35; transition: opacity 0.2s; font-size: 0.8rem; cursor: pointer; flex-shrink: 0; }
         .email-copy:hover { opacity: 0.90; }
         .card-divider { height: 1px; background: var(--divider, rgba(255,255,255,0.07)); margin: 18px 0; }
 
@@ -160,12 +142,16 @@
 </head>
 <body class="contact-page theme-dark">
 
-    <!-- Background videos -->
+    <!-- Background videos — NO autoplay attr; JS triggers play after canplay -->
     <div id="yt-dark">
-        <video id="vid-dark" muted loop playsinline><source src="media/dark.webm" type="video/webm"></video>
+        <video id="vid-dark" muted loop playsinline>
+            <source src="media/dark.webm" type="video/webm">
+        </video>
     </div>
     <div id="yt-light">
-        <video id="vid-light" muted loop playsinline><source src="media/light.webm" type="video/webm"></video>
+        <video id="vid-light" muted loop playsinline>
+            <source src="media/light.webm" type="video/webm">
+        </video>
     </div>
     <div id="bg-video-overlay"></div>
 
@@ -175,7 +161,7 @@
         <div class="enter-button">click to enter...</div>
     </div>
 
-    <!-- Volume control -->
+    <!-- Volume -->
     <div class="top-left-wrapper">
         <div class="volume-container">
             <i class="fas fa-volume-up control-icon" id="mute-btn"></i>
@@ -186,7 +172,7 @@
     <audio id="bg-audio" loop><source src="" type="audio/mpeg"></audio>
     <div id="toast"></div>
 
-    <!-- Fixed nav (top) -->
+    <!-- Fixed nav -->
     <div id="fixed-nav">
         <div class="glass-card" style="padding:16px 20px;">
             <div class="nav-tabs" style="display:flex;justify-content:space-around;">
@@ -197,7 +183,7 @@
         </div>
     </div>
 
-    <!-- Fixed player (bottom) -->
+    <!-- Fixed player -->
     <div id="fixed-player">
         <div class="glass-card" style="padding:15px 18px !important;">
             <div style="display:flex;align-items:center;gap:13px;">
@@ -222,7 +208,7 @@
         </div>
     </div>
 
-    <!-- Scrollable middle content -->
+    <!-- Main card -->
     <div class="card-container" id="main-content">
         <div class="glass-card">
             <div class="section-label">reach me at</div>
@@ -251,9 +237,7 @@
     window.addEventListener('load', function () {
         window.startTitleLoop && window.startTitleLoop('Contact', 300);
 
-        if (typeof emailjs !== 'undefined') {
-            emailjs.init({ publicKey: 'ANitUhHu4kV4-js93' });
-        }
+        if (typeof emailjs !== 'undefined') emailjs.init({ publicKey: 'ANitUhHu4kV4-js93' });
 
         var overlay      = document.getElementById('overlay');
         var mainContent  = document.getElementById('main-content');
@@ -266,7 +250,7 @@
         var vidDark      = document.getElementById('vid-dark');
         var vidLight     = document.getElementById('vid-light');
 
-        // ── Videos: play only once buffered ──────────────────────
+        /* ── Videos: snap correct opacity, play after buffer ── */
         function startVideos() {
             var isDark = localStorage.getItem('theme') !== 'light';
             ytDark.style.transition  = 'none';
@@ -279,17 +263,18 @@
                     ytLight.style.transition = 'opacity 0.65s ease';
                 });
             });
-            var primary   = isDark ? vidDark  : vidLight;
+            var primary   = isDark ? vidDark : vidLight;
             var secondary = isDark ? vidLight : vidDark;
-            function playSecondary() { secondary.play().catch(function(){}); }
-            if (primary.readyState >= 3) {
+            function playBoth() {
                 primary.play().catch(function(){});
-                playSecondary();
+                secondary.play().catch(function(){});
+            }
+            if (primary.readyState >= 3) {
+                playBoth();
             } else {
-                primary.addEventListener('canplay', function onReady() {
-                    primary.removeEventListener('canplay', onReady);
-                    primary.play().catch(function(){});
-                    playSecondary();
+                primary.addEventListener('canplay', function handler() {
+                    primary.removeEventListener('canplay', handler);
+                    playBoth();
                 });
             }
         }
@@ -301,7 +286,7 @@
 
         startVideos();
 
-        // ── Enter site ────────────────────────────────────────────
+        /* ── Enter site ── */
         var _entered = false;
         function enterSite() {
             if (_entered) return;
@@ -309,7 +294,9 @@
             sessionStorage.setItem('site_entered', '1');
             audio.play()
                 .then(function () { window._restoreMusicTime && window._restoreMusicTime(); })
-                .catch(function () { document.addEventListener('click', function () { audio.play(); }, { once: true }); });
+                .catch(function () {
+                    document.addEventListener('click', function () { audio.play().catch(function(){}); }, { once: true });
+                });
             if (playPauseBtn) playPauseBtn.classList.replace('fa-play', 'fa-pause');
             overlay.style.opacity = '0';
             setTimeout(function () {
@@ -324,7 +311,6 @@
         window._enterSite = enterSite;
 
         if (sessionStorage.getItem('site_entered')) {
-            // Already entered this session — kill overlay instantly, no fade
             overlay.style.transition = 'none';
             overlay.style.display    = 'none';
             mainContent.classList.add('visible');
@@ -332,28 +318,30 @@
             fixedPlayer.classList.add('visible');
             audio.play()
                 .then(function () { window._restoreMusicTime && window._restoreMusicTime(); })
-                .catch(function () { document.addEventListener('click', function () { audio.play(); }, { once: true }); });
+                .catch(function () {
+                    document.addEventListener('click', function () { audio.play().catch(function(){}); }, { once: true });
+                });
             if (playPauseBtn) playPauseBtn.classList.replace('fa-play', 'fa-pause');
             setTimeout(function () { window._ropeInit && window._ropeInit(); }, 80);
         } else {
             overlay.addEventListener('click', enterSite);
         }
 
-        // ── Toast ─────────────────────────────────────────────────
+        /* ── Toast ── */
         function showToast(msg, type) {
             var t = document.getElementById('toast');
             t.textContent = msg; t.className = type || ''; t.style.opacity = '1';
             setTimeout(function () { t.style.opacity = '0'; t.className = ''; }, 3000);
         }
 
-        // ── Copy email ────────────────────────────────────────────
+        /* ── Copy email ── */
         document.getElementById('copy-btn').addEventListener('click', function () {
             navigator.clipboard.writeText('shub.professional@gmail.com')
                 .then(function () { showToast('Email copied!', 'success'); })
                 .catch(function () { showToast('Could not copy.', 'error'); });
         });
 
-        // ── Send message ──────────────────────────────────────────
+        /* ── Send message ── */
         document.getElementById('send-btn').addEventListener('click', function () {
             var name  = document.getElementById('f-name').value.trim();
             var email = document.getElementById('f-email').value.trim();
@@ -363,13 +351,12 @@
 
             var btn = document.getElementById('send-btn');
             btn.classList.add('loading'); btn.disabled = true;
-
             function finish() { btn.classList.remove('loading'); btn.disabled = false; }
 
             function fallbackMailto() {
-                var s = encodeURIComponent('Message from ' + name);
-                var b = encodeURIComponent('From: ' + name + ' <' + email + '>\n\n' + msg);
-                window.open('mailto:shub.professional@gmail.com?subject=' + s + '&body=' + b);
+                window.open('mailto:shub.professional@gmail.com?subject='
+                    + encodeURIComponent('Message from ' + name)
+                    + '&body=' + encodeURIComponent('From: ' + name + ' <' + email + '>\n\n' + msg));
                 showToast('Opening mail client...', '');
             }
 
@@ -378,15 +365,12 @@
             emailjs.send('service_wfciems', 'template_srqhd09', { name: name, email: email, message: msg })
                 .then(function () {
                     showToast('Message sent!', 'success');
-                    ['f-name', 'f-email', 'f-message'].forEach(function (id) {
+                    ['f-name','f-email','f-message'].forEach(function (id) {
                         document.getElementById(id).value = '';
                     });
                     finish();
                 })
-                .catch(function () {
-                    fallbackMailto();
-                    finish();
-                });
+                .catch(function () { fallbackMailto(); finish(); });
         });
     });
     </script>

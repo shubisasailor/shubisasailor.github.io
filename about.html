@@ -25,9 +25,11 @@
     </script>
     <script src="js/rope-theme.js" defer></script>
     <style>
+        /* ── Background videos ── */
         #yt-dark, #yt-light {
             position: fixed; inset: 0; z-index: 0;
-            pointer-events: none; overflow: hidden; transition: opacity 0.65s ease;
+            pointer-events: none; overflow: hidden;
+            transition: opacity 0.65s ease;
         }
         #yt-dark video, #yt-light video {
             position: absolute;
@@ -40,31 +42,23 @@
         #yt-dark  { opacity: 1; }
         #yt-light { opacity: 0; }
 
-        /* ── Fixed nav (top) ── */
+        /* ── Fixed nav ── */
         #fixed-nav {
-            position: fixed;
-            top: 20px;
-            left: 50%;
+            position: fixed; top: 20px; left: 50%;
             transform: translateX(-50%);
-            width: calc(100% - 32px);
-            max-width: 450px;
-            z-index: 200;
-            opacity: 0; visibility: hidden;
+            width: calc(100% - 32px); max-width: 450px;
+            z-index: 200; opacity: 0; visibility: hidden;
             transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1),
                         visibility 1.5s cubic-bezier(0.19,1,0.22,1);
         }
         #fixed-nav.visible { opacity: 1; visibility: visible; }
 
-        /* ── Fixed player (bottom) ── */
+        /* ── Fixed player ── */
         #fixed-player {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
+            position: fixed; bottom: 20px; left: 50%;
             transform: translateX(-50%);
-            width: calc(100% - 32px);
-            max-width: 450px;
-            z-index: 200;
-            opacity: 0; visibility: hidden;
+            width: calc(100% - 32px); max-width: 450px;
+            z-index: 200; opacity: 0; visibility: hidden;
             transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1),
                         visibility 1.5s cubic-bezier(0.19,1,0.22,1);
         }
@@ -72,26 +66,20 @@
 
         /* ── Scrollable middle ── */
         .card-container {
-            position: fixed;
-            inset: 0;
-            z-index: 5;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow-y: auto;
-            overflow-x: hidden;
+            position: fixed; inset: 0; z-index: 5;
+            display: flex; flex-direction: column; align-items: center;
+            overflow-y: auto; overflow-x: hidden;
             padding: 88px 16px 100px !important;
-            width: 100%;
-            opacity: 0; visibility: hidden;
+            width: 100%; opacity: 0; visibility: hidden;
             transition: opacity 1.5s cubic-bezier(0.19,1,0.22,1),
                         visibility 1.5s cubic-bezier(0.19,1,0.22,1);
-            scrollbar-width: none;
-            -ms-overflow-style: none;
+            scrollbar-width: none; -ms-overflow-style: none;
         }
         .card-container::-webkit-scrollbar { display: none; }
         .card-container.visible { opacity: 1; visibility: visible; }
         .glass-card { width: 100% !important; max-width: 450px; }
 
+        /* ── Typography ── */
         .section-label {
             font-size: 0.60rem; letter-spacing: 3px; font-weight: bold;
             margin-bottom: 14px; text-transform: uppercase;
@@ -101,8 +89,11 @@
             font-size: 0.84rem; line-height: 1.8;
             color: var(--bio-text-color, rgba(255,255,255,0.75)); margin: 0;
         }
-        .card-divider { height: 1px; background: var(--divider, rgba(255,255,255,0.07)); margin: 16px 0; }
+        .card-divider {
+            height: 1px; background: var(--divider, rgba(255,255,255,0.07)); margin: 16px 0;
+        }
 
+        /* ── Skills ── */
         .skills-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
         .skill-tag {
             font-size: 0.72rem; letter-spacing: 1px; padding: 5px 12px; border-radius: 6px;
@@ -113,116 +104,237 @@
         }
         .skill-tag:hover { background: rgba(255,255,255,0.11); border-color: rgba(255,255,255,0.26); color: white; }
 
-        /* ── GitHub repos ── */
-        .repo-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .repo-card {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            padding: 11px 14px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.07);
+        /* ── PROJECTS BUTTON ── */
+        #projects-btn {
+            width: 100%; padding: 11px 16px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.09);
             border-radius: 9px;
-            text-decoration: none;
-            color: inherit;
-            transition: background 0.2s, border-color 0.2s, transform 0.15s;
+            color: rgba(255,255,255,0.55);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.70rem; letter-spacing: 2.5px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 9px;
+            transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s;
+            position: relative; overflow: hidden;
         }
+        /* shimmer on hover */
+        #projects-btn::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%);
+            transform: translateX(-100%);
+            transition: transform 0.55s ease;
+        }
+        #projects-btn:hover::after { transform: translateX(100%); }
+        #projects-btn:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.20);
+            color: rgba(255,255,255,0.88);
+        }
+        #projects-btn:active { transform: scale(0.985); }
+        #projects-btn .btn-chevron {
+            font-size: 0.58rem;
+            color: rgba(255,255,255,0.30);
+            transition: transform 0.32s cubic-bezier(0.34,1.56,0.64,1), color 0.2s;
+        }
+        #projects-btn.open .btn-chevron {
+            transform: rotate(180deg);
+            color: rgba(255,255,255,0.60);
+        }
+
+        /* ── PROJECTS PANEL (desktop: side card) ── */
+        #projects-panel {
+            position: fixed;
+            /* vertically centered, positioned to the right of the main card */
+            top: 50%;
+            left: calc(50% + 244px);
+            transform: translateY(-50%) translateX(24px);
+            width: 252px;
+            max-height: calc(100vh - 160px);
+            background: rgba(4,4,8,0.68);
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 14px;
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+            box-shadow:
+                0 0 0 1px rgba(255,255,255,0.04),
+                0 28px 56px rgba(0,0,0,0.65),
+                inset 0 1px 0 rgba(255,255,255,0.07);
+            z-index: 300;
+            opacity: 0; visibility: hidden;
+            display: flex; flex-direction: column;
+            transition:
+                opacity   0.30s ease,
+                visibility 0.30s,
+                transform  0.38s cubic-bezier(0.34,1.56,0.64,1);
+            pointer-events: none;
+        }
+        #projects-panel.open {
+            opacity: 1; visibility: visible;
+            transform: translateY(-50%) translateX(0);
+            pointer-events: auto;
+        }
+
+        /* ── Panel header ── */
+        .panel-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 13px 15px 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            flex-shrink: 0;
+        }
+        .panel-title {
+            font-size: 0.58rem; letter-spacing: 3px; font-weight: bold;
+            text-transform: uppercase; color: rgba(255,255,255,0.40);
+        }
+        .panel-close {
+            font-size: 0.68rem; color: rgba(255,255,255,0.22);
+            cursor: pointer; padding: 3px 5px; border-radius: 4px;
+            transition: color 0.2s, background 0.2s;
+        }
+        .panel-close:hover { color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.06); }
+
+        /* ── Panel scrollable body ── */
+        .panel-body {
+            overflow-y: auto; overflow-x: hidden;
+            flex: 1; padding: 10px 10px 12px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.10) transparent;
+        }
+        .panel-body::-webkit-scrollbar { width: 3px; }
+        .panel-body::-webkit-scrollbar-track { background: transparent; }
+        .panel-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius: 10px; }
+
+        /* ── Repo rows inside panel ── */
+        .repo-card {
+            display: flex; align-items: center; gap: 9px;
+            padding: 9px 11px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px; text-decoration: none; color: inherit;
+            margin-bottom: 6px;
+            transition: background 0.18s, border-color 0.18s, transform 0.12s;
+        }
+        .repo-card:last-child { margin-bottom: 0; }
         .repo-card:hover {
             background: rgba(255,255,255,0.07);
-            border-color: rgba(255,255,255,0.18);
-            transform: translateX(3px);
+            border-color: rgba(255,255,255,0.16);
+            transform: translateX(2px);
         }
-        .repo-card:active { transform: translateX(3px) scale(0.99); }
-        .repo-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            min-width: 0;
-            flex: 1;
-        }
-        .repo-icon {
-            font-size: 0.78rem;
-            color: rgba(255,255,255,0.28);
-            flex-shrink: 0;
-        }
+        .repo-card:active { transform: translateX(2px) scale(0.985); }
+        .repo-left { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+        .repo-icon { font-size: 0.72rem; color: rgba(255,255,255,0.22); flex-shrink: 0; }
         .repo-name {
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: rgba(255,255,255,0.80);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            letter-spacing: 0.3px;
+            font-size: 0.73rem; font-weight: 600;
+            color: rgba(255,255,255,0.78);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        .repo-lang {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.64rem;
-            color: rgba(255,255,255,0.28);
-            letter-spacing: 0.4px;
-            flex-shrink: 0;
-            white-space: nowrap;
-        }
-        .repo-lang-dot {
-            width: 7px; height: 7px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-        .repo-arrow {
-            font-size: 0.60rem;
-            color: rgba(255,255,255,0.20);
-            flex-shrink: 0;
-            transition: color 0.2s;
-        }
+        .repo-lang-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .repo-arrow { font-size: 0.54rem; color: rgba(255,255,255,0.16); transition: color 0.18s; flex-shrink: 0; }
         .repo-card:hover .repo-arrow { color: rgba(255,255,255,0.55); }
 
-        /* Skeleton */
+        /* Skeleton shimmer */
         .repo-skeleton {
-            height: 42px;
-            background: rgba(255,255,255,0.03);
+            height: 38px; background: rgba(255,255,255,0.03);
             border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 9px;
+            border-radius: 8px; margin-bottom: 6px;
             animation: skPulse 1.6s ease-in-out infinite;
         }
         .repo-skeleton:nth-child(2) { animation-delay: 0.15s; }
         .repo-skeleton:nth-child(3) { animation-delay: 0.30s; }
-        @keyframes skPulse { 0%,100%{opacity:0.25} 50%{opacity:0.60} }
-
+        @keyframes skPulse { 0%,100%{opacity:0.18} 50%{opacity:0.50} }
         .repo-error {
-            font-size: 0.72rem;
-            color: rgba(255,255,255,0.28);
-            letter-spacing: 1px;
+            font-size: 0.70rem; color: rgba(255,255,255,0.28);
+            letter-spacing: 0.5px; padding: 6px 0;
         }
 
-        .song-title   { font-size: 0.78rem; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: rgba(255,255,255,0.65) !important; }
-        #music-time   { font-size: 0.65rem; opacity: 0.45; white-space: nowrap; min-width: 32px; text-align: right; color: var(--text, white); }
-        #music-progress { background: rgba(255,255,255,0.55) !important; box-shadow: 0 0 7px rgba(255,255,255,0.18) !important; }
+        /* ── MOBILE: bottom sheet ── */
+        @media (max-width: 700px) {
+            #projects-panel {
+                /* reset desktop */
+                top: auto !important;
+                left: 50% !important;
+                width: calc(100% - 32px) !important;
+                max-width: 450px !important;
+                max-height: 52vh !important;
+                bottom: 90px;
+                /* bottom-sheet slide up */
+                transform: translateX(-50%) translateY(110%) !important;
+                border-radius: 14px;
+                transition:
+                    opacity   0.30s ease,
+                    visibility 0.30s,
+                    transform  0.40s cubic-bezier(0.25,1.4,0.5,1) !important;
+            }
+            #projects-panel.open {
+                transform: translateX(-50%) translateY(0) !important;
+                opacity: 1; visibility: visible;
+            }
+            /* show backdrop on mobile */
+            #panel-backdrop { display: block; }
+            /* drag handle visual cue */
+            .panel-drag-handle { display: block; }
+        }
+
+        /* Drag handle (mobile only) */
+        .panel-drag-handle {
+            display: none;
+            width: 36px; height: 4px;
+            background: rgba(255,255,255,0.18);
+            border-radius: 10px;
+            margin: 8px auto 0;
+            flex-shrink: 0;
+        }
+
+        /* Mobile tap-to-close backdrop */
+        #panel-backdrop {
+            display: none;
+            position: fixed; inset: 0; z-index: 299;
+            background: rgba(0,0,0,0.40);
+            backdrop-filter: blur(3px);
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.30s, visibility 0.30s;
+        }
+        #panel-backdrop.open { opacity: 1; visibility: visible; }
+
+        /* ── Music player ── */
+        .song-title {
+            font-size: 0.78rem; font-weight: bold; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis;
+            color: rgba(255,255,255,0.65) !important;
+        }
+        #music-time {
+            font-size: 0.65rem; opacity: 0.45; white-space: nowrap;
+            min-width: 32px; text-align: right; color: var(--text, white);
+        }
+        #music-progress {
+            background: rgba(255,255,255,0.55) !important;
+            box-shadow: 0 0 7px rgba(255,255,255,0.18) !important;
+        }
     </style>
 </head>
 <body class="about-page theme-dark">
 
-    <!-- Background videos -->
+    <!-- Background videos — NO autoplay attr; JS triggers play after canplay -->
     <div id="yt-dark">
-        <video id="vid-dark" muted loop playsinline><source src="media/dark.webm" type="video/webm"></video>
+        <video id="vid-dark" muted loop playsinline>
+            <source src="media/dark.webm" type="video/webm">
+        </video>
     </div>
     <div id="yt-light">
-        <video id="vid-light" muted loop playsinline><source src="media/light.webm" type="video/webm"></video>
+        <video id="vid-light" muted loop playsinline>
+            <source src="media/light.webm" type="video/webm">
+        </video>
     </div>
     <div id="bg-video-overlay"></div>
 
-    <!-- Overlay -->
+    <!-- Entry overlay -->
     <div id="overlay">
         <div class="overlay-blur"></div>
         <div class="enter-button">click to enter...</div>
     </div>
 
-    <!-- Volume control -->
+    <!-- Volume -->
     <div class="top-left-wrapper">
         <div class="volume-container">
             <i class="fas fa-volume-up control-icon" id="mute-btn"></i>
@@ -232,7 +344,7 @@
 
     <audio id="bg-audio" loop><source src="" type="audio/mpeg"></audio>
 
-    <!-- Fixed nav (top) -->
+    <!-- Fixed nav -->
     <div id="fixed-nav">
         <div class="glass-card" style="padding:16px 20px;">
             <div class="nav-tabs" style="display:flex;justify-content:space-around;">
@@ -243,7 +355,7 @@
         </div>
     </div>
 
-    <!-- Fixed player (bottom) -->
+    <!-- Fixed player -->
     <div id="fixed-player">
         <div class="glass-card" style="padding:15px 18px !important;">
             <div style="display:flex;align-items:center;gap:13px;">
@@ -268,7 +380,24 @@
         </div>
     </div>
 
-    <!-- Scrollable middle content -->
+    <!-- Mobile backdrop -->
+    <div id="panel-backdrop"></div>
+
+    <!-- Projects panel -->
+    <div id="projects-panel">
+        <div class="panel-drag-handle"></div>
+        <div class="panel-header">
+            <span class="panel-title">projects</span>
+            <i class="fas fa-times panel-close" id="panel-close-btn"></i>
+        </div>
+        <div class="panel-body" id="repo-list">
+            <div class="repo-skeleton"></div>
+            <div class="repo-skeleton"></div>
+            <div class="repo-skeleton"></div>
+        </div>
+    </div>
+
+    <!-- Main scrollable card -->
     <div class="card-container" id="main-content">
         <div class="glass-card">
             <div class="section-label">who i am</div>
@@ -293,135 +422,140 @@
                 <span class="skill-tag">C++</span>
             </div>
             <div class="card-divider"></div>
-            <div class="section-label">projects</div>
-            <!-- Repo cards injected by JS below -->
-            <div class="repo-grid" id="repo-grid">
-                <div class="repo-skeleton"></div>
-                <div class="repo-skeleton"></div>
-                <div class="repo-skeleton"></div>
-            </div>
+            <!-- Single button — no section label, no repo list inline -->
+            <button id="projects-btn">
+                <i class="fab fa-github" style="font-size:0.78rem;opacity:0.50;"></i>
+                VIEW PROJECTS
+                <i class="fas fa-chevron-down btn-chevron"></i>
+            </button>
         </div>
     </div>
 
-    <!-- ── GitHub public repos ─────────────────────────────────── -->
+    <!-- ═══════════════════════════════ GITHUB FETCH ══════════════════════════════ -->
     <script>
     (function () {
         var GITHUB_USER = 'ZetsuoNoShub';
-        var grid = document.getElementById('repo-grid');
+        var list        = document.getElementById('repo-list');
+        var fetched     = false;
 
         var LANG_COLORS = {
-            'JavaScript': '#f1e05a',
-            'TypeScript': '#3178c6',
-            'Python':     '#3572A5',
-            'HTML':       '#e34c26',
-            'CSS':        '#563d7c',
-            'Java':       '#b07219',
-            'C++':        '#f34b7d',
-            'C':          '#555555',
-            'C#':         '#178600',
-            'Shell':      '#89e051',
-            'Rust':       '#dea584',
-            'Go':         '#00ADD8',
-            'Ruby':       '#701516',
-            'PHP':        '#4F5D95',
-            'Swift':      '#F05138',
-            'Kotlin':     '#A97BFF',
-            'Dart':       '#00B4AB'
+            'JavaScript':'#f1e05a','TypeScript':'#3178c6','Python':'#3572A5',
+            'HTML':'#e34c26','CSS':'#563d7c','Java':'#b07219',
+            'C++':'#f34b7d','C':'#555555','C#':'#178600',
+            'Shell':'#89e051','Rust':'#dea584','Go':'#00ADD8',
+            'Ruby':'#701516','PHP':'#4F5D95','Swift':'#F05138',
+            'Kotlin':'#A97BFF','Dart':'#00B4AB'
         };
 
         function buildCard(repo) {
             var a = document.createElement('a');
-            a.className    = 'repo-card';
-            a.href         = repo.html_url;
-            a.target       = '_blank';
-            a.rel          = 'noopener noreferrer';
-            a.title        = repo.description || repo.name;
+            a.className = 'repo-card';
+            a.href = repo.html_url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+            a.title = repo.description || repo.name;
 
-            // Left: icon + name
             var left = document.createElement('div');
             left.className = 'repo-left';
-
             var icon = document.createElement('i');
             icon.className = 'fab fa-github repo-icon';
-            left.appendChild(icon);
-
             var name = document.createElement('span');
-            name.className   = 'repo-name';
-            name.textContent = repo.name;
-            left.appendChild(name);
-
+            name.className = 'repo-name'; name.textContent = repo.name;
+            left.appendChild(icon); left.appendChild(name);
             a.appendChild(left);
 
-            // Middle: language badge
             if (repo.language) {
-                var lang = document.createElement('span');
-                lang.className = 'repo-lang';
-
                 var dot = document.createElement('span');
                 dot.className = 'repo-lang-dot';
-                dot.style.background = LANG_COLORS[repo.language] || 'rgba(255,255,255,0.30)';
-                lang.appendChild(dot);
-                lang.appendChild(document.createTextNode(repo.language));
-                a.appendChild(lang);
+                dot.style.background = LANG_COLORS[repo.language] || 'rgba(255,255,255,0.28)';
+                dot.title = repo.language;
+                a.appendChild(dot);
             }
 
-            // Right: arrow
             var arrow = document.createElement('i');
             arrow.className = 'fas fa-arrow-up-right-from-square repo-arrow';
             a.appendChild(arrow);
-
             return a;
         }
 
-        fetch('https://api.github.com/users/' + GITHUB_USER + '/repos?per_page=100&sort=updated')
-            .then(function (r) {
-                if (!r.ok) throw new Error('GitHub ' + r.status);
-                return r.json();
-            })
-            .then(function (repos) {
-                // Exclude forks; sort by stars desc, then last-updated desc
-                var sorted = repos
-                    .filter(function (r) { return !r.fork; })
-                    .sort(function (a, b) {
-                        if (b.stargazers_count !== a.stargazers_count)
-                            return b.stargazers_count - a.stargazers_count;
-                        return new Date(b.updated_at) - new Date(a.updated_at);
-                    });
+        window._fetchRepos = function () {
+            if (fetched) return;
+            fetched = true;
 
-                grid.innerHTML = '';
-
-                if (!sorted.length) {
-                    var msg = document.createElement('span');
-                    msg.className   = 'repo-error';
-                    msg.textContent = 'No public repositories yet.';
-                    grid.appendChild(msg);
-                    return;
-                }
-
-                sorted.forEach(function (repo) {
-                    grid.appendChild(buildCard(repo));
+            fetch('https://api.github.com/users/' + GITHUB_USER + '/repos?per_page=100&sort=updated')
+                .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+                .then(function (repos) {
+                    var sorted = repos
+                        .filter(function (r) { return !r.fork; })
+                        .sort(function (a, b) {
+                            if (b.stargazers_count !== a.stargazers_count)
+                                return b.stargazers_count - a.stargazers_count;
+                            return new Date(b.updated_at) - new Date(a.updated_at);
+                        });
+                    list.innerHTML = '';
+                    if (!sorted.length) {
+                        var msg = document.createElement('span');
+                        msg.className = 'repo-error';
+                        msg.textContent = 'No public repositories yet.';
+                        list.appendChild(msg); return;
+                    }
+                    sorted.forEach(function (repo) { list.appendChild(buildCard(repo)); });
+                })
+                .catch(function () {
+                    list.innerHTML = '';
+                    var fb = document.createElement('a');
+                    fb.className = 'repo-card';
+                    fb.href = 'https://github.com/' + GITHUB_USER;
+                    fb.target = '_blank'; fb.rel = 'noopener noreferrer';
+                    fb.innerHTML = '<div class="repo-left"><i class="fab fa-github repo-icon"></i>'
+                        + '<span class="repo-name">View GitHub profile</span></div>'
+                        + '<i class="fas fa-arrow-up-right-from-square repo-arrow"></i>';
+                    list.appendChild(fb);
                 });
-            })
-            .catch(function () {
-                // Graceful fallback: link to profile
-                grid.innerHTML = '';
-                var fallback = document.createElement('a');
-                fallback.className = 'repo-card';
-                fallback.href      = 'https://github.com/' + GITHUB_USER;
-                fallback.target    = '_blank';
-                fallback.rel       = 'noopener noreferrer';
-                fallback.innerHTML =
-                    '<div class="repo-left">'
-                    + '<i class="fab fa-github repo-icon"></i>'
-                    + '<span class="repo-name">View GitHub profile</span>'
-                    + '</div>'
-                    + '<i class="fas fa-arrow-up-right-from-square repo-arrow"></i>';
-                grid.appendChild(fallback);
-            });
+        };
     })();
     </script>
 
-    <!-- ── Site enter / video logic ───────────────────────────── -->
+    <!-- ═══════════════════════════ PANEL TOGGLE ══════════════════════════════ -->
+    <script>
+    (function () {
+        var btn      = document.getElementById('projects-btn');
+        var panel    = document.getElementById('projects-panel');
+        var closeBtn = document.getElementById('panel-close-btn');
+        var backdrop = document.getElementById('panel-backdrop');
+        var open     = false;
+
+        function openPanel() {
+            open = true;
+            panel.classList.add('open');
+            btn.classList.add('open');
+            backdrop.classList.add('open');
+            window._fetchRepos && window._fetchRepos();
+        }
+        function closePanel() {
+            open = false;
+            panel.classList.remove('open');
+            btn.classList.remove('open');
+            backdrop.classList.remove('open');
+        }
+
+        btn.addEventListener('click', function () { open ? closePanel() : openPanel(); });
+        closeBtn.addEventListener('click', closePanel);
+        backdrop.addEventListener('click', closePanel);
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && open) closePanel();
+        });
+
+        // Mobile: swipe down on panel to dismiss
+        var swipeStartY = 0;
+        panel.addEventListener('touchstart', function (e) {
+            swipeStartY = e.touches[0].clientY;
+        }, { passive: true });
+        panel.addEventListener('touchend', function (e) {
+            if (e.changedTouches[0].clientY - swipeStartY > 55) closePanel();
+        }, { passive: true });
+    })();
+    </script>
+
+    <!-- ═══════════════════════════ SITE ENTER / VIDEOS ════════════════════════ -->
     <script>
     window.addEventListener('load', function () {
         window.startTitleLoop && window.startTitleLoop('About', 300);
@@ -437,34 +571,44 @@
         var vidDark      = document.getElementById('vid-dark');
         var vidLight     = document.getElementById('vid-light');
 
-        // ── Videos: play only once buffered ──────────────────────
+        /* ── Correct video shown immediately; play after buffer ── */
         function startVideos() {
-            var isDark    = localStorage.getItem('theme') !== 'light';
+            var isDark = localStorage.getItem('theme') !== 'light';
+
+            // Snap opacity with no transition to avoid flash
             ytDark.style.transition  = 'none';
             ytLight.style.transition = 'none';
             ytDark.style.opacity  = isDark ? '1' : '0';
             ytLight.style.opacity = isDark ? '0' : '1';
+
+            // Re-enable crossfade transition on next frame
             requestAnimationFrame(function () {
                 requestAnimationFrame(function () {
                     ytDark.style.transition  = 'opacity 0.65s ease';
                     ytLight.style.transition = 'opacity 0.65s ease';
                 });
             });
-            var primary   = isDark ? vidDark  : vidLight;
+
+            var primary   = isDark ? vidDark : vidLight;
             var secondary = isDark ? vidLight : vidDark;
-            function playSecondary() { secondary.play().catch(function(){}); }
-            if (primary.readyState >= 3) {
+
+            function playBoth() {
                 primary.play().catch(function(){});
-                playSecondary();
+                secondary.play().catch(function(){});
+            }
+
+            // readyState >= 3 = HAVE_FUTURE_DATA: enough buffered to play
+            if (primary.readyState >= 3) {
+                playBoth();
             } else {
-                primary.addEventListener('canplay', function onReady() {
-                    primary.removeEventListener('canplay', onReady);
-                    primary.play().catch(function(){});
-                    playSecondary();
+                primary.addEventListener('canplay', function handler() {
+                    primary.removeEventListener('canplay', handler);
+                    playBoth();
                 });
             }
         }
 
+        // rope-theme.js calls this on every toggle
         window._syncBgVideos = function (isNowDark) {
             ytDark.style.opacity  = isNowDark ? '1' : '0';
             ytLight.style.opacity = isNowDark ? '0' : '1';
@@ -472,16 +616,22 @@
 
         startVideos();
 
-        // ── Enter site ────────────────────────────────────────────
+        /* ── Enter site ── */
         var _entered = false;
         function enterSite() {
             if (_entered) return;
             _entered = true;
             sessionStorage.setItem('site_entered', '1');
+
             audio.play()
                 .then(function () { window._restoreMusicTime && window._restoreMusicTime(); })
-                .catch(function () { document.addEventListener('click', function () { audio.play(); }, { once: true }); });
+                .catch(function () {
+                    document.addEventListener('click', function () {
+                        audio.play().catch(function(){});
+                    }, { once: true });
+                });
             if (playPauseBtn) playPauseBtn.classList.replace('fa-play', 'fa-pause');
+
             overlay.style.opacity = '0';
             setTimeout(function () {
                 overlay.style.display = 'none';
@@ -495,7 +645,7 @@
         window._enterSite = enterSite;
 
         if (sessionStorage.getItem('site_entered')) {
-            // Already entered this session — kill overlay instantly, no fade
+            // Returning visitor — kill overlay with zero delay, no fade flash
             overlay.style.transition = 'none';
             overlay.style.display    = 'none';
             mainContent.classList.add('visible');
@@ -503,7 +653,11 @@
             fixedPlayer.classList.add('visible');
             audio.play()
                 .then(function () { window._restoreMusicTime && window._restoreMusicTime(); })
-                .catch(function () { document.addEventListener('click', function () { audio.play(); }, { once: true }); });
+                .catch(function () {
+                    document.addEventListener('click', function () {
+                        audio.play().catch(function(){});
+                    }, { once: true });
+                });
             if (playPauseBtn) playPauseBtn.classList.replace('fa-play', 'fa-pause');
             setTimeout(function () { window._ropeInit && window._ropeInit(); }, 80);
         } else {
