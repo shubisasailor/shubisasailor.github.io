@@ -51,33 +51,28 @@
     }
 
     // ── Banner ────────────────────────────────────────────────────
+    // Fallback banner hash in case Lanyard doesn't return one
+    var FALLBACK_BANNER = '42f0f76f36b11eddbda08547db73bf3d';
+
     function applyBanner(user) {
         if (!heroImgEl || !heroBgEl) return;
 
-        if (user && user.banner) {
-            var ext = user.banner.startsWith('a_') ? 'gif' : 'webp';
-            var url = 'https://cdn.discordapp.com/banners/'
-                + DISCORD_ID + '/' + user.banner + '.' + ext + '?size=600';
+        var bannerHash = (user && user.banner) ? user.banner : FALLBACK_BANNER;
+        var ext = bannerHash.startsWith('a_') ? 'gif' : 'webp';
+        var url = 'https://cdn.discordapp.com/banners/'
+            + DISCORD_ID + '/' + bannerHash + '.' + ext + '?size=600';
 
-            // Reset any stale error state before setting a new src
-            heroImgEl.removeAttribute('src');
-            heroImgEl.onerror = null;
-            // Attach handlers BEFORE setting src so cached images don't
-            // fire onload before the handler is registered.
-            heroImgEl.onload  = function () { heroImgEl.classList.add('visible'); };
-            heroImgEl.onerror = function () {
-                heroImgEl.style.display = 'none';
-                useAccentColor(user);
-            };
-            heroImgEl.src = url;
-
-            // If the image was already cached and loaded synchronously,
-            // the onload above may never fire — handle that edge case.
-            if (heroImgEl.complete && heroImgEl.naturalWidth) {
-                heroImgEl.classList.add('visible');
-            }
-        } else {
+        heroImgEl.removeAttribute('src');
+        heroImgEl.onerror = null;
+        heroImgEl.onload  = function () { heroImgEl.classList.add('visible'); };
+        heroImgEl.onerror = function () {
+            heroImgEl.style.display = 'none';
             useAccentColor(user);
+        };
+        heroImgEl.src = url;
+
+        if (heroImgEl.complete && heroImgEl.naturalWidth) {
+            heroImgEl.classList.add('visible');
         }
     }
 
