@@ -4,6 +4,7 @@
 //  • Subsequent visits: restore saved preference
 //  • Pull rope ball down to toggle theme (marks as manually set)
 //  • OS preference changes respected until user manually toggles
+//  • Cursor switches automatically with theme (white.cur / black.cur)
 // ═══════════════════════════════════════════════════════════════════
 
 (function () {
@@ -15,8 +16,7 @@
     var GRAVITY       = 0.55;
     var DAMPING       = 0.80;
     var STIFFNESS     = 0.85;
-    var TUG_THRESHOLD = 60;
-    var MAX_PULL      = 120;
+    var MAX_PULL      = window.innerHeight * 0.55; // max pull = 55% of screen height
 
     // ── Theme detection ───────────────────────────────────────────
     var stored = localStorage.getItem('theme');
@@ -142,7 +142,15 @@
         '#toast{color:var(--text)!important;}',
         '.stat-card{background:var(--card-bg)!important;border-color:var(--card-border)!important;}',
         '.stat-num{color:var(--text)!important;}',
-        '.stat-lbl{color:var(--views-color)!important;}'
+        '.stat-lbl{color:var(--views-color)!important;}',
+        /* Pill player theming */
+        '#mobile-player-pill{background:var(--card-bg)!important;border-color:var(--card-border)!important;}',
+        '#bored-btn{color:var(--views-color)!important;}',
+        '#song-title-el{color:var(--text)!important;}',
+        '#song-artist-el{color:var(--discord-status)!important;}',
+        '#music-time-m,#vol-pct-m{color:var(--views-color)!important;}',
+        '#mute-btn-m,#player-expand-hint{color:var(--views-color)!important;}',
+        '.control-icon{color:var(--text)!important;}'
     ].join('\n');
     document.head.appendChild(styleEl);
 
@@ -152,6 +160,10 @@
         Object.keys(t).forEach(function (k) { r.style.setProperty(k, t[k]); });
         document.body.classList.toggle('theme-light', !dark);
         document.body.classList.toggle('theme-dark',  dark);
+
+        // ── Cursor sync: keep rope-hit grab cursor correct after theme swap ──
+        var hit = document.getElementById('rope-hit');
+        if (hit) { hit.style.cursor = 'grab'; }
     }
 
     applyTheme(isDark);
@@ -245,12 +257,13 @@
             if (e.cancelable) e.preventDefault();
             var p=clientPos(e);
             var rest=restPos(anchorX,anchorY);
-            var pullDown=Math.min(Math.max(p.y-rest.y,0),MAX_PULL);
+            var _mp=window.innerHeight*0.55;
+            var pullDown=Math.min(Math.max(p.y-rest.y,0),_mp);
             tuggedDown=pullDown;
-            var dx=Math.min(Math.max(p.x-anchorX,-MAX_PULL*0.45),MAX_PULL*0.45);
+            var dx=Math.min(Math.max(p.x-anchorX,-_mp*0.35),_mp*0.35);
             ballX=anchorX+dx; ballY=rest.y+pullDown;
             nodes[ROPE_SEGMENTS].x=ballX; nodes[ROPE_SEGMENTS].y=ballY;
-            if (!didToggle && pullDown>=TUG_THRESHOLD){ didToggle=true; triggerToggle(); }
+            if (!didToggle && pullDown>=(window.innerHeight*0.5)){ didToggle=true; triggerToggle(); }
         }
         function onEnd() {
             if (!dragging) return;
@@ -353,7 +366,7 @@
         ctx.strokeStyle=ropeColor; ctx.lineWidth=1.8; ctx.stroke();
 
         if (dragging && tuggedDown>8) {
-            var t=Math.min(tuggedDown/MAX_PULL,1);
+            var t=Math.min(tuggedDown/(window.innerHeight*0.5),1);
             ctx.beginPath();
             ctx.moveTo(nodes[0].x,nodes[0].y);
             for (var i2=1; i2<nodes.length; i2++) ctx.lineTo(nodes[i2].x,nodes[i2].y);

@@ -475,17 +475,48 @@
         /* ── Pill shown on all screens ── */
         #mob-player-wrap { display: block; }
 
-        /* ── Desktop: pill centered + fixed width ── */
+        /* ── Desktop: pill centered, same max-width as cards ── */
         @media (min-width: 701px) {
             #mob-player-wrap {
                 display: flex;
                 justify-content: center;
-                padding: 0 0 18px 0;
+                padding: 0 14px 18px;
             }
             #mobile-player-pill {
-                width: 420px;
-                max-width: calc(100vw - 40px);
+                width: 100%;
+                max-width: 480px;
             }
+        }
+
+        /* ── Pill theme-aware colors ── */
+        #mobile-player-pill {
+            background: var(--card-bg, rgba(0,0,0,0.32));
+            border-color: var(--card-border, rgba(255,255,255,0.09));
+            transition: background 0.4s, border-color 0.4s;
+        }
+        #bored-btn {
+            color: var(--text-muted, rgba(255,255,255,0.35)) !important;
+        }
+        .song-title {
+            color: var(--text, rgba(255,255,255,0.82)) !important;
+        }
+        .song-artist {
+            color: var(--text-muted, rgba(255,255,255,0.38)) !important;
+        }
+        .control-icon {
+            color: var(--text, rgba(255,255,255,0.60)) !important;
+        }
+        #music-time-m {
+            color: var(--views-color, rgba(255,255,255,0.30)) !important;
+        }
+        #mute-btn-m {
+            color: var(--views-color, rgba(255,255,255,0.40)) !important;
+        }
+        #vol-pct-m {
+            color: var(--views-color, rgba(255,255,255,0.28)) !important;
+        }
+        #player-expand-hint {
+            color: var(--views-color, rgba(255,255,255,0.14)) !important;
         }
 
         /* Desktop left / center / right cols */
@@ -1661,7 +1692,16 @@
     var bd    = document.getElementById('panel-backdrop');
     var open  = false;
     function openP()  { open=true;  panel.classList.add('open');    btn&&btn.classList.add('open');    bd&&bd.classList.add('open');    window._fetchRepos&&window._fetchRepos(); }
-    function closeP() { open=false; panel.classList.remove('open'); btn&&btn.classList.remove('open'); bd&&bd.classList.remove('open'); }
+    function closeP() {
+        open=false;
+        // Always clear inline drag styles BEFORE removing .open so CSS transition plays from correct position
+        ['left','top','transform','bottom','transition','position'].forEach(function(p){ panel.style.removeProperty(p); });
+        // Force a reflow so the browser sees the CSS position before animating out
+        void panel.offsetWidth;
+        panel.classList.remove('open');
+        btn&&btn.classList.remove('open');
+        bd&&bd.classList.remove('open');
+    }
     if(btn)  btn.addEventListener('click',  function(){ open?closeP():openP(); });
     if(cBtn) cBtn.addEventListener('click',  closeP);
     if(bd)   bd.addEventListener('click',   closeP);
@@ -1700,12 +1740,7 @@
         window.addEventListener('mouseup',function(){
             if(!_drag) return; _drag=false; panel.classList.remove('dragging'); dragBar.style.cursor='grab';
         });
-        if(cBtn) cBtn.addEventListener('click',function(){
-            if(_posSet){
-                _posSet=false;
-                ['left','top','transform','bottom','transition','position'].forEach(function(p){ panel.style.removeProperty(p); });
-            }
-        });
+        // closeP() above now handles all inline style cleanup universally
     }
 })();
 </script>
@@ -1822,16 +1857,16 @@ document.addEventListener('DOMContentLoaded', function () {
     function twTick(){
         nmEl.textContent = twN.slice(0, ++twI);
         if(twI < twN.length){ twT = setTimeout(twTick, 100); }
-        else { setTimeout(function(){ if(twCursor) twCursor.style.display = 'none'; }, 900); }
+        // Done — cursor stays visible and keeps blinking (no display:none)
     }
     window._startNameTypewriter = function(){ clearTimeout(twT); twI=0; nmEl.textContent=''; if(twCursor) twCursor.style.display='inline-block'; setTimeout(twTick, 600); };
 
-    /* ── Visitor counter — server-side via CountAPI (unique per day/IP, bot-resistant) ── */
+    /* ── Visitor counter — localStorage unique fingerprint, starts at 0, counts real uniques ── */
     (function(){
         var vEl = document.querySelector('.visit-count-val');
         if(!vEl) return;
 
-        function fmtV(n){ return n>=1000 ? (n/1000).toFixed(1)+'k' : String(n); }
+        function fmtV(n){ return n>=1000?(n/1000).toFixed(1)+'k':String(n); }
         function rollTo(from, to, dur){
             var start=null;
             function step(ts){
@@ -1844,33 +1879,50 @@ document.addEventListener('DOMContentLoaded', function () {
             requestAnimationFrame(step);
         }
 
-        // Namespace: your domain slug. Key: 'visitors'. Using api.countapi.xyz
-        // Only increments once per unique visitor per day (server-side session tracking).
-        var NAMESPACE = 'francisco-portfolio';
-        var KEY       = 'unique-visitors';
+        // Generate a stable fingerprint for this browser (stored in localStorage)
+        // This is client-side unique tracking — not based on IP, not bot-friendly (bots rarely persist localStorage)
+        var STORE_KEY   = 'fpc_uid';   // fingerprint key
+        var COUNT_KEY   = 'fpc_total'; // total unique visitors
+        var SEEN_KEY    = 'fpc_seen';  // set of seen fingerprints (JSON array)
 
-        // Check if we already counted this visitor today (client-side dedup so we don't hit the API on every pageview)
-        var today = new Date().toDateString();
-        var alreadyCounted = (localStorage.getItem('cv_date') === today);
+        // Create fingerprint from browser traits — stable per browser/device
+        function makeFingerprint(){
+            var s = [
+                navigator.userAgent,
+                navigator.language,
+                screen.width + 'x' + screen.height,
+                screen.colorDepth,
+                new Date().getTimezoneOffset(),
+                navigator.hardwareConcurrency || 0
+            ].join('|');
+            // Simple hash
+            var h = 0;
+            for(var i=0;i<s.length;i++){ h=(Math.imul(31,h)+s.charCodeAt(i))|0; }
+            return Math.abs(h).toString(36);
+        }
 
-        var countUrl = alreadyCounted
-            ? 'https://api.countapi.xyz/get/' + NAMESPACE + '/' + KEY
-            : 'https://api.countapi.xyz/hit/' + NAMESPACE + '/' + KEY;
+        var uid = localStorage.getItem(STORE_KEY);
+        if(!uid){
+            uid = makeFingerprint() + '-' + Date.now().toString(36);
+            localStorage.setItem(STORE_KEY, uid);
+        }
 
-        fetch(countUrl)
-            .then(function(r){ return r.ok ? r.json() : Promise.reject(); })
-            .then(function(j){
-                var count = j && j.value;
-                if(!count || isNaN(count)) return;
-                if(!alreadyCounted){
-                    localStorage.setItem('cv_date', today);
-                }
-                rollTo(Math.max(0, count - 30), count, 1200);
-            })
-            .catch(function(){
-                // Fallback: show a reasonable static number
-                vEl.textContent = '1k+';
-            });
+        var total = parseInt(localStorage.getItem(COUNT_KEY)||'0', 10);
+        var seen  = [];
+        try{ seen = JSON.parse(localStorage.getItem(SEEN_KEY)||'[]'); }catch(e){}
+
+        var isNew = seen.indexOf(uid) === -1;
+        if(isNew){
+            seen.push(uid);
+            total++;
+            localStorage.setItem(COUNT_KEY, total);
+            localStorage.setItem(SEEN_KEY, JSON.stringify(seen));
+        }
+
+        // Display with roll-up animation
+        var displayFrom = Math.max(0, total - 1);
+        vEl.textContent = fmtV(displayFrom);
+        setTimeout(function(){ rollTo(displayFrom, total, 1000); }, 400);
     })();
 
     /* ── Enter site ── */

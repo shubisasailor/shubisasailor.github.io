@@ -2,10 +2,25 @@
    main.css — Francisco Portfolio
    ================================================================ */
 
-/* --- 0. Custom Cursor — desktop only (mobile uses touch-fx canvas) --- */
+/* --- 0. Custom Cursor — desktop only, theme-aware --- */
 @media (hover: hover) and (pointer: fine) {
-    *, *::before, *::after {
-        cursor: url('../media/cursor/cursor.webp') 0 0, auto !important;
+    /* Dark theme → white cursor */
+    body.theme-dark *,
+    body.theme-dark *::before,
+    body.theme-dark *::after {
+        cursor: url('../media/cursor/white.cur') 0 0, auto !important;
+    }
+    /* Light theme → black cursor */
+    body.theme-light *,
+    body.theme-light *::before,
+    body.theme-light *::after {
+        cursor: url('../media/cursor/black.cur') 0 0, auto !important;
+    }
+    /* Fallback before theme class is applied (defaults to dark) */
+    body:not(.theme-dark):not(.theme-light) *,
+    body:not(.theme-dark):not(.theme-light) *::before,
+    body:not(.theme-dark):not(.theme-light) *::after {
+        cursor: url('../media/cursor/white.cur') 0 0, auto !important;
     }
 }
 
@@ -307,6 +322,7 @@ html, body {
 
 .nav-tab:hover,
 .nav-tabs span:hover { opacity: 0.72; }
+
 /* --- 11. Fun micro-interactions --- */
 
 /* Skill tags: shimmer on hover */
