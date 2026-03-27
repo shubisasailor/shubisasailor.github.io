@@ -137,20 +137,33 @@
         '#mute-btn{color:rgba(255,255,255,0.45)!important;transition:color 0.2s!important;}',
         '#mute-btn:hover{color:rgba(255,255,255,0.90)!important;}',
         '#vol-pct{color:rgba(255,255,255,0.28)!important;}',
-        '.control-icon:not(#mute-btn){color:var(--text)!important;opacity:0.65;}',
-        '.control-icon:not(#mute-btn):hover{opacity:1!important;}',
+        '.control-icon{color:var(--text)!important;opacity:0.65;}',
+        '.control-icon:hover{opacity:1!important;}',
         '#toast{color:var(--text)!important;}',
         '.stat-card{background:var(--card-bg)!important;border-color:var(--card-border)!important;}',
         '.stat-num{color:var(--text)!important;}',
         '.stat-lbl{color:var(--views-color)!important;}',
         /* Pill player theming */
-        '#mobile-player-pill{background:var(--card-bg)!important;border-color:var(--card-border)!important;}',
+        '#mobile-player-pill{background:var(--card-bg)!important;border-color:var(--card-border)!important;transition:background 0.4s,border-color 0.4s!important;}',
         '#bored-btn{color:var(--views-color)!important;}',
         '#song-title-el{color:var(--text)!important;}',
         '#song-artist-el{color:var(--discord-status)!important;}',
         '#music-time-m,#vol-pct-m{color:var(--views-color)!important;}',
-        '#mute-btn-m,#player-expand-hint{color:var(--views-color)!important;}',
-        '.control-icon{color:var(--text)!important;}'
+        '#mute-btn-m{color:var(--views-color)!important;}',
+        '#player-expand-hint{color:var(--views-color)!important;opacity:0.55!important;}',
+        /* Progress bars respond to theme */
+        '#prog-track-m{background:var(--card-border)!important;}',
+        '#music-progress-m{background:var(--text)!important;opacity:0.60;}',
+        /* Desktop Spotify bar */
+        '#sp-title{color:var(--text)!important;}',
+        '#sp-artist{color:var(--discord-status)!important;}',
+        '#sp-prog-track,#sp-vol-track{background:var(--card-border)!important;}',
+        '#sp-prog-fill{background:var(--text)!important;opacity:0.70;}',
+        '#sp-vol-fill{background:var(--text)!important;opacity:0.60;}',
+        '#sp-time-cur,#sp-time-total{color:var(--views-color)!important;}',
+        '#sp-vol-icon{color:var(--views-color)!important;}',
+        '.sp-ctrl{color:var(--text)!important;opacity:0.55;}',
+        '.sp-ctrl:hover{opacity:1!important;}'
     ].join('\n');
     document.head.appendChild(styleEl);
 
