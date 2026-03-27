@@ -59,6 +59,9 @@
             var url = 'https://cdn.discordapp.com/banners/'
                 + DISCORD_ID + '/' + user.banner + '.' + ext + '?size=600';
 
+            // Reset any stale error state before setting a new src
+            heroImgEl.removeAttribute('src');
+            heroImgEl.onerror = null;
             // Attach handlers BEFORE setting src so cached images don't
             // fire onload before the handler is registered.
             heroImgEl.onload  = function () { heroImgEl.classList.add('visible'); };
