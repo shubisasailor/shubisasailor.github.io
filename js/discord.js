@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════
-//  discord.js — real status dot, last active, avatar via Lanyard
+//  discord.js — status, avatar, banner hero via Lanyard
 // ═══════════════════════════════════════════════════════════════════
 
 (function () {
@@ -7,11 +7,13 @@
     var USERNAME   = 'shub.is.a.sailor';
     var DISPLAY    = 'Shub';
 
-    var skeletonEl = document.getElementById('discord-skeleton');
-    var cardEl     = document.getElementById('discord-card');
-    var pfpEl      = document.getElementById('discord-pfp');
-    var nameEl     = document.getElementById('discord-name');
-    var statusEl   = document.getElementById('discord-status');
+    var skeletonEl   = document.getElementById('discord-skeleton');
+    var cardEl       = document.getElementById('discord-card');
+    var pfpEl        = document.getElementById('discord-pfp');
+    var nameEl       = document.getElementById('discord-name');
+    var statusEl     = document.getElementById('discord-status');
+    var heroBannerEl = document.getElementById('hero-banner');
+    var heroImgEl    = document.getElementById('hero-banner-img');
 
     if (!skeletonEl || !cardEl) return;
 
@@ -46,62 +48,62 @@
 
     function statusDotHTML(color) {
         return '<span style="'
-            + 'display:inline-block;'
-            + 'width:9px;height:9px;'
-            + 'border-radius:50%;'
-            + 'background:' + color + ';'
-            + 'box-shadow:0 0 6px ' + color + ';'
-            + 'margin-right:5px;'
-            + 'flex-shrink:0;'
-            + 'vertical-align:middle;'
+            + 'display:inline-block;width:9px;height:9px;border-radius:50%;'
+            + 'background:' + color + ';box-shadow:0 0 6px ' + color + ';'
+            + 'margin-right:5px;flex-shrink:0;vertical-align:middle;'
             + '"></span>';
     }
 
-    var bannerEl    = document.getElementById('discord-banner');
-    var bannerImgEl = document.getElementById('discord-banner-img');
+    function applyBanner(user) {
+        if (!heroBannerEl || !heroImgEl) return;
 
-    function applyBanner(bannerHash, bannerColor) {
-        if (bannerHash && bannerImgEl) {
-            var ext = bannerHash.startsWith('a_') ? 'gif' : 'webp';
-            var url = 'https://cdn.discordapp.com/banners/' + DISCORD_ID + '/' + bannerHash + '.' + ext + '?size=480';
-            bannerImgEl.onload = function () { bannerImgEl.classList.add('loaded'); };
-            bannerImgEl.onerror = function () { bannerImgEl.style.display = 'none'; };
-            bannerImgEl.src = url;
-        } else if (bannerColor && bannerEl) {
-            // Discord accent color as fallback gradient
-            var hex = '#' + ('000000' + bannerColor.toString(16)).slice(-6);
-            bannerEl.style.background = 'linear-gradient(135deg,' + hex + 'dd 0%,' + hex + '66 100%)';
+        if (user && user.banner) {
+            var ext = user.banner.startsWith('a_') ? 'gif' : 'webp';
+            var url = 'https://cdn.discordapp.com/banners/'
+                + DISCORD_ID + '/' + user.banner + '.' + ext + '?size=600';
+            heroImgEl.onload  = function () { heroImgEl.classList.add('visible'); };
+            heroImgEl.onerror = function () { applyAccentColor(user); };
+            heroImgEl.src = url;
+        } else {
+            applyAccentColor(user);
+        }
+    }
+
+    function applyAccentColor(user) {
+        // Use Discord accent color as a gradient fallback
+        if (user && user.accent_color) {
+            var hex = '#' + ('000000' + user.accent_color.toString(16)).slice(-6);
+            heroBannerEl.style.background =
+                'linear-gradient(135deg,' + hex + 'bb 0%,#0d0d1a 100%)';
         }
     }
 
     function render(avatarSrc, lanyardData) {
-        pfpEl.src = avatarSrc;
+        // ── Avatar ───────────────────────────────────────────────
+        // Set src after attaching onerror so it fires reliably
         pfpEl.onerror = function () {
             pfpEl.style.display = 'none';
             var init = document.createElement('div');
             init.style.cssText = [
-                'width:44px','height:44px','border-radius:50%',
+                'width:42px','height:42px','border-radius:50%',
                 'background:linear-gradient(135deg,#5865F2,#7289da)',
                 'display:flex','align-items:center','justify-content:center',
-                'font-weight:bold','font-size:1.1rem','color:white','flex-shrink:0',
-                'border:3px solid rgba(10,10,15,0.95)'
+                'font-weight:bold','font-size:1.1rem','color:white','flex-shrink:0'
             ].join(';');
             init.textContent = DISPLAY.charAt(0).toUpperCase();
-            var wrap = document.querySelector('.discord-avatar-wrap');
-            if (wrap) wrap.insertBefore(init, pfpEl);
+            cardEl.insertBefore(init, pfpEl.parentNode);
         };
+        pfpEl.src = avatarSrc;
 
+        // ── Name ─────────────────────────────────────────────────
         nameEl.textContent = DISPLAY;
 
-        // Build status line
+        // ── Status ───────────────────────────────────────────────
         var status = 'offline';
         var lastSeenTs = null;
 
         if (lanyardData) {
             status = lanyardData.discord_status || 'offline';
-            // Lanyard provides active_on_discord_mobile / desktop / web
-            // Last active timestamp isn't directly in Lanyard but we can
-            // infer from activities timestamps if present
             var acts = lanyardData.activities || [];
             for (var i = 0; i < acts.length; i++) {
                 if (acts[i].timestamps && acts[i].timestamps.start) {
@@ -109,6 +111,10 @@
                 }
             }
         }
+
+        // Update the status dot element class directly
+        var dotEl = document.getElementById('discord-dot');
+        if (dotEl) dotEl.className = 'discord-status-dot ds-' + status;
 
         var color = STATUS_COLORS[status] || STATUS_COLORS.offline;
         var label = STATUS_LABELS[status] || 'Offline';
@@ -132,42 +138,30 @@
             '</div>'
         ].join('');
 
-        // Show activity (game/spotify) if present
-        var acts2 = (lanyardData && lanyardData.activities) || [];
+        // ── Activity ─────────────────────────────────────────────
+        var acts2    = (lanyardData && lanyardData.activities) || [];
         var activity = null;
         for (var j = 0; j < acts2.length; j++) {
-            if (acts2[j].type === 2) { // Spotify
+            if (acts2[j].type === 2) {
                 activity = '🎵 ' + acts2[j].details + ' — ' + acts2[j].state;
                 break;
             }
-            if (acts2[j].type === 0 && !activity) { // Playing
+            if (acts2[j].type === 0 && !activity) {
                 activity = '🎮 ' + acts2[j].name;
             }
         }
         if (activity) {
             statusEl.innerHTML += '<div style="margin-top:4px;font-size:0.68rem;'
                 + 'color:rgba(255,255,255,0.35);white-space:nowrap;overflow:hidden;'
-                + 'text-overflow:ellipsis;max-width:180px;">'
+                + 'text-overflow:ellipsis;max-width:200px;">'
                 + activity + '</div>';
-        }
-
-        // Apply banner from lanyardData
-        if (lanyardData && lanyardData.discord_user) {
-            var u = lanyardData.discord_user;
-            applyBanner(u.banner || null, u.banner_color || null);
-        }
-
-        // Update status dot element
-        var dotEl = document.getElementById('discord-dot');
-        if (dotEl) {
-            dotEl.className = 'discord-status-dot ds-' + (status || 'offline');
         }
 
         skeletonEl.style.display = 'none';
         cardEl.classList.add('loaded');
     }
 
-    // Default avatar fallback
+    // ── Default avatar fallback ───────────────────────────────────
     var defaultIdx    = parseInt(DISCORD_ID.slice(-4)) % 6;
     var defaultAvatar = 'https://cdn.discordapp.com/embed/avatars/' + defaultIdx + '.png';
 
@@ -178,7 +172,7 @@
         render(defaultAvatar, null);
     }
 
-    var timer = setTimeout(fallback, 3000);
+    var timer = setTimeout(fallback, 3500);
 
     fetch('https://api.lanyard.rest/v1/users/' + DISCORD_ID)
         .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
@@ -186,14 +180,21 @@
             clearTimeout(timer);
             if (done) return;
             done = true;
+
             var d    = json && json.data;
             var user = d && d.discord_user;
+
+            // ── Avatar URL ────────────────────────────────────────
             var avatarUrl = defaultAvatar;
             if (user && user.avatar) {
-                var ext = user.avatar.startsWith('a_') ? '.gif' : '.webp';
+                var ext = user.avatar.startsWith('a_') ? 'gif' : 'webp';
                 avatarUrl = 'https://cdn.discordapp.com/avatars/'
-                    + DISCORD_ID + '/' + user.avatar + ext + '?size=128';
+                    + DISCORD_ID + '/' + user.avatar + '.' + ext + '?size=128';
             }
+
+            // ── Banner ────────────────────────────────────────────
+            applyBanner(user);
+
             render(avatarUrl, d);
         })
         .catch(function () { clearTimeout(timer); fallback(); });
