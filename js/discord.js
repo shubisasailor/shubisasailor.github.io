@@ -54,26 +54,8 @@
     // Fallback banner hash in case Lanyard doesn't return one
     var FALLBACK_BANNER = '42f0f76f36b11eddbda08547db73bf3d';
 
-    function applyBanner(user) {
-        if (!heroImgEl || !heroBgEl) return;
-
-        // Only attempt to override with Discord CDN banner if user actually has one
-        if (!user || !user.banner) return;
-
-        var bannerHash = user.banner;
-        var ext = bannerHash.startsWith('a_') ? 'gif' : 'webp';
-        var url = 'https://cdn.discordapp.com/banners/'
-            + DISCORD_ID + '/' + bannerHash + '.' + ext + '?size=600';
-
-        var tmpImg = new Image();
-        tmpImg.onload = function () {
-            heroImgEl.src = url;
-            heroImgEl.classList.add('visible');
-        };
-        tmpImg.onerror = function () {
-            // Keep the local banner.jpg that's already showing — do nothing
-        };
-        tmpImg.src = url;
+    function applyBanner() {
+        // Banner removed
     }
 
     function useAccentColor(user) {
