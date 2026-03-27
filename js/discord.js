@@ -69,9 +69,6 @@
                 heroImgEl.style.display = 'none';
                 useAccentColor(user);
             };
-            // crossOrigin must also be set before src to avoid CORS-triggered
-            // errors on cached responses in Chromium-based browsers.
-            heroImgEl.crossOrigin = 'anonymous';
             heroImgEl.src = url;
 
             // If the image was already cached and loaded synchronously,
