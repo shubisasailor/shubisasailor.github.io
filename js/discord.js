@@ -58,12 +58,24 @@
             var ext = user.banner.startsWith('a_') ? 'gif' : 'webp';
             var url = 'https://cdn.discordapp.com/banners/'
                 + DISCORD_ID + '/' + user.banner + '.' + ext + '?size=600';
+
+            // Attach handlers BEFORE setting src so cached images don't
+            // fire onload before the handler is registered.
             heroImgEl.onload  = function () { heroImgEl.classList.add('visible'); };
             heroImgEl.onerror = function () {
                 heroImgEl.style.display = 'none';
                 useAccentColor(user);
             };
+            // crossOrigin must also be set before src to avoid CORS-triggered
+            // errors on cached responses in Chromium-based browsers.
+            heroImgEl.crossOrigin = 'anonymous';
             heroImgEl.src = url;
+
+            // If the image was already cached and loaded synchronously,
+            // the onload above may never fire — handle that edge case.
+            if (heroImgEl.complete && heroImgEl.naturalWidth) {
+                heroImgEl.classList.add('visible');
+            }
         } else {
             useAccentColor(user);
         }
