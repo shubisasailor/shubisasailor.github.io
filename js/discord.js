@@ -57,23 +57,23 @@
     function applyBanner(user) {
         if (!heroImgEl || !heroBgEl) return;
 
-        var bannerHash = (user && user.banner) ? user.banner : FALLBACK_BANNER;
+        // Only attempt to override with Discord CDN banner if user actually has one
+        if (!user || !user.banner) return;
+
+        var bannerHash = user.banner;
         var ext = bannerHash.startsWith('a_') ? 'gif' : 'webp';
         var url = 'https://cdn.discordapp.com/banners/'
             + DISCORD_ID + '/' + bannerHash + '.' + ext + '?size=600';
 
-        heroImgEl.removeAttribute('src');
-        heroImgEl.onerror = null;
-        heroImgEl.onload  = function () { heroImgEl.classList.add('visible'); };
-        heroImgEl.onerror = function () {
-            heroImgEl.style.display = 'none';
-            useAccentColor(user);
-        };
-        heroImgEl.src = url;
-
-        if (heroImgEl.complete && heroImgEl.naturalWidth) {
+        var tmpImg = new Image();
+        tmpImg.onload = function () {
+            heroImgEl.src = url;
             heroImgEl.classList.add('visible');
-        }
+        };
+        tmpImg.onerror = function () {
+            // Keep the local banner.jpg that's already showing — do nothing
+        };
+        tmpImg.src = url;
     }
 
     function useAccentColor(user) {

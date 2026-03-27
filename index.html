@@ -66,7 +66,7 @@
         :root {
             --nav-h: 72px;       /* fixed nav height incl padding */
             --player-h-desk: 90px;
-            --player-h-mob: 160px; /* pill + volume row — generous estimate */
+            --player-h-mob: 190px; /* pill + volume row — generous estimate */
             --player-pad-mob: 14px;
             --safe-bottom: max(16px, env(safe-area-inset-bottom, 16px));
         }
@@ -172,17 +172,17 @@
         /* ── Bottom padding — always leave room for the player pill ── */
         .card-container {
             /* Large safe padding so content never hides behind player on any device */
-            padding-bottom: calc(var(--player-h-mob) + var(--player-pad-mob) + var(--safe-bottom) + 80px);
+            padding-bottom: calc(var(--player-h-mob) + var(--player-pad-mob) + var(--safe-bottom) + 120px);
         }
         @media (min-width: 701px) {
             .card-container {
-                padding-bottom: calc(var(--player-h-mob) + var(--player-pad-mob) + var(--safe-bottom) + 80px);
+                padding-bottom: calc(var(--player-h-mob) + var(--player-pad-mob) + var(--safe-bottom) + 120px);
             }
         }
         @media (max-width: 700px) {
             .card-container {
                 /* Extra generous on mobile — volume row + notch safe area */
-                padding-bottom: calc(var(--player-h-mob) + var(--player-pad-mob) + var(--safe-bottom) + 100px);
+                padding-bottom: calc(var(--player-h-mob) + var(--player-pad-mob) + var(--safe-bottom) + 140px);
             }
         }
 
@@ -305,6 +305,7 @@
             transition: opacity 0.7s ease;
             pointer-events: none;
         }
+        #hero-banner-img { opacity: 1; }
         #hero-banner-img.visible { opacity: 1; }
         #hero-banner-overlay {
             position: absolute;
@@ -1189,7 +1190,7 @@
             <!-- ── Banner hero area ── -->
             <div id="hero-banner">
                 <!-- actual banner image, fades in when loaded -->
-                <img id="hero-banner-img" alt="">
+                <img id="hero-banner-img" src="media/banner/banner.jpg" alt="">
                 <!-- dark gradient so name stays readable -->
                 <div id="hero-banner-overlay"></div>
                 <!-- name + subtitle sit on top of banner -->
