@@ -1966,11 +1966,9 @@ document.addEventListener('DOMContentLoaded', function () {
         var vEl = document.querySelector('.visit-count-val');
         if(!vEl) return;
 
-        // ── Visitor counter via counterapi.dev (free, no setup needed) ──
-        // Uses a unique namespace so the count is scoped to your site.
         var NAMESPACE = 'francisco-portfolio-v1';
         var KEY       = 'visitors';
-        var BASE_SEED = 47; // realistic starting point before the counter began
+        var BASE_SEED = 47;
 
         function fmtV(n){ return n >= 1000 ? (n/1000).toFixed(1) + 'k' : String(n); }
 
@@ -1993,33 +1991,48 @@ document.addEventListener('DOMContentLoaded', function () {
             setTimeout(function(){ rollTo(from, safe, 900); }, 350);
         }
 
+        /* localStorage fallback — always reliable */
+        function lsFallback(increment){
+            var n = parseInt(localStorage.getItem('pf_ls_count') || String(BASE_SEED), 10);
+            if(increment){ n++; localStorage.setItem('pf_ls_count', n); }
+            showCount(n);
+        }
+
+        /* fetch with hard 3-second timeout */
+        function fetchWithTimeout(url, options, ms){
+            var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            var timer = ctrl ? setTimeout(function(){ ctrl.abort(); }, ms) : null;
+            var opts = ctrl ? Object.assign({}, options, { signal: ctrl.signal }) : options;
+            return fetch(url, opts).then(function(r){
+                if(timer) clearTimeout(timer);
+                return r;
+            }, function(e){
+                if(timer) clearTimeout(timer);
+                return Promise.reject(e);
+            });
+        }
+
         var alreadyCounted = sessionStorage.getItem('pf_counted');
 
         if(alreadyCounted){
-            // Returning tab: just read current count
-            fetch('https://api.counterapi.dev/v1/' + NAMESPACE + '/' + KEY)
+            fetchWithTimeout('https://api.counterapi.dev/v1/' + NAMESPACE + '/' + KEY, {}, 3000)
                 .then(function(r){ return r.json(); })
-                .then(function(d){ if(d && d.count) showCount(d.count + BASE_SEED); })
-                .catch(function(){
-                    var n = parseInt(localStorage.getItem('pf_ls_count') || String(BASE_SEED), 10);
-                    showCount(n);
-                });
+                .then(function(d){ if(d && d.count) showCount(d.count + BASE_SEED); else lsFallback(false); })
+                .catch(function(){ lsFallback(false); });
         } else {
             sessionStorage.setItem('pf_counted', '1');
-            // Hit the "up" endpoint to increment and read in one call
-            fetch('https://api.counterapi.dev/v1/' + NAMESPACE + '/' + KEY + '/up')
+            /* Show localStorage count immediately while API call is in flight */
+            lsFallback(true);
+            fetchWithTimeout('https://api.counterapi.dev/v1/' + NAMESPACE + '/' + KEY + '/up', {}, 3000)
                 .then(function(r){ return r.json(); })
                 .then(function(d){
-                    var n = (d && d.count) ? d.count + BASE_SEED : BASE_SEED;
-                    localStorage.setItem('pf_ls_count', n);
-                    showCount(n);
+                    if(d && d.count){
+                        var n = d.count + BASE_SEED;
+                        localStorage.setItem('pf_ls_count', n);
+                        rollTo(parseInt(vEl.textContent, 10) || BASE_SEED, n, 600);
+                    }
                 })
-                .catch(function(){
-                    // Offline fallback
-                    var lsCount = parseInt(localStorage.getItem('pf_ls_count') || String(BASE_SEED), 10) + 1;
-                    localStorage.setItem('pf_ls_count', lsCount);
-                    showCount(lsCount);
-                });
+                .catch(function(){}); /* already showing localStorage count */
         }
     })();
 

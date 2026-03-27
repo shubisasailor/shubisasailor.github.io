@@ -277,8 +277,8 @@
 
             tuggedLeft = -dx; // positive = pulled left
 
-            // Trigger when ball crosses 50% of screen width (reaches center)
-            if (!didToggle && ballX <= window.innerWidth * 0.50) {
+            // Trigger when ball crosses 75% of screen width (~25% drag from starting position)
+            if (!didToggle && ballX <= window.innerWidth * 0.75) {
                 didToggle = true;
                 triggerToggle();
             }
@@ -386,8 +386,8 @@
         ctx.strokeStyle=ropeColor; ctx.lineWidth=1.8; ctx.stroke();
 
         if (dragging && tuggedLeft > 8) {
-            // Red glow as ball approaches center (50% width = trigger point)
-            var t = Math.min(tuggedLeft / (anchorX * 0.5), 1);
+            // Red glow as ball approaches trigger point (75% screen width)
+            var t = Math.min(tuggedLeft / (anchorX * 0.25), 1);
             ctx.beginPath();
             ctx.moveTo(nodes[0].x,nodes[0].y);
             for (var i2=1; i2<nodes.length; i2++) ctx.lineTo(nodes[i2].x,nodes[i2].y);
