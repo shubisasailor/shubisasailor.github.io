@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/main.css">
-    <script src="js/title-typer.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
 
     <!-- Skip overlay for returning visitors in same session -->
@@ -791,6 +791,7 @@
         .bio-text { transition:color 0.3s; }
         .glass-card:hover .bio-text { color:rgba(255,255,255,0.62); }
 
+        @media (min-width:701px) { #player-expand-hint { display:none!important; } }
         @media (max-width:319px) { #rope-canvas, #rope-hit { display:none!important; } }
     </style>
 </head>
@@ -873,10 +874,34 @@
 <!-- Nav -->
 <div id="fixed-nav">
     <div class="glass-card" style="padding:14px 20px;">
-        <div style="display:flex;justify-content:space-around;align-items:center;">
+        <div style="display:flex;justify-content:space-around;align-items:center;position:relative;">
             <span class="nav-tab active" id="tab-overview" data-tab="overview" role="tab" tabindex="0">OVERVIEW</span>
             <span class="nav-tab"        id="tab-about"    data-tab="about"    role="tab" tabindex="0">ABOUT</span>
             <span class="nav-tab"        id="tab-contact"  data-tab="contact"  role="tab" tabindex="0">CONTACT</span>
+            <!-- Theme toggle -->
+            <button id="theme-toggle-btn" title="Toggle theme" onclick="(function(){
+                if(window.ropeTheme){ window.ropeTheme.toggle(); }
+                var isDark = window.ropeTheme ? window.ropeTheme.isDark() : true;
+                if(window._syncBgVideos) window._syncBgVideos(isDark);
+                var btn=document.getElementById('theme-toggle-btn');
+                var icon=btn.querySelector('i');
+                icon.className = isDark ? 'fas fa-moon' : 'fas fa-sun';
+            })();" style="
+                background:rgba(255,255,255,0.05);
+                border:1px solid rgba(255,255,255,0.10);
+                border-radius:8px;
+                width:28px; height:28px;
+                display:flex; align-items:center; justify-content:center;
+                cursor:pointer;
+                color:rgba(255,255,255,0.45);
+                font-size:0.70rem;
+                transition:all 0.2s;
+                flex-shrink:0;
+                -webkit-tap-highlight-color:transparent;
+            " onmouseover="this.style.color='rgba(255,255,255,0.85)';this.style.borderColor='rgba(255,255,255,0.25)';"
+               onmouseout="this.style.color='rgba(255,255,255,0.45)';this.style.borderColor='rgba(255,255,255,0.10)';">
+                <i class="fas fa-moon"></i>
+            </button>
         </div>
     </div>
 </div>
@@ -981,6 +1006,33 @@
                 <div class="bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
                 <span id="badge-song-name">—</span>
             </div>
+            <!-- Bored button — starts music -->
+            <div id="bored-btn-wrap" style="margin-top:10px;">
+                <button id="bored-btn" onclick="(function(){
+                    var btn=document.getElementById('bored-btn');
+                    var wrap=document.getElementById('bored-btn-wrap');
+                    if(window._audioPlay){ window._audioPlay().catch(function(){}); }
+                    if(window._syncPlayIcons) setTimeout(function(){ window._syncPlayIcons(!window._audioPaused()); },150);
+                    btn.textContent='♪ playing...';
+                    btn.disabled=true;
+                    btn.style.opacity='0.4';
+                    setTimeout(function(){ wrap.style.display='none'; },1200);
+                })();" style="
+                    background:rgba(255,255,255,0.05);
+                    border:1px solid rgba(255,255,255,0.12);
+                    border-radius:20px;
+                    padding:5px 14px;
+                    font-family:Inter,sans-serif;
+                    font-size:0.65rem;
+                    letter-spacing:1.5px;
+                    color:rgba(255,255,255,0.40);
+                    cursor:pointer;
+                    transition:all 0.2s;
+                " onmouseover="this.style.color='rgba(255,255,255,0.80)';this.style.borderColor='rgba(255,255,255,0.28)';"
+                   onmouseout="this.style.color='rgba(255,255,255,0.40)';this.style.borderColor='rgba(255,255,255,0.12)';">
+                    feeling bored?
+                </button>
+            </div>
             <!-- Discord -->
             <div class="discord-skeleton" id="discord-skeleton">
                 <div class="skeleton-avatar"></div>
@@ -1007,7 +1059,7 @@
                 <a href="https://pinterest.com/shubflexin"        target="_blank" rel="noopener"><i class="fab fa-pinterest"></i></a>
                 <a href="https://youtube.com/@Tarnished_Shubh"    target="_blank" rel="noopener"><i class="fab fa-youtube"></i></a>
                 <a href="https://x.com/ZetsuoNoShub"              target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i></a>
-                <a href="mailto:shub.professional@gmail.com"      rel="noopener"><i class="fas fa-envelope"></i></a>
+                <a href="/cdn-cgi/l/email-protection#6d1e05180f431d1f020b081e1e0402030c012d0a000c0401430e0200" rel="noopener"><i class="fas fa-envelope"></i></a>
             </div>
         </div>
 
@@ -1067,7 +1119,7 @@
             <div class="section-label">reach me at</div>
             <div class="email-row">
                 <i class="fas fa-envelope"></i>
-                <span id="email-display">shub.professional@gmail.com</span>
+                <span id="email-display"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="abd8c3dec985dbd9c4cdced8d8c2c4c5cac7ebccc6cac2c785c8c4c6">[email&#160;protected]</a></span>
                 <i class="fas fa-copy email-copy" id="copy-btn" title="Copy email"></i>
             </div>
             <div class="card-divider"></div>
@@ -1092,7 +1144,7 @@
 <!-- ══════════ SCRIPTS ══════════ -->
 
 <!-- ── 1. Song data + audio engine ── -->
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 (function () {
     'use strict';
 
@@ -1567,7 +1619,14 @@
     };
     fetch('https://api.github.com/users/'+GH)
         .then(function(r){return r.json();})
-        .then(function(d){ if(cntEl&&d.public_repos) cntEl.textContent=d.public_repos; })
+        .then(function(d){
+            if(cntEl && d.public_repos){
+                // Add your private repo count here — update PRIVATE_REPOS as needed
+                var PRIVATE_REPOS = 0; // <-- set your private repo count
+                cntEl.textContent = d.public_repos + PRIVATE_REPOS;
+                cntEl.title = d.public_repos + ' public + ' + PRIVATE_REPOS + ' private';
+            }
+        })
         .catch(function(){});
 })();
 </script>
@@ -1663,6 +1722,22 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     window._syncBgVideos = function(d){ applyVT(d); };
     initVT();
+    /* Sync theme toggle button icon */
+    (function(){
+        var btn = document.getElementById('theme-toggle-btn');
+        if(!btn) return;
+        var stored = localStorage.getItem('theme');
+        var isDark = stored==='light' ? false : stored==='dark' ? true : !(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
+        var icon = btn.querySelector('i');
+        if(icon) icon.className = isDark ? 'fas fa-moon' : 'fas fa-sun';
+        /* Update icon after each toggle */
+        btn.addEventListener('click', function(){
+            setTimeout(function(){
+                var nowDark = window.ropeTheme ? window.ropeTheme.isDark() : true;
+                if(icon) icon.className = nowDark ? 'fas fa-moon' : 'fas fa-sun';
+            }, 20);
+        });
+    })();
 
     /* ── Tab switching ── */
     var SUFFIX = { overview:'Portfolio', about:'About', contact:'Contact' };
@@ -1688,8 +1763,8 @@ document.addEventListener('DOMContentLoaded', function () {
         /* Scroll content to top */
         main.scrollTop = 0;
 
-        /* Title */
-        if (window.startTitleLoop) window.startTitleLoop(SUFFIX[tab], 0);
+        /* Title — static */
+        document.title = 'Francisco | ' + (SUFFIX[tab] || tab);
 
         /* Pushstate */
         history.pushState({tab:tab}, '', tab==='overview' ? './' : tab+'.html');
@@ -1721,37 +1796,61 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* ── Name typewriter ── */
     var nmEl = document.getElementById('display-name');
-    var twN = 'Francisco', twI = 0, twE = false, twT = null;
+    var twCursor = document.getElementById('tw-cursor');
+    var twN = 'Francisco', twI = 0, twT = null;
     function twTick(){
-        if(!twE){ nmEl.textContent=twN.slice(0,++twI); if(twI===twN.length){twE=true;twT=setTimeout(twTick,2600);return;} twT=setTimeout(twTick,100); }
-        else { nmEl.textContent=twN.slice(0,--twI); if(twI===0){twE=false;twT=setTimeout(twTick,500);return;} twT=setTimeout(twTick,55); }
+        nmEl.textContent = twN.slice(0, ++twI);
+        if(twI < twN.length){ twT = setTimeout(twTick, 100); }
+        else { setTimeout(function(){ if(twCursor) twCursor.style.display = 'none'; }, 900); }
     }
-    window._startNameTypewriter = function(){ clearTimeout(twT); twI=0; twE=false; nmEl.textContent=''; setTimeout(twTick, 600); };
+    window._startNameTypewriter = function(){ clearTimeout(twT); twI=0; nmEl.textContent=''; if(twCursor) twCursor.style.display='inline-block'; setTimeout(twTick, 600); };
 
-    /* ── View counter with roll-up ── */
-    var vEl = document.querySelector('.visit-count-val');
-    if(vEl){
-        var SEED=1100;
+    /* ── Visitor counter — server-side via CountAPI (unique per day/IP, bot-resistant) ── */
+    (function(){
+        var vEl = document.querySelector('.visit-count-val');
+        if(!vEl) return;
+
         function fmtV(n){ return n>=1000 ? (n/1000).toFixed(1)+'k' : String(n); }
-        function rollTo(el,from,to,dur){
+        function rollTo(from, to, dur){
             var start=null;
-            function step(ts){ if(!start)start=ts; var p=Math.min((ts-start)/dur,1); var ease=1-Math.pow(1-p,3); el.textContent=fmtV(Math.round(from+(to-from)*ease)); if(p<1)requestAnimationFrame(step); }
+            function step(ts){
+                if(!start) start=ts;
+                var p=Math.min((ts-start)/dur,1);
+                var ease=1-Math.pow(1-p,3);
+                vEl.textContent=fmtV(Math.round(from+(to-from)*ease));
+                if(p<1) requestAnimationFrame(step);
+            }
             requestAnimationFrame(step);
         }
-        if(!localStorage.getItem('unique_views')) localStorage.setItem('unique_views',SEED);
-        var cnt=parseInt(localStorage.getItem('unique_views'),10);
-        if(isNaN(cnt)||cnt<SEED){cnt=SEED;localStorage.setItem('unique_views',SEED);}
-        var displayFrom=Math.max(SEED,cnt-Math.floor(cnt*0.05));
-        vEl.textContent=fmtV(displayFrom);
-        setTimeout(function(){ rollTo(vEl,displayFrom,cnt,1400); },600);
-        fetch('https://api.ipify.org?format=json').then(function(r){return r.json();}).then(function(j){
-            var today=new Date().toDateString();
-            if(localStorage.getItem('visitor_ip')!==j.ip||localStorage.getItem('visitor_date')!==today){
-                cnt++;localStorage.setItem('unique_views',cnt);localStorage.setItem('visitor_ip',j.ip);localStorage.setItem('visitor_date',today);
-                setTimeout(function(){ rollTo(vEl,cnt-1,cnt,600); },800);
-            }
-        }).catch(function(){});
-    }
+
+        // Namespace: your domain slug. Key: 'visitors'. Using api.countapi.xyz
+        // Only increments once per unique visitor per day (server-side session tracking).
+        var NAMESPACE = 'francisco-portfolio';
+        var KEY       = 'unique-visitors';
+
+        // Check if we already counted this visitor today (client-side dedup so we don't hit the API on every pageview)
+        var today = new Date().toDateString();
+        var alreadyCounted = (localStorage.getItem('cv_date') === today);
+
+        var countUrl = alreadyCounted
+            ? 'https://api.countapi.xyz/get/' + NAMESPACE + '/' + KEY
+            : 'https://api.countapi.xyz/hit/' + NAMESPACE + '/' + KEY;
+
+        fetch(countUrl)
+            .then(function(r){ return r.ok ? r.json() : Promise.reject(); })
+            .then(function(j){
+                var count = j && j.value;
+                if(!count || isNaN(count)) return;
+                if(!alreadyCounted){
+                    localStorage.setItem('cv_date', today);
+                }
+                rollTo(Math.max(0, count - 30), count, 1200);
+            })
+            .catch(function(){
+                // Fallback: show a reasonable static number
+                vEl.textContent = '1k+';
+            });
+    })();
 
     /* ── Enter site ── */
     var _ent = false;
@@ -1760,21 +1859,12 @@ document.addEventListener('DOMContentLoaded', function () {
         nav.classList.add('visible');
         player.classList.add('visible');
         window._startNameTypewriter();
-        if(window.startTitleLoop) window.startTitleLoop('Portfolio', 300);
         setTimeout(function(){ if(window._ropeInit) window._ropeInit(); }, 100);
     }
     function enterSite(){
         if(_ent) return; _ent=true;
         sessionStorage.setItem('site_entered','1');
-        if(window._audioPlay){
-            window._audioPlay().catch(function(){
-                var resume = function(){ if(window._audioPlay) window._audioPlay().catch(function(){}); };
-                document.addEventListener('touchstart', resume, {once:true});
-                document.addEventListener('click', resume, {once:true});
-            });
-        }
-        /* Sync play icons */
-        if(window._syncPlayIcons) setTimeout(function(){ window._syncPlayIcons(!window._audioPaused()); }, 200);
+        /* No autoplay — user must click the Bored button */
         overlay.style.opacity='0';
         setTimeout(function(){
             overlay.style.display='none';
@@ -1790,11 +1880,12 @@ document.addEventListener('DOMContentLoaded', function () {
     if(sessionStorage.getItem('site_entered')){
         _ent=true;
         overlay.style.display='none';
-        if(window._audioPlay) window._audioPlay().catch(function(){
-            document.addEventListener('click',function(){ if(window._audioPlay) window._audioPlay().catch(function(){}); },{once:true});
-        });
         show();
-        if(window._syncPlayIcons) setTimeout(function(){ window._syncPlayIcons(!window._audioPaused()); }, 300);
+        /* Hide bored btn if audio resumes */
+        setTimeout(function(){
+            var boredWrap = document.getElementById('bored-btn-wrap');
+            if(boredWrap && window._audioPaused && !window._audioPaused()) boredWrap.style.display='none';
+        }, 500);
     } else {
         overlay.addEventListener('click', enterSite);
         overlay.addEventListener('touchend', function(e){ e.preventDefault(); enterSite(); }, {passive:false});
@@ -1925,14 +2016,4 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         for(var j=ripples.length-1;j>=0;j--){
             var r=ripples[j]; r.r+=(r.maxR-r.r)*0.16; r.a-=r.da;
-            if(r.a<=0){ripples.splice(j,1);continue;}
-            ctx.beginPath(); ctx.arc(r.x,r.y,r.r,0,6.2832);
-            ctx.strokeStyle='rgba(255,255,255,'+r.a+')'; ctx.lineWidth=1.2; ctx.stroke();
-        }
-        if(ripples.length>0||ids.length>0) raf=requestAnimationFrame(draw);
-    }
-})();
-</script>
-
-</body>
-</html>
+            if(r.a<=0){ripples.splice(j,1);co

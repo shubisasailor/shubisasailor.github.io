@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════
 //  nav.js — SPA tab switching, background crossfade, keyboard nav
-//  Title: "Francisco | " prefix is static; only suffix types in.
+//  Title is set statically — no typewriter animation.
 // ═══════════════════════════════════════════════════════════════════
 
 (function () {
@@ -11,7 +11,6 @@
         contact:  'bg-contact'
     };
 
-    // Suffix only — "Francisco | " stays put in the tab title.
     var SUFFIX_MAP = {
         overview: 'Portfolio',
         about:    'About',
@@ -20,22 +19,6 @@
 
     var TAB_ORDER  = ['overview', 'about', 'contact'];
     var currentTab = 'overview';
-
-    // ── Title typewriter — prefix static, suffix types in ─────────
-    var _titleTimer = null;
-    function animateTitle(suffix) {
-        clearTimeout(_titleTimer);
-        var prefix = 'Francisco | ';
-        var i = 0;
-        function step() {
-            i++;
-            document.title = prefix + suffix.slice(0, i) + (i < suffix.length ? '|' : '');
-            if (i < suffix.length) _titleTimer = setTimeout(step, 72);
-        }
-        // Start immediately (first char)
-        document.title = prefix + '|';
-        _titleTimer = setTimeout(step, 72);
-    }
 
     // ── Core switch function ───────────────────────────────────────
     window.switchTab = function (tab) {
@@ -60,8 +43,8 @@
         if (prevBg) prevBg.style.opacity = '0';
         if (nextBg) nextBg.style.opacity = '1';
 
-        // Animate title suffix
-        animateTitle(SUFFIX_MAP[tab] || tab);
+        // Static title — no animation
+        document.title = 'Francisco | ' + (SUFFIX_MAP[tab] || tab);
 
         // Pushstate
         var url = tab === 'overview' ? './' : tab + '.html';
@@ -102,8 +85,7 @@
         });
     });
 
-    // ── Initial title (on page load) ──────────────────────────────
-    // Runs once so "Portfolio" types in from the start.
-    animateTitle('Portfolio');
+    // ── Initial title ─────────────────────────────────────────────
+    document.title = 'Francisco | Portfolio';
 
 })();
