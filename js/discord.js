@@ -57,19 +57,38 @@
             + '"></span>';
     }
 
+    var bannerEl    = document.getElementById('discord-banner');
+    var bannerImgEl = document.getElementById('discord-banner-img');
+
+    function applyBanner(bannerHash, bannerColor) {
+        if (bannerHash && bannerImgEl) {
+            var ext = bannerHash.startsWith('a_') ? 'gif' : 'webp';
+            var url = 'https://cdn.discordapp.com/banners/' + DISCORD_ID + '/' + bannerHash + '.' + ext + '?size=480';
+            bannerImgEl.onload = function () { bannerImgEl.classList.add('loaded'); };
+            bannerImgEl.onerror = function () { bannerImgEl.style.display = 'none'; };
+            bannerImgEl.src = url;
+        } else if (bannerColor && bannerEl) {
+            // Discord accent color as fallback gradient
+            var hex = '#' + ('000000' + bannerColor.toString(16)).slice(-6);
+            bannerEl.style.background = 'linear-gradient(135deg,' + hex + 'dd 0%,' + hex + '66 100%)';
+        }
+    }
+
     function render(avatarSrc, lanyardData) {
         pfpEl.src = avatarSrc;
         pfpEl.onerror = function () {
             pfpEl.style.display = 'none';
             var init = document.createElement('div');
             init.style.cssText = [
-                'width:45px','height:45px','border-radius:50%',
+                'width:44px','height:44px','border-radius:50%',
                 'background:linear-gradient(135deg,#5865F2,#7289da)',
                 'display:flex','align-items:center','justify-content:center',
-                'font-weight:bold','font-size:1.1rem','color:white','flex-shrink:0'
+                'font-weight:bold','font-size:1.1rem','color:white','flex-shrink:0',
+                'border:3px solid rgba(10,10,15,0.95)'
             ].join(';');
             init.textContent = DISPLAY.charAt(0).toUpperCase();
-            cardEl.insertBefore(init, pfpEl);
+            var wrap = document.querySelector('.discord-avatar-wrap');
+            if (wrap) wrap.insertBefore(init, pfpEl);
         };
 
         nameEl.textContent = DISPLAY;
@@ -130,6 +149,18 @@
                 + 'color:rgba(255,255,255,0.35);white-space:nowrap;overflow:hidden;'
                 + 'text-overflow:ellipsis;max-width:180px;">'
                 + activity + '</div>';
+        }
+
+        // Apply banner from lanyardData
+        if (lanyardData && lanyardData.discord_user) {
+            var u = lanyardData.discord_user;
+            applyBanner(u.banner || null, u.banner_color || null);
+        }
+
+        // Update status dot element
+        var dotEl = document.getElementById('discord-dot');
+        if (dotEl) {
+            dotEl.className = 'discord-status-dot ds-' + (status || 'offline');
         }
 
         skeletonEl.style.display = 'none';

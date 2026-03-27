@@ -265,19 +265,66 @@
         .skeleton-line { height:9px; border-radius:5px; background:rgba(255,255,255,0.07); animation:skPulse 1.6s ease-in-out infinite; }
         .skeleton-line.short { width:55%; animation-delay:0.2s; }
         @keyframes skPulse { 0%,100%{opacity:0.20} 50%{opacity:0.60} }
-        .discord-real { display:none; background:rgba(255,255,255,0.025); border-radius:12px; padding:14px; margin-top:16px; align-items:center; gap:12px; }
+
+        /* ── Discord banner card ── */
+        .discord-real { display:none; flex-direction:column; border-radius:14px; margin-top:16px; overflow:hidden; border:1px solid rgba(255,255,255,0.07); background:rgba(10,10,15,0.60); }
         .discord-real.loaded { display:flex; }
-        .discord-avatar-wrap { position:relative; width:42px; height:42px; flex-shrink:0; }
-        .discord-avatar-wrap img { width:42px; height:42px; border-radius:50%; object-fit:cover; display:block; box-shadow:0 0 0 2px rgba(255,255,255,0.10); }
-        .discord-status-dot { position:absolute; bottom:0; right:0; width:12px; height:12px; border-radius:50%; border:2.5px solid rgba(8,8,8,0.95); box-sizing:border-box; }
+
+        /* Banner area */
+        #discord-banner {
+            width:100%; height:68px; flex-shrink:0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            background-size: cover; background-position: center top;
+            position: relative;
+            transition: background-image 0.4s ease;
+        }
+        #discord-banner-img {
+            position:absolute; inset:0; width:100%; height:100%;
+            object-fit:cover; object-position:center top;
+            opacity:0; transition:opacity 0.4s ease;
+        }
+        #discord-banner-img.loaded { opacity:1; }
+        /* Subtle dark gradient over banner bottom so avatar blends */
+        #discord-banner::after {
+            content:'';
+            position:absolute; bottom:0; left:0; right:0; height:28px;
+            background:linear-gradient(to bottom, transparent, rgba(10,10,15,0.55));
+            pointer-events:none;
+        }
+
+        /* Avatar row — overlaps banner */
+        #discord-avatar-row {
+            display:flex; align-items:flex-end; justify-content:space-between;
+            padding: 0 14px 0 14px;
+            margin-top: -22px; /* pull up over banner */
+            position:relative; z-index:2;
+        }
+        .discord-avatar-wrap { position:relative; width:44px; height:44px; flex-shrink:0; }
+        .discord-avatar-wrap img {
+            width:44px; height:44px; border-radius:50%; object-fit:cover; display:block;
+            border:3px solid rgba(10,10,15,0.95);
+            box-shadow:0 2px 12px rgba(0,0,0,0.6);
+        }
+        .discord-status-dot {
+            position:absolute; bottom:1px; right:1px;
+            width:12px; height:12px; border-radius:50%;
+            border:2.5px solid rgba(10,10,15,0.95); box-sizing:border-box;
+        }
         .ds-online    { background:#23a55a; box-shadow:0 0 6px rgba(35,165,90,0.8); }
         .ds-idle      { background:#f0b232; box-shadow:0 0 6px rgba(240,178,50,0.8); }
         .ds-dnd       { background:#f23f43; box-shadow:0 0 6px rgba(242,63,67,0.8); }
         .ds-offline   { background:transparent; border:2.5px solid #80848e; box-shadow:none; }
         .ds-streaming { background:#593695; box-shadow:0 0 6px rgba(89,54,149,0.8); }
-        #discord-name { font-weight:600; font-size:clamp(0.82rem,2.2vw,0.90rem); color:rgba(255,255,255,0.85); }
-        #discord-status, #discord-status a { font-size:clamp(0.63rem,1.8vw,0.70rem); margin-top:3px; color:rgba(255,255,255,0.45)!important; text-decoration:none; }
-        #discord-activity { font-size:clamp(0.58rem,1.6vw,0.66rem); margin-top:3px; color:rgba(255,255,255,0.30); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px; }
+
+        /* Info area below avatar row */
+        #discord-info {
+            padding:6px 14px 13px;
+            text-align:left;
+        }
+        #discord-name { font-weight:700; font-size:clamp(0.84rem,2.2vw,0.92rem); color:rgba(255,255,255,0.90); }
+        #discord-status, #discord-status a { font-size:clamp(0.63rem,1.8vw,0.70rem); margin-top:2px; color:rgba(255,255,255,0.45)!important; text-decoration:none; }
+        #discord-activity { font-size:clamp(0.58rem,1.6vw,0.65rem); margin-top:4px; color:rgba(255,255,255,0.28); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+
         /* Online pulse */
         .ds-online { animation: dsPulse 2.4s ease-in-out infinite; }
         @keyframes dsPulse { 0%,100%{box-shadow:0 0 4px rgba(35,165,90,0.55)} 50%{box-shadow:0 0 10px rgba(35,165,90,0.95)} }
@@ -1097,11 +1144,19 @@
                 </div>
             </div>
             <div class="discord-real" id="discord-card">
-                <div class="discord-avatar-wrap">
-                    <img id="discord-pfp" src="" alt="Discord PFP">
-                    <div class="discord-status-dot ds-offline" id="discord-dot"></div>
+                <!-- Banner -->
+                <div id="discord-banner">
+                    <img id="discord-banner-img" src="" alt="">
                 </div>
-                <div style="text-align:left;min-width:0;flex:1;">
+                <!-- Avatar row overlapping banner -->
+                <div id="discord-avatar-row">
+                    <div class="discord-avatar-wrap">
+                        <img id="discord-pfp" src="" alt="Discord PFP">
+                        <div class="discord-status-dot ds-offline" id="discord-dot"></div>
+                    </div>
+                </div>
+                <!-- Name + status below -->
+                <div id="discord-info">
                     <div id="discord-name"></div>
                     <div id="discord-status"></div>
                     <div id="discord-activity"></div>
