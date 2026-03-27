@@ -16,7 +16,7 @@
     var GRAVITY       = 0.90;
     var DAMPING       = 0.76;
     var STIFFNESS     = 0.88;
-    var MAX_PULL = window.innerWidth * 0.60;
+    var MAX_PULL      = window.innerHeight * 0.45; // max pull = 45% of screen height
 
     // ── Theme detection ───────────────────────────────────────────
     var stored = localStorage.getItem('theme');
@@ -193,7 +193,7 @@
     var ballX = 0, ballY = 0, ballVx = 0, ballVy = 0;
     var dragging   = false;
     var didToggle  = false;
-    var tuggedLeft = 0;   // how far left the ball has been pulled
+    var tuggedDown = 0;   // how far down the ball has been pulled
     var broken     = false;
     var particles  = [];
     var ropeBuilt  = false;
@@ -251,43 +251,34 @@
         function onStart(e) {
             if (e.cancelable) e.preventDefault();
             if (broken) return;
-            dragging=true; didToggle=false; tuggedLeft=0;
+            dragging=true; didToggle=false; tuggedDown=0;
         }
         function onMove(e) {
             if (!dragging) return;
             if (e.cancelable) e.preventDefault();
             var p = clientPos(e);
 
-            // Allow pulling left only (rope hangs from top-right anchor)
-            // Also allow slight vertical drop for natural feel
-            var maxPullX = anchorX;                         // can pull all the way to left edge
-            var maxPullY = window.innerHeight * 0.40;       // slight vertical sag
-
-            // dx = how far left from anchor (clamped, no rightward pull)
-            var dx = Math.min(0, p.x - anchorX);           // always <= 0 (leftward)
-            dx = Math.max(dx, -maxPullX);                   // clamp to screen left
-
-            // dy = small vertical drop for natural rope feel
-            var dy = Math.min(Math.max(p.y - anchorY, 0), maxPullY);
-
-            ballX = anchorX + dx;
-            ballY = anchorY + dy + ROPE_SEGMENTS * SEGMENT_LEN * 0.3; // keep some sag
+            // Free drag — follow the pointer, clamped to screen
+            ballX = Math.max(0, Math.min(window.innerWidth, p.x));
+            ballY = Math.max(anchorY + ROPE_SEGMENTS * SEGMENT_LEN * 0.2,
+                             Math.min(window.innerHeight * 0.85, p.y));
             nodes[ROPE_SEGMENTS].x = ballX;
             nodes[ROPE_SEGMENTS].y = ballY;
 
-            tuggedLeft = -dx; // positive = pulled left
+            // Track how far below rest position the ball is
+            tuggedDown = ballY - (anchorY + ROPE_SEGMENTS * SEGMENT_LEN);
 
-            // Trigger when ball crosses 50% of screen width (~25% drag from starting position)
-            if (!didToggle && ballX <= window.innerWidth * 0.50) {
+            // Trigger when ball reaches 50% of screen height
+            if (!didToggle && ballY >= window.innerHeight * 0.5) {
                 didToggle = true;
                 triggerToggle();
             }
         }
         function onEnd() {
             if (!dragging) return;
-            dragging=false; tuggedLeft=0;
-            // Fling back to rest — give it rightward velocity
-            ballVx = 4; ballVy = -1;
+            dragging=false; tuggedDown=0;
+            // Fling back upward toward rest
+            ballVy = -6;
             didToggle=false;
         }
 
@@ -315,7 +306,7 @@
         applyTheme(isDark);
         if (window._syncBgVideos) window._syncBgVideos(isDark);
         /* Reset ALL drag state so red overlay never persists */
-        broken=true; dragging=false; tuggedLeft=0; didToggle=false; particles=[];
+        broken=true; dragging=false; tuggedDown=0; didToggle=false; particles=[];
         for (var i=0; i<26; i++) {
             var angle=(Math.PI*2*i)/26+Math.random()*0.2;
             var speed=2+Math.random()*5.5;
@@ -385,9 +376,11 @@
         ctx.lineTo(ballX,ballY);
         ctx.strokeStyle=ropeColor; ctx.lineWidth=1.8; ctx.stroke();
 
-        if (dragging && tuggedLeft > 8) {
-            // Red glow as ball approaches trigger point (50% screen width)
-            var t = Math.min(tuggedLeft / (anchorX * 0.50), 1);
+        if (dragging && tuggedDown > 8) {
+            // Red glow as ball approaches 50% screen height trigger
+            var restY    = anchorY + ROPE_SEGMENTS * SEGMENT_LEN;
+            var triggerY = window.innerHeight * 0.5;
+            var t = Math.min(tuggedDown / Math.max(1, triggerY - restY), 1);
             ctx.beginPath();
             ctx.moveTo(nodes[0].x,nodes[0].y);
             for (var i2=1; i2<nodes.length; i2++) ctx.lineTo(nodes[i2].x,nodes[i2].y);
