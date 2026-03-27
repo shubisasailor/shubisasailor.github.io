@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════
-//  discord.js — status, avatar, banner, decoration via Lanyard
+//  discord.js — status, avatar, decoration via Lanyard
 // ═══════════════════════════════════════════════════════════════════
 
 (function () {
@@ -13,8 +13,6 @@
     var decoEl      = document.getElementById('discord-decoration');
     var nameEl      = document.getElementById('discord-name');
     var statusEl    = document.getElementById('discord-status');
-    var heroBgEl    = document.getElementById('hero-banner');
-    var heroImgEl   = document.getElementById('hero-banner-img');
 
     if (!skeletonEl || !cardEl) return;
 
@@ -48,22 +46,6 @@
         return '<span style="display:inline-block;width:9px;height:9px;border-radius:50%;'
             + 'background:' + color + ';box-shadow:0 0 6px ' + color + ';'
             + 'margin-right:5px;flex-shrink:0;vertical-align:middle;"></span>';
-    }
-
-    // ── Banner ────────────────────────────────────────────────────
-    // Fallback banner hash in case Lanyard doesn't return one
-    var FALLBACK_BANNER = '42f0f76f36b11eddbda08547db73bf3d';
-
-    function applyBanner() {
-        // Banner removed
-    }
-
-    function useAccentColor(user) {
-        if (user && user.accent_color && heroBgEl) {
-            var hex = '#' + ('000000' + (user.accent_color >>> 0).toString(16)).slice(-6);
-            heroBgEl.style.background =
-                'linear-gradient(135deg,' + hex + 'cc 0%,#0d0d1a 100%)';
-        }
     }
 
     // ── Decoration ────────────────────────────────────────────────
@@ -179,10 +161,7 @@
                     + DISCORD_ID + '/' + user.avatar + '.' + ext + '?size=128';
             }
 
-            // Banner + decoration
-            applyBanner(user);
             applyDecoration(user);
-
             render(avatarUrl, d);
         })
         .catch(function (e) {
