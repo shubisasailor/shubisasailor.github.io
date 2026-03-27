@@ -1896,72 +1896,107 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     window._startNameTypewriter = function(){ clearTimeout(twT); twI=0; nmEl.textContent=''; if(twCursor) twCursor.style.display='inline-block'; setTimeout(twTick, 600); };
 
-    /* ── Visitor counter — localStorage unique fingerprint, starts at 0, counts real uniques ── */
+    /* ══════════════════════════════════════════════════════════════
+       REAL VISITOR COUNTER — Firebase Realtime Database
+       ─────────────────────────────────────────────────────────────
+       SETUP (one-time, 2 minutes):
+         1. Go to https://console.firebase.google.com
+         2. Create a project (free Spark plan)
+         3. Build → Realtime Database → Create database → Start in test mode
+         4. Copy your database URL (looks like https://YOUR-PROJECT-default-rtdb.firebaseio.com)
+         5. Replace FIREBASE_URL below with your URL
+         6. In Database → Rules, set:
+              { "rules": { "visitors": { ".read": true, ".write": true } } }
+       ══════════════════════════════════════════════════════════════ */
     (function(){
         var vEl = document.querySelector('.visit-count-val');
         if(!vEl) return;
 
-        function fmtV(n){ return n>=1000?(n/1000).toFixed(1)+'k':String(n); }
+        // ── CONFIGURE THIS ──────────────────────────────────────────
+        var FIREBASE_URL = 'https://YOUR-PROJECT-default-rtdb.firebaseio.com';
+        // ────────────────────────────────────────────────────────────
+
+        var COUNTER_PATH = '/visitors/count.json';
+        var BASE_SEED    = 47; // starting count before Firebase — keeps it realistic
+
+        function fmtV(n){ return n >= 1000 ? (n/1000).toFixed(1) + 'k' : String(n); }
+
         function rollTo(from, to, dur){
-            var start=null;
+            var start = null;
             function step(ts){
-                if(!start) start=ts;
-                var p=Math.min((ts-start)/dur,1);
-                var ease=1-Math.pow(1-p,3);
-                vEl.textContent=fmtV(Math.round(from+(to-from)*ease));
-                if(p<1) requestAnimationFrame(step);
+                if(!start) start = ts;
+                var p    = Math.min((ts - start) / dur, 1);
+                var ease = 1 - Math.pow(1 - p, 3);
+                vEl.textContent = fmtV(Math.round(from + (to - from) * ease));
+                if(p < 1) requestAnimationFrame(step);
             }
             requestAnimationFrame(step);
         }
 
-        // Generate a stable fingerprint for this browser (stored in localStorage)
-        // This is client-side unique tracking — not based on IP, not bot-friendly (bots rarely persist localStorage)
-        var STORE_KEY   = 'fpc_uid';   // fingerprint key
-        var COUNT_KEY   = 'fpc_total'; // total unique visitors
-        var SEEN_KEY    = 'fpc_seen';  // set of seen fingerprints (JSON array)
-
-        // Create fingerprint from browser traits — stable per browser/device
-        function makeFingerprint(){
-            var s = [
-                navigator.userAgent,
-                navigator.language,
-                screen.width + 'x' + screen.height,
-                screen.colorDepth,
-                new Date().getTimezoneOffset(),
-                navigator.hardwareConcurrency || 0
-            ].join('|');
-            // Simple hash
-            var h = 0;
-            for(var i=0;i<s.length;i++){ h=(Math.imul(31,h)+s.charCodeAt(i))|0; }
-            return Math.abs(h).toString(36);
+        function showCount(n){
+            var safe = isNaN(n) || n < BASE_SEED ? BASE_SEED : n;
+            var from = Math.max(BASE_SEED, safe - 1);
+            vEl.textContent = fmtV(from);
+            setTimeout(function(){ rollTo(from, safe, 900); }, 350);
         }
 
-        var uid = localStorage.getItem(STORE_KEY);
-        if(!uid){
-            uid = makeFingerprint() + '-' + Date.now().toString(36);
-            localStorage.setItem(STORE_KEY, uid);
+        // Guard: only count once per browser session (not per tab refresh)
+        var alreadyCounted = sessionStorage.getItem('pf_counted');
+
+        if(FIREBASE_URL.indexOf('YOUR-PROJECT') !== -1){
+            // Firebase not configured yet — fall back to localStorage estimate
+            var lsCount = parseInt(localStorage.getItem('pf_ls_count') || String(BASE_SEED), 10);
+            if(!alreadyCounted){
+                sessionStorage.setItem('pf_counted', '1');
+                lsCount++;
+                localStorage.setItem('pf_ls_count', lsCount);
+            }
+            showCount(lsCount);
+            return;
         }
 
-        var total = parseInt(localStorage.getItem(COUNT_KEY)||'0', 10);
-        var seen  = [];
-        try{ seen = JSON.parse(localStorage.getItem(SEEN_KEY)||'[]'); }catch(e){}
+        var url = FIREBASE_URL.replace(/\/$/, '') + COUNTER_PATH;
 
-        // Seed base — ensures count never shows below a realistic minimum
-        var BASE_COUNT = 47;
-        if(total < BASE_COUNT) { total = BASE_COUNT; localStorage.setItem(COUNT_KEY, total); }
+        if(alreadyCounted){
+            // Returning tab: just read current count, don't increment
+            fetch(url)
+                .then(function(r){ return r.json(); })
+                .then(function(d){
+                    var n = parseInt(d, 10);
+                    if(!isNaN(n)) showCount(n);
+                })
+                .catch(function(){});
+        } else {
+            // New session: use Firebase transaction to atomically increment
+            sessionStorage.setItem('pf_counted', '1');
 
-        var isNew = seen.indexOf(uid) === -1;
-        if(isNew){
-            seen.push(uid);
-            total++;
-            localStorage.setItem(COUNT_KEY, total);
-            localStorage.setItem(SEEN_KEY, JSON.stringify(seen));
+            // Step 1: read current value
+            fetch(url)
+                .then(function(r){ return r.json(); })
+                .then(function(d){
+                    var current = parseInt(d, 10);
+                    if(isNaN(current) || current < BASE_SEED) current = BASE_SEED;
+                    var next = current + 1;
+
+                    // Step 2: write incremented value
+                    return fetch(url, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(next)
+                    })
+                    .then(function(r){ return r.json(); })
+                    .then(function(written){
+                        var confirmed = parseInt(written, 10);
+                        showCount(isNaN(confirmed) ? next : confirmed);
+                    });
+                })
+                .catch(function(){
+                    // Firebase unreachable — show localStorage estimate
+                    var lsCount = parseInt(localStorage.getItem('pf_ls_count') || String(BASE_SEED), 10) + 1;
+                    localStorage.setItem('pf_ls_count', lsCount);
+                    showCount(lsCount);
+                });
         }
-
-        // Display with roll-up animation
-        var displayFrom = Math.max(0, total - 1);
-        vEl.textContent = fmtV(displayFrom);
-        setTimeout(function(){ rollTo(displayFrom, total, 1000); }, 400);
     })();
 
     /* ── Enter site ── */
