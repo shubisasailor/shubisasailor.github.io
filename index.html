@@ -169,10 +169,10 @@
         .card-container::-webkit-scrollbar { display: none; }
         .card-container.visible { opacity: 1; visibility: visible; }
 
-        /* ── Bottom padding in scroll area changes by device ── */
+        /* ── Bottom padding — pill height same on all screens ── */
         @media (min-width: 701px) {
             .card-container {
-                padding-bottom: calc(var(--player-h-desk) + 20px);
+                padding-bottom: calc(var(--player-h-mob) + var(--player-pad-mob) + var(--safe-bottom) + 20px);
             }
         }
         @media (max-width: 700px) {
@@ -452,9 +452,9 @@
         #touch-fx { position:fixed; inset:0; pointer-events:none; z-index:9997; }
 
         /* ══════════════════════════════════════════════════════════
-           MUSIC PLAYER — unified, no conflicts
-           Desktop: Spotify-style full-width bar at bottom
-           Mobile:  pill card at bottom
+           MUSIC PLAYER — pill on ALL screen sizes
+           Desktop: floating pill centered at bottom, dbl-click → overlay
+           Mobile:  same pill, double-tap → overlay
         ══════════════════════════════════════════════════════════ */
 
         /* ── Player wrapper ── */
@@ -463,29 +463,29 @@
             bottom: 0; left: 0; right: 0;
             z-index: 400;
             opacity: 0; visibility: hidden;
+            pointer-events: none;
             transition: opacity 1.2s cubic-bezier(0.19,1,0.22,1),
                         visibility 1.2s cubic-bezier(0.19,1,0.22,1);
         }
-        #fixed-player.visible { opacity: 1; visibility: visible; }
+        #fixed-player.visible { opacity: 1; visibility: visible; pointer-events: auto; }
 
-        /* ── Desktop Spotify bar ── */
-        #pc-player-bar {
-            display: none;
-            align-items: center;
-            height: var(--player-h-desk);
-            padding: 0 28px;
-            background: rgba(8,8,14,0.93);
-            border-top: 1px solid rgba(255,255,255,0.07);
-            backdrop-filter: blur(48px) saturate(180%);
-            -webkit-backdrop-filter: blur(48px) saturate(180%);
-        }
+        /* ── Desktop Spotify bar — hidden always ── */
+        #pc-player-bar { display: none !important; }
+
+        /* ── Pill shown on all screens ── */
+        #mob-player-wrap { display: block; }
+
+        /* ── Desktop: pill centered + fixed width ── */
         @media (min-width: 701px) {
-            #pc-player-bar  { display: flex; }
-            #mob-player-wrap { display: none; }
-        }
-        @media (max-width: 700px) {
-            #pc-player-bar  { display: none !important; }
-            #mob-player-wrap { display: block; }
+            #mob-player-wrap {
+                display: flex;
+                justify-content: center;
+                padding: 0 0 18px 0;
+            }
+            #mobile-player-pill {
+                width: 420px;
+                max-width: calc(100vw - 40px);
+            }
         }
 
         /* Desktop left / center / right cols */
@@ -650,8 +650,17 @@
                         transform 0.40s cubic-bezier(0.34,1.35,0.64,1) 0.20s;
         }
         #player-overlay.card-open #player-overlay-card { opacity:1; transform:translateY(0); }
-        /* Only on mobile */
-        @media (min-width:701px) { #player-overlay { display:none!important; } }
+        /* Overlay works on ALL screens — desktop uses it on double-click */
+        @media (min-width:701px) {
+            #player-overlay-bg {
+                background: rgba(0,0,0,0.35);
+                backdrop-filter: blur(32px) saturate(140%);
+                -webkit-backdrop-filter: blur(32px) saturate(140%);
+            }
+            #player-overlay-card {
+                width: min(360px, calc(100vw - 48px));
+            }
+        }
 
         /* Overlay internals */
         #ov-collapse {
@@ -945,37 +954,55 @@
         </div>
     </div>
 
-    <!-- MOBILE pill (shown on ≤700px via CSS) -->
+    <!-- Pill player — all screen sizes. Starts as "feeling bored?" then activates -->
     <div id="mob-player-wrap">
         <div id="mobile-player-pill">
-            <div id="player-expand-hint">DOUBLE-TAP TO EXPAND</div>
-            <div style="display:flex;align-items:center;gap:12px;">
-                <div class="music-cover-wrap" id="mobile-cover-wrap">
-                    <img id="music-cover" src="media/music-cover/cry.jpg" alt="Cover"
-                         onerror="this.style.display='none';document.getElementById('cover-fallback').style.display='flex';">
-                    <div id="cover-fallback">&#9834;</div>
-                </div>
-                <div style="flex:1;min-width:0;">
-                    <div class="song-title" id="song-title-el">—</div>
-                    <div class="song-artist" id="song-artist-el">—</div>
-                    <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
-                        <div id="mobile-prog-cont">
-                            <div id="prog-track-m"><div id="music-progress-m"></div></div>
+
+            <!-- ── Bored state (shown before music starts) ── -->
+            <div id="bored-state" style="display:flex;align-items:center;justify-content:center;padding:4px 0;">
+                <button id="bored-btn" style="
+                    background:transparent; border:none; padding:0;
+                    font-family:Inter,sans-serif; font-size:0.72rem;
+                    letter-spacing:2px; color:rgba(255,255,255,0.35);
+                    cursor:pointer; transition:color 0.2s; width:100%; text-align:center;
+                " onmouseover="this.style.color='rgba(255,255,255,0.75)';"
+                   onmouseout="this.style.color='rgba(255,255,255,0.35)';">
+                    ♪ &nbsp; feeling bored?
+                </button>
+            </div>
+
+            <!-- ── Active player state (hidden until bored-btn clicked) ── -->
+            <div id="player-state" style="display:none;">
+                <div id="player-expand-hint" style="text-align:center;font-size:0.44rem;letter-spacing:2px;color:rgba(255,255,255,0.14);margin-bottom:4px;pointer-events:none;">DOUBLE-CLICK TO EXPAND</div>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div class="music-cover-wrap" id="mobile-cover-wrap">
+                        <img id="music-cover" src="media/music-cover/cry.jpg" alt="Cover"
+                             onerror="this.style.display='none';document.getElementById('cover-fallback').style.display='flex';">
+                        <div id="cover-fallback">&#9834;</div>
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                        <div class="song-title" id="song-title-el">—</div>
+                        <div class="song-artist" id="song-artist-el">—</div>
+                        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+                            <div id="mobile-prog-cont">
+                                <div id="prog-track-m"><div id="music-progress-m"></div></div>
+                            </div>
+                            <span id="music-time-m">0:00</span>
                         </div>
-                        <span id="music-time-m">0:00</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:14px;flex-shrink:0;">
+                        <i class="fas fa-backward control-icon" id="prev-btn" style="font-size:0.78rem;"></i>
+                        <i class="fas fa-play control-icon"     id="play-pause-btn" style="font-size:1.05rem;"></i>
+                        <i class="fas fa-forward control-icon"  id="next-btn" style="font-size:0.78rem;"></i>
                     </div>
                 </div>
-                <div style="display:flex;align-items:center;gap:14px;flex-shrink:0;">
-                    <i class="fas fa-backward control-icon" id="prev-btn" style="font-size:0.78rem;"></i>
-                    <i class="fas fa-play control-icon"     id="play-pause-btn" style="font-size:1.05rem;"></i>
-                    <i class="fas fa-forward control-icon"  id="next-btn" style="font-size:0.78rem;"></i>
+                <div style="display:flex;align-items:center;gap:8px;border-top:1px solid rgba(255,255,255,0.05);margin-top:12px;padding-top:11px;">
+                    <i class="fas fa-volume-up" id="mute-btn-m" style="font-size:0.78rem;color:rgba(255,255,255,0.40);cursor:pointer;"></i>
+                    <input type="range" id="volume-bar-m" min="0" max="1" step="0.02" value="0.8" style="flex:1;height:3px;cursor:pointer;accent-color:rgba(255,255,255,0.65);">
+                    <span id="vol-pct-m" style="font-size:0.58rem;color:rgba(255,255,255,0.28);min-width:26px;text-align:right;">80%</span>
                 </div>
             </div>
-            <div style="display:flex;align-items:center;gap:8px;border-top:1px solid rgba(255,255,255,0.05);margin-top:12px;padding-top:11px;">
-                <i class="fas fa-volume-up" id="mute-btn-m" style="font-size:0.78rem;color:rgba(255,255,255,0.40);cursor:pointer;"></i>
-                <input type="range" id="volume-bar-m" min="0" max="1" step="0.02" value="0.8" style="flex:1;height:3px;cursor:pointer;accent-color:rgba(255,255,255,0.65);">
-                <span id="vol-pct-m" style="font-size:0.58rem;color:rgba(255,255,255,0.28);min-width:26px;text-align:right;">80%</span>
-            </div>
+
         </div>
     </div>
 
@@ -1006,33 +1033,7 @@
                 <div class="bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
                 <span id="badge-song-name">—</span>
             </div>
-            <!-- Bored button — starts music -->
-            <div id="bored-btn-wrap" style="margin-top:10px;">
-                <button id="bored-btn" onclick="(function(){
-                    var btn=document.getElementById('bored-btn');
-                    var wrap=document.getElementById('bored-btn-wrap');
-                    if(window._audioPlay){ window._audioPlay().catch(function(){}); }
-                    if(window._syncPlayIcons) setTimeout(function(){ window._syncPlayIcons(!window._audioPaused()); },150);
-                    btn.textContent='♪ playing...';
-                    btn.disabled=true;
-                    btn.style.opacity='0.4';
-                    setTimeout(function(){ wrap.style.display='none'; },1200);
-                })();" style="
-                    background:rgba(255,255,255,0.05);
-                    border:1px solid rgba(255,255,255,0.12);
-                    border-radius:20px;
-                    padding:5px 14px;
-                    font-family:Inter,sans-serif;
-                    font-size:0.65rem;
-                    letter-spacing:1.5px;
-                    color:rgba(255,255,255,0.40);
-                    cursor:pointer;
-                    transition:all 0.2s;
-                " onmouseover="this.style.color='rgba(255,255,255,0.80)';this.style.borderColor='rgba(255,255,255,0.28)';"
-                   onmouseout="this.style.color='rgba(255,255,255,0.40)';this.style.borderColor='rgba(255,255,255,0.12)';">
-                    feeling bored?
-                </button>
-            </div>
+
             <!-- Discord -->
             <div class="discord-skeleton" id="discord-skeleton">
                 <div class="skeleton-avatar"></div>
@@ -1414,26 +1415,7 @@
         setTimeout(function(){ btn.classList.remove('pp-ring'); }, 600);
     }
 
-    /* ── Mobile pill swipe next/prev ── */
-    var mPill = document.getElementById('mobile-player-pill');
-    if (mPill) {
-        var _tsx = 0, _tsy = 0;
-        mPill.addEventListener('touchstart', function(e){ _tsx = e.touches[0].clientX; _tsy = e.touches[0].clientY; }, {passive:true});
-        mPill.addEventListener('touchend', function(e){
-            var dx = e.changedTouches[0].clientX - _tsx;
-            var dy = e.changedTouches[0].clientY - _tsy;
-            if (Math.abs(dx) > 55 && Math.abs(dy) < 40) {
-                if (dx > 0) goNext(!audio.paused);
-                else        goPrev(!audio.paused);
-                mPill.style.transition = 'transform 0.12s ease';
-                mPill.style.transform  = 'translateX(' + (dx > 0 ? '8px' : '-8px') + ')';
-                setTimeout(function(){
-                    mPill.style.transform = 'translateX(0)';
-                    setTimeout(function(){ mPill.style.transition = ''; }, 200);
-                }, 120);
-            }
-        }, {passive:true});
-    }
+    /* Swipe handled by unified pill listener */
 
     /* ── Mobile overlay (double-tap pill) ── */
     (function(){
@@ -1493,24 +1475,7 @@
             });
         }
 
-        /* Double-tap pill to open (mobile only) */
-        var pill = document.getElementById('mobile-player-pill');
-        if (pill) {
-            var _lastTap = 0;
-            pill.addEventListener('touchend', function(e) {
-                /* Ignore taps on interactive controls */
-                var tgt = e.target;
-                if (tgt.closest && tgt.closest('#prev-btn, #play-pause-btn, #next-btn, #mute-btn-m, #volume-bar-m, #mobile-prog-cont')) return;
-                var now = Date.now();
-                if (now - _lastTap < 350) {
-                    e.preventDefault();
-                    openOverlay();
-                    _lastTap = 0;
-                } else {
-                    _lastTap = now;
-                }
-            }, {passive: false});
-        }
+        /* Double-tap/click handled by unified pill listener below */
 
         /* Swipe down overlay to close */
         var _sy = 0;
@@ -1521,7 +1486,63 @@
         document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && overlay.classList.contains('bg-open')) closeOverlay(); });
     })();
 
-    /* Desktop: double-click pill to do nothing (no overlay on desktop — bar is always visible) */
+    /* ── Bored button: activate player ── */
+    (function(){
+        var boredBtn    = document.getElementById('bored-btn');
+        var boredState  = document.getElementById('bored-state');
+        var playerState = document.getElementById('player-state');
+        if (!boredBtn) return;
+
+        function activatePlayer() {
+            sessionStorage.setItem('music_active', '1');
+            if (window._audioPlay) window._audioPlay().catch(function(){});
+            if (window._syncPlayIcons) setTimeout(function(){ window._syncPlayIcons(!window._audioPaused()); }, 150);
+            boredState.style.transition = 'opacity 0.35s';
+            boredState.style.opacity = '0';
+            setTimeout(function(){
+                boredState.style.display = 'none';
+                playerState.style.opacity = '0';
+                playerState.style.display = 'block';
+                playerState.style.transition = 'opacity 0.35s';
+                requestAnimationFrame(function(){ requestAnimationFrame(function(){
+                    playerState.style.opacity = '1';
+                }); });
+            }, 320);
+        }
+
+        boredBtn.addEventListener('click', activatePlayer);
+        boredBtn.addEventListener('touchend', function(e){ e.preventDefault(); activatePlayer(); }, {passive:false});
+    })();
+
+    /* ── Double-click (desktop) + double-tap (mobile) pill → open overlay ── */
+    (function(){
+        var pill = document.getElementById('mobile-player-pill');
+        if (!pill) return;
+        var SKIP = '#prev-btn, #play-pause-btn, #next-btn, #mute-btn-m, #volume-bar-m, #mobile-prog-cont, #bored-btn';
+
+        // Desktop double-click
+        var _lastClick = 0;
+        pill.addEventListener('click', function(e){
+            if (e.target.closest && e.target.closest(SKIP)) return;
+            var now = Date.now();
+            if (now - _lastClick < 380) {
+                if (window._openPlayerOverlay) window._openPlayerOverlay();
+                _lastClick = 0;
+            } else { _lastClick = now; }
+        });
+
+        // Mobile double-tap
+        var _lastTap = 0;
+        pill.addEventListener('touchend', function(e){
+            if (e.target.closest && e.target.closest(SKIP)) return;
+            var now = Date.now();
+            if (now - _lastTap < 380) {
+                e.preventDefault();
+                if (window._openPlayerOverlay) window._openPlayerOverlay();
+                _lastTap = 0;
+            } else { _lastTap = now; }
+        }, {passive:false});
+    })();
 
     /* Expose for main script */
     window._audioPlay   = function(){ return audio.play(); };
@@ -1881,11 +1902,15 @@ document.addEventListener('DOMContentLoaded', function () {
         _ent=true;
         overlay.style.display='none';
         show();
-        /* Hide bored btn if audio resumes */
-        setTimeout(function(){
-            var boredWrap = document.getElementById('bored-btn-wrap');
-            if(boredWrap && window._audioPaused && !window._audioPaused()) boredWrap.style.display='none';
-        }, 500);
+        /* If music was playing in this session, skip bored state */
+        if(sessionStorage.getItem('music_active')){
+            var bs = document.getElementById('bored-state');
+            var ps = document.getElementById('player-state');
+            if(bs) bs.style.display='none';
+            if(ps) ps.style.display='block';
+            if(window._audioPlay) window._audioPlay().catch(function(){});
+            if(window._syncPlayIcons) setTimeout(function(){ window._syncPlayIcons(!window._audioPaused()); }, 300);
+        }
     } else {
         overlay.addEventListener('click', enterSite);
         overlay.addEventListener('touchend', function(e){ e.preventDefault(); enterSite(); }, {passive:false});
