@@ -286,50 +286,107 @@
         #hero-banner {
             position: relative;
             width: 100%;
-            min-height: 148px;
+            height: 160px;
             display: flex;
             align-items: center;
             justify-content: center;
-            /* fallback gradient when no banner loads */
             background: linear-gradient(135deg, #0d0d1a 0%, #111827 50%, #0f172a 100%);
+            border-radius: 16px 16px 0 0;
             overflow: hidden;
+            flex-shrink: 0;
         }
-        /* actual banner image */
         #hero-banner-img {
             position: absolute;
-            inset: 0;
+            top: 0; left: 0;
             width: 100%; height: 100%;
             object-fit: cover;
-            object-position: center 20%;
+            object-position: center 30%;
             opacity: 0;
-            transition: opacity 0.6s ease;
+            transition: opacity 0.7s ease;
             pointer-events: none;
-            user-select: none;
         }
         #hero-banner-img.visible { opacity: 1; }
-        /* gradient overlay so text is always readable */
         #hero-banner-overlay {
             position: absolute;
-            inset: 0;
-            background:
-                linear-gradient(to bottom,
-                    rgba(0,0,0,0.28) 0%,
-                    rgba(0,0,0,0.18) 40%,
-                    rgba(0,0,0,0.55) 100%);
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(0,0,0,0.20) 0%,
+                rgba(0,0,0,0.10) 35%,
+                rgba(0,0,0,0.65) 100%
+            );
             pointer-events: none;
+            z-index: 1;
         }
-        /* name + subtitle centered on banner */
         #hero-text {
             position: relative;
             z-index: 2;
-            padding: 28px 22px 24px;
+            padding: 24px 22px 28px;
             text-align: center;
             width: 100%;
         }
-        /* separator line between banner and lower section */
-        .hero-card > div:last-child {
-            border-top: 1px solid rgba(255,255,255,0.06);
+
+        /* ── Discord card overlaps banner bottom edge ── */
+        #discord-overlap-wrap {
+            position: relative;
+            z-index: 3;
+            margin-top: -32px;
+            padding: 0 18px;
+            width: 100%;
+            box-sizing: border-box;
         }
+        .discord-skeleton {
+            display: flex; align-items: center; gap: 12px;
+            background: rgba(12,12,18,0.88);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 14px; padding: 14px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+        .discord-real {
+            display: none;
+            background: rgba(12,12,18,0.88);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 14px; padding: 13px 14px;
+            align-items: center; gap: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+        .discord-real.loaded { display: flex; }
+
+        #hero-lower { padding: 16px 22px 20px; }
+
+        .skeleton-avatar { width:42px; height:42px; border-radius:50%; background:rgba(255,255,255,0.07); flex-shrink:0; animation:skPulse 1.6s ease-in-out infinite; }
+        .skeleton-lines { display:flex; flex-direction:column; gap:9px; flex:1; }
+        .skeleton-line { height:9px; border-radius:5px; background:rgba(255,255,255,0.07); animation:skPulse 1.6s ease-in-out infinite; }
+        .skeleton-line.short { width:55%; animation-delay:0.2s; }
+        @keyframes skPulse { 0%,100%{opacity:0.20} 50%{opacity:0.60} }
+
+        /* avatar + decoration */
+        .discord-avatar-wrap { position:relative; width:42px; height:42px; flex-shrink:0; }
+        .discord-avatar-wrap img#discord-pfp { width:42px; height:42px; border-radius:50%; object-fit:cover; display:block; box-shadow:0 0 0 2px rgba(255,255,255,0.12); }
+        #discord-decoration {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 64px; height: 64px;
+            pointer-events: none;
+            display: none;
+            z-index: 2;
+        }
+        #discord-decoration.show { display: block; }
+
+        .discord-status-dot { position:absolute; bottom:0; right:0; width:12px; height:12px; border-radius:50%; border:2.5px solid rgba(12,12,18,0.95); box-sizing:border-box; z-index:3; }
+        .ds-online    { background:#23a55a; box-shadow:0 0 6px rgba(35,165,90,0.8); }
+        .ds-idle      { background:#f0b232; box-shadow:0 0 6px rgba(240,178,50,0.8); }
+        .ds-dnd       { background:#f23f43; box-shadow:0 0 6px rgba(242,63,67,0.8); }
+        .ds-offline   { background:transparent; border:2.5px solid #80848e; box-shadow:none; }
+        .ds-streaming { background:#593695; box-shadow:0 0 6px rgba(89,54,149,0.8); }
+        #discord-name { font-weight:600; font-size:clamp(0.82rem,2.2vw,0.90rem); color:rgba(255,255,255,0.88); }
+        #discord-status, #discord-status a { font-size:clamp(0.63rem,1.8vw,0.70rem); margin-top:3px; color:rgba(255,255,255,0.45)!important; text-decoration:none; }
+        #discord-activity { font-size:clamp(0.58rem,1.6vw,0.66rem); margin-top:3px; color:rgba(255,255,255,0.30); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px; }
+        .ds-online { animation: dsPulse 2.4s ease-in-out infinite; }
+        @keyframes dsPulse { 0%,100%{box-shadow:0 0 4px rgba(35,165,90,0.55)} 50%{box-shadow:0 0 10px rgba(35,165,90,0.95)} }
 
         /* ── Skills ── */
         .skills-grid { display:flex; flex-wrap:wrap; gap:7px; margin-top:4px; }
@@ -1149,9 +1206,9 @@
             </div>
 
             <!-- ── Lower section (normal padding) ── -->
-            <div style="padding:18px 22px 20px;">
+            <div id="discord-overlap-wrap">
 
-                <!-- Discord -->
+                <!-- Discord skeleton -->
                 <div class="discord-skeleton" id="discord-skeleton">
                     <div class="skeleton-avatar"></div>
                     <div class="skeleton-lines">
@@ -1159,9 +1216,13 @@
                         <div class="skeleton-line short"></div>
                     </div>
                 </div>
+
+                <!-- Discord real card -->
                 <div class="discord-real" id="discord-card">
                     <div class="discord-avatar-wrap">
                         <img id="discord-pfp" src="" alt="Discord PFP">
+                        <!-- decoration overlaid on avatar -->
+                        <img id="discord-decoration" src="" alt="">
                         <div class="discord-status-dot ds-offline" id="discord-dot"></div>
                     </div>
                     <div style="text-align:left;min-width:0;flex:1;">
@@ -1171,7 +1232,10 @@
                     </div>
                 </div>
 
-                <!-- Socials -->
+            </div>
+
+            <!-- Socials -->
+            <div id="hero-lower">
                 <div class="social-links">
                     <a href="https://linkedin.com/in/c3o"             target="_blank" rel="noopener"><i class="fab fa-linkedin"></i></a>
                     <a href="https://instagram.com/shub.is.a.sailor/" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
@@ -1180,8 +1244,8 @@
                     <a href="https://x.com/ZetsuoNoShub"              target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i></a>
                     <a href="/cdn-cgi/l/email-protection#6d1e05180f431d1f020b081e1e0402030c012d0a000c0401430e0200" rel="noopener"><i class="fas fa-envelope"></i></a>
                 </div>
-
             </div>
+
         </div>
 
         <!-- Stats -->
