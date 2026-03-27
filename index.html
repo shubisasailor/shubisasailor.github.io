@@ -1885,6 +1885,53 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    /* ── Horizontal swipe to change tabs ── */
+    (function(){
+        var _tx = 0, _ty = 0, _swiping = false;
+        var THRESHOLD = 55;   // min horizontal px to trigger
+        var ANGLE_MAX = 0.65; // max abs(dy/dx) ratio — keeps it horizontal-only
+
+        main.addEventListener('touchstart', function(e){
+            // Ignore multi-touch
+            if(e.touches.length !== 1) { _swiping = false; return; }
+            _tx = e.touches[0].clientX;
+            _ty = e.touches[0].clientY;
+            _swiping = true;
+        }, {passive: true});
+
+        main.addEventListener('touchmove', function(e){
+            // If mostly vertical, cancel swipe intent so normal scroll wins
+            if(!_swiping || e.touches.length !== 1) return;
+            var dx = e.touches[0].clientX - _tx;
+            var dy = e.touches[0].clientY - _ty;
+            if(Math.abs(dy) > Math.abs(dx) * 1.2) { _swiping = false; }
+        }, {passive: true});
+
+        main.addEventListener('touchend', function(e){
+            if(!_swiping || e.changedTouches.length !== 1) return;
+            var dx = e.changedTouches[0].clientX - _tx;
+            var dy = e.changedTouches[0].clientY - _ty;
+            _swiping = false;
+            // Reject if not horizontal enough
+            if(Math.abs(dx) < THRESHOLD) return;
+            if(Math.abs(dy) / Math.abs(dx) > ANGLE_MAX) return;
+            // Ignore if finger started inside the progress bar or a scrollable element
+            var target = e.target;
+            while(target && target !== main){
+                if(target.id === 'progress-container' || target.id === 'sp-prog-wrap') return;
+                target = target.parentElement;
+            }
+            var i = TABS.indexOf(cur);
+            if(dx < 0) {
+                // Swipe left → next tab
+                window.switchTab(TABS[(i + 1) % TABS.length]);
+            } else {
+                // Swipe right → prev tab
+                window.switchTab(TABS[(i - 1 + TABS.length) % TABS.length]);
+            }
+        }, {passive: true});
+    })();
+
     /* ── Name typewriter ── */
     var nmEl = document.getElementById('display-name');
     var twCursor = document.getElementById('tw-cursor');
