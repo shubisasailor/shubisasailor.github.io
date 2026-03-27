@@ -16,7 +16,7 @@
     var GRAVITY       = 0.90;
     var DAMPING       = 0.76;
     var STIFFNESS     = 0.88;
-    var MAX_PULL      = window.innerHeight * 0.45; // max pull = 45% of screen height
+    var MAX_PULL = window.innerWidth * 0.60;
 
     // ── Theme detection ───────────────────────────────────────────
     var stored = localStorage.getItem('theme');
@@ -277,8 +277,8 @@
 
             tuggedLeft = -dx; // positive = pulled left
 
-            // Trigger when ball crosses 75% of screen width (~25% drag from starting position)
-            if (!didToggle && ballX <= window.innerWidth * 0.75) {
+            // Trigger when ball crosses 50% of screen width (~25% drag from starting position)
+            if (!didToggle && ballX <= window.innerWidth * 0.50) {
                 didToggle = true;
                 triggerToggle();
             }
@@ -386,8 +386,8 @@
         ctx.strokeStyle=ropeColor; ctx.lineWidth=1.8; ctx.stroke();
 
         if (dragging && tuggedLeft > 8) {
-            // Red glow as ball approaches trigger point (75% screen width)
-            var t = Math.min(tuggedLeft / (anchorX * 0.25), 1);
+            // Red glow as ball approaches trigger point (50% screen width)
+            var t = Math.min(tuggedLeft / (anchorX * 0.50), 1);
             ctx.beginPath();
             ctx.moveTo(nodes[0].x,nodes[0].y);
             for (var i2=1; i2<nodes.length; i2++) ctx.lineTo(nodes[i2].x,nodes[i2].y);
