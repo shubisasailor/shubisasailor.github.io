@@ -405,46 +405,174 @@
         /* ── Touch FX canvas ── */
         #touch-fx { position:fixed; inset:0; pointer-events:none; z-index:9997; }
 
-        /* ── Expand hint on mini pill ── */
+        /* ── Expand hint ── */
         #player-expand-hint {
-            text-align: center;
-            font-size: 0.50rem;
-            letter-spacing: 2px;
-            color: rgba(255,255,255,0.16);
-            margin-bottom: 6px;
-            user-select: none;
-            pointer-events: none;
+            text-align: center; font-size: 0.50rem; letter-spacing: 2px;
+            color: rgba(255,255,255,0.16); margin-bottom: 6px;
+            user-select: none; pointer-events: none;
         }
-        /* Keep old collapse btn hidden — not used anymore */
         #player-collapse-btn { display: none !important; }
 
-        /* ══ EXPANDED OVERLAY — separate element, pure opacity fade ══ */
+        /* ══ MOBILE FULLSCREEN OVERLAY — two-phase: bg blur first, card second ══ */
         #player-overlay {
             position: fixed; inset: 0; z-index: 400;
             display: flex; align-items: center; justify-content: center;
-            opacity: 0; visibility: hidden;
-            transition: opacity 0.28s ease, visibility 0.28s ease;
             pointer-events: none;
         }
-        #player-overlay.open {
-            opacity: 1; visibility: visible; pointer-events: auto;
-        }
-        /* Semi-transparent glass backdrop */
+        #player-overlay.bg-open { pointer-events: auto; }
+
         #player-overlay-bg {
             position: absolute; inset: 0;
-            background: rgba(0,0,0,0.22);
-            backdrop-filter: blur(52px) saturate(150%);
-            -webkit-backdrop-filter: blur(52px) saturate(150%);
+            background: rgba(0,0,0,0.60);
+            backdrop-filter: blur(52px) saturate(160%);
+            -webkit-backdrop-filter: blur(52px) saturate(160%);
+            opacity: 0; transition: opacity 0.32s ease;
         }
-        /* Centered card slides up slightly */
+        #player-overlay.bg-open #player-overlay-bg { opacity: 1; }
+
         #player-overlay-card {
             position: relative; z-index: 10;
             display: flex; flex-direction: column; align-items: center;
             width: min(310px, calc(100vw - 48px));
-            transform: translateY(22px);
-            transition: transform 0.38s cubic-bezier(0.34,1.35,0.64,1);
+            opacity: 0; transform: translateY(40px);
+            transition: opacity 0.30s ease 0.20s,
+                        transform 0.40s cubic-bezier(0.34,1.35,0.64,1) 0.20s;
         }
-        #player-overlay.open #player-overlay-card { transform: translateY(0); }
+        #player-overlay.card-open #player-overlay-card { opacity: 1; transform: translateY(0); }
+
+        /* Only show mobile overlay on ≤700px */
+        @media (min-width: 701px) { #player-overlay { display: none !important; } }
+
+        /* ══ DESKTOP SPOTIFY BAR ══ */
+        #spotify-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            z-index: 400;
+            background: rgba(8,8,14,0.55);
+            backdrop-filter: blur(48px) saturate(180%);
+            -webkit-backdrop-filter: blur(48px) saturate(180%);
+            border-top: 1px solid rgba(255,255,255,0.08);
+            display: flex; align-items: center;
+            padding: 0 28px; gap: 0; height: 90px;
+            /* slide up from below */
+            transform: translateY(100%);
+            opacity: 0;
+            transition: transform 0.38s cubic-bezier(0.22,1,0.36,1),
+                        opacity 0.28s ease;
+            pointer-events: none;
+        }
+        #spotify-bar.open {
+            transform: translateY(0); opacity: 1; pointer-events: auto;
+        }
+        /* Only show on desktop */
+        @media (max-width: 700px) { #spotify-bar { display: none !important; } }
+
+        /* Left col — cover + meta */
+        #sp-left {
+            display: flex; align-items: center; gap: 13px;
+            width: 28%; min-width: 0; flex-shrink: 0;
+        }
+        #sp-cover {
+            width: 56px; height: 56px; border-radius: 8px; object-fit: cover;
+            flex-shrink: 0; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            display: block;
+        }
+        #sp-cover.spinning { animation: spSpin 18s linear infinite; border-radius: 50% !important; }
+        @keyframes spSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        #sp-cover-fb {
+            width: 56px; height: 56px; border-radius: 8px;
+            background: rgba(255,255,255,0.04); display: none;
+            align-items: center; justify-content: center;
+            font-size: 1.3rem; color: rgba(255,255,255,0.20); flex-shrink: 0;
+        }
+        #sp-title {
+            font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.88);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;
+        }
+        #sp-artist {
+            font-size: 0.68rem; color: rgba(255,255,255,0.38); margin-top: 3px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;
+        }
+
+        /* Center col — controls + progress */
+        #sp-center {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; gap: 8px; min-width: 0;
+        }
+        #sp-controls { display: flex; align-items: center; gap: 22px; }
+        .sp-ctrl {
+            color: rgba(255,255,255,0.55); cursor: pointer;
+            transition: color 0.18s, transform 0.14s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .sp-ctrl:hover { color: white; transform: scale(1.12); }
+        .sp-ctrl:active { transform: scale(0.88); }
+        #sp-play-btn {
+            width: 36px; height: 36px; background: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; flex-shrink: 0;
+            box-shadow: 0 2px 16px rgba(255,255,255,0.18);
+            transition: transform 0.14s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        #sp-play-btn:hover { transform: scale(1.1); }
+        #sp-play-btn:active { transform: scale(0.92); }
+        #sp-play-icon { color: #000; font-size: 0.90rem; margin-left: 2px; }
+        #sp-play-icon.fa-pause { margin-left: 0; }
+        #sp-prog-row {
+            display: flex; align-items: center; gap: 9px;
+            width: 100%; max-width: 520px;
+        }
+        #sp-time-cur, #sp-time-total {
+            font-size: 0.58rem; color: rgba(255,255,255,0.28);
+            font-variant-numeric: tabular-nums; white-space: nowrap; min-width: 28px;
+        }
+        #sp-time-total { text-align: left; }
+        #sp-prog-wrap {
+            flex: 1; height: 20px; display: flex; align-items: center; cursor: pointer; position: relative;
+        }
+        #sp-prog-track {
+            width: 100%; height: 3px; background: rgba(255,255,255,0.12);
+            border-radius: 10px; overflow: hidden; transition: height 0.15s;
+        }
+        #sp-prog-wrap:hover #sp-prog-track { height: 5px; }
+        #sp-prog-fill {
+            height: 100%; width: 0%; background: rgba(255,255,255,0.70);
+            border-radius: 10px; pointer-events: none; transition: width 0.1s linear;
+        }
+        #sp-prog-wrap:hover #sp-prog-fill { background: white; }
+
+        /* Right col — volume + close */
+        #sp-right {
+            display: flex; align-items: center; gap: 10px;
+            width: 28%; justify-content: flex-end; flex-shrink: 0;
+        }
+        #sp-vol-icon {
+            font-size: 0.78rem; color: rgba(255,255,255,0.38); cursor: pointer;
+            transition: color 0.18s; flex-shrink: 0;
+        }
+        #sp-vol-icon:hover { color: rgba(255,255,255,0.85); }
+        #sp-vol-wrap {
+            flex: 1; max-width: 110px; height: 20px;
+            display: flex; align-items: center; cursor: pointer; position: relative;
+        }
+        #sp-vol-track {
+            width: 100%; height: 3px; background: rgba(255,255,255,0.12);
+            border-radius: 10px; overflow: hidden; transition: height 0.15s;
+        }
+        #sp-vol-wrap:hover #sp-vol-track { height: 5px; }
+        #sp-vol-fill {
+            height: 100%; width: 80%; background: rgba(255,255,255,0.60);
+            border-radius: 10px; pointer-events: none;
+        }
+        #sp-vol-input {
+            position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; margin: 0;
+        }
+        #sp-close {
+            font-size: 0.70rem; color: rgba(255,255,255,0.22); cursor: pointer;
+            padding: 6px 8px; border-radius: 6px; transition: color 0.18s, background 0.18s;
+            flex-shrink: 0; margin-left: 4px;
+        }
+        #sp-close:hover { color: rgba(255,255,255,0.80); background: rgba(255,255,255,0.07); }
 
         /* Drag handle / close pill */
         #ov-collapse {
@@ -845,7 +973,43 @@
     </div>
 </div>
 
-<!-- Success Modal -->
+<!-- ══ Desktop Spotify bar ══ -->
+<div id="spotify-bar">
+    <!-- Left: cover + meta -->
+    <div id="sp-left">
+        <img id="sp-cover" src="media/music-cover/cry.jpg" alt=""
+             onerror="this.style.display='none';document.getElementById('sp-cover-fb').style.display='flex';">
+        <div id="sp-cover-fb">&#9834;</div>
+        <div style="min-width:0;">
+            <div id="sp-title">—</div>
+            <div id="sp-artist">—</div>
+        </div>
+    </div>
+    <!-- Center: controls + progress -->
+    <div id="sp-center">
+        <div id="sp-controls">
+            <i class="fas fa-backward-step sp-ctrl" id="sp-prev" style="font-size:0.88rem;"></i>
+            <div id="sp-play-btn"><i class="fas fa-play" id="sp-play-icon"></i></div>
+            <i class="fas fa-forward-step sp-ctrl" id="sp-next" style="font-size:0.88rem;"></i>
+        </div>
+        <div id="sp-prog-row">
+            <span id="sp-time-cur">0:00</span>
+            <div id="sp-prog-wrap">
+                <div id="sp-prog-track"><div id="sp-prog-fill"></div></div>
+            </div>
+            <span id="sp-time-total">0:00</span>
+        </div>
+    </div>
+    <!-- Right: volume + close -->
+    <div id="sp-right">
+        <i class="fas fa-volume-high" id="sp-vol-icon"></i>
+        <div id="sp-vol-wrap">
+            <div id="sp-vol-track"><div id="sp-vol-fill"></div></div>
+            <input type="range" id="sp-vol-input" min="0" max="1" step="0.02" value="0.8">
+        </div>
+        <i class="fas fa-chevron-down" id="sp-close" title="Collapse"></i>
+    </div>
+</div>
 <div id="success-modal">
     <div id="success-modal-bg"></div>
     <div id="success-modal-card">
@@ -924,7 +1088,7 @@
 
     <!-- MOBILE: pill card -->
     <div id="mobile-player-pill" class="glass-card music-player-card" style="padding:12px 14px;">
-        <div id="player-expand-hint" style="text-align:center;font-size:0.48rem;letter-spacing:2px;color:rgba(255,255,255,0.14);margin-bottom:4px;user-select:none;pointer-events:none;">TAP COVER TO EXPAND · SWIPE RIGHT FOR NEXT</div>
+        <div id="player-expand-hint" style="text-align:center;font-size:0.48rem;letter-spacing:2px;color:rgba(255,255,255,0.14);margin-bottom:4px;user-select:none;pointer-events:none;">DOUBLE-CLICK TO EXPAND</div>
         <div style="display:flex;align-items:center;gap:12px;">
             <div class="music-cover-wrap" id="mobile-cover-wrap" style="cursor:pointer;">
                 <img id="music-cover" src="media/music-cover/cry.jpg"
@@ -1746,165 +1910,245 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 650); /* let the plane animation play first */
     });
 
-    /* ── Player expanded overlay ── */
+    /* ── Player: mobile fullscreen overlay + desktop Spotify bar ── */
     (function(){
-        var overlay   = document.getElementById('player-overlay');
-        var pcBar     = document.getElementById('pc-player-bar');
-        var audio     = document.getElementById('bg-audio');
-        var ovBars    = document.getElementById('ov-bars');
-        var ovCover   = document.getElementById('ov-cover');
-        var ovTitle   = document.getElementById('ov-title');
-        var ovArtist  = document.getElementById('ov-artist');
-        var ovProgFill= document.getElementById('ov-prog-fill');
-        var ovProgWrap= document.getElementById('ov-prog-wrap');
-        var ovTimeCur = document.getElementById('ov-time-cur');
-        var ovTimeTotal=document.getElementById('ov-time-total');
-        var ovPlayBtn = document.getElementById('ov-play-btn');
-        var ovPlayIcon= document.getElementById('ov-play-icon');
-        var ovPrev    = document.getElementById('ov-prev');
-        var ovNext    = document.getElementById('ov-next');
-        var ovCollapse= document.getElementById('ov-collapse');
-        var ovVolIcon = document.getElementById('ov-vol-icon');
-        var ovVolSlider=document.getElementById('ov-vol-slider');
-        var ovBg      = document.getElementById('player-overlay-bg');
-        if(!overlay) return;
+        var audio = document.getElementById('bg-audio');
+        var pill  = document.getElementById('fixed-player');
 
-        function syncMeta(){
-            /* Pull from whichever element has the data */
-            var src   = (document.getElementById('music-cover')||{}).src
-                      || (document.getElementById('music-cover-pc')||{}).src || '';
-            var title = (document.getElementById('song-title-el')||{}).textContent
-                      || (document.getElementById('pc-song-title')||{}).textContent || '—';
-            var artist= (document.getElementById('song-artist-el')||{}).textContent
-                      || (document.getElementById('pc-song-artist')||{}).textContent || '—';
-            if(ovCover && src){ ovCover.style.display=''; ovCover.src=src; }
-            if(ovTitle)  ovTitle.textContent  = title;
-            if(ovArtist) ovArtist.textContent = artist;
+        function fmt(s){ if(!isFinite(s)||isNaN(s))return'0:00'; var m=Math.floor(s/60),sc=Math.floor(s%60); return m+':'+(sc<10?'0':'')+sc; }
+        function getMeta(){
+            return {
+                src:    (document.getElementById('music-cover')||{}).src || '',
+                title:  (document.getElementById('song-title-el')||{}).textContent || '—',
+                artist: (document.getElementById('song-artist-el')||{}).textContent || '—'
+            };
         }
+        var miniPrev = document.getElementById('prev-btn');
+        var miniNext = document.getElementById('next-btn');
+        var miniPP   = document.getElementById('play-pause-btn');
 
-        function openOverlay(){
-            syncMeta(); syncVolume(); syncPlayState(!audio.paused);
-            overlay.classList.add('open');
-        }
-        function closeOverlay(){ overlay.classList.remove('open'); }
+        /* ════ MOBILE FULLSCREEN OVERLAY ════ */
+        (function(){
+            var overlay    = document.getElementById('player-overlay');
+            var ovBg       = document.getElementById('player-overlay-bg');
+            var ovBars     = document.getElementById('ov-bars');
+            var ovCover    = document.getElementById('ov-cover');
+            var ovTitle    = document.getElementById('ov-title');
+            var ovArtist   = document.getElementById('ov-artist');
+            var ovProgFill = document.getElementById('ov-prog-fill');
+            var ovProgWrap = document.getElementById('ov-prog-wrap');
+            var ovTimeCur  = document.getElementById('ov-time-cur');
+            var ovTimeTotal= document.getElementById('ov-time-total');
+            var ovPlayBtn  = document.getElementById('ov-play-btn');
+            var ovPlayIcon = document.getElementById('ov-play-icon');
+            var ovPrev     = document.getElementById('ov-prev');
+            var ovNext     = document.getElementById('ov-next');
+            var ovCollapse = document.getElementById('ov-collapse');
+            var ovVolIcon  = document.getElementById('ov-vol-icon');
+            var ovVolSlider= document.getElementById('ov-vol-slider');
+            if(!overlay) return;
 
-        /* Expose so mobile cover-tap can call it */
-        window._openPlayerOverlay = openOverlay;
-
-        function syncPlayState(playing){
-            if(ovPlayIcon){
-                ovPlayIcon.className='fas '+(playing?'fa-pause':'fa-play');
-                ovPlayIcon.style.marginLeft=playing?'0':'2px';
+            function syncMeta(){
+                var m=getMeta();
+                if(ovCover&&m.src){ ovCover.style.display='block'; ovCover.src=m.src; }
+                if(ovTitle)  ovTitle.textContent=m.title;
+                if(ovArtist) ovArtist.textContent=m.artist;
             }
-            if(ovBars)  ovBars.classList.toggle('paused',!playing);
-            if(ovCover) ovCover.classList.toggle('spinning',playing);
-        }
+            function syncPlay(playing){
+                if(ovPlayIcon){ ovPlayIcon.className='fas '+(playing?'fa-pause':'fa-play'); ovPlayIcon.style.marginLeft=playing?'0':'2px'; }
+                if(ovBars)  ovBars.classList.toggle('paused',!playing);
+                if(ovCover) ovCover.classList.toggle('spinning',playing);
+            }
+            function syncVol(){
+                var v=audio.muted?0:audio.volume;
+                if(ovVolSlider) ovVolSlider.value=v;
+                if(ovVolIcon) ovVolIcon.className=(audio.muted||v===0)?'fas fa-volume-xmark':v<0.4?'fas fa-volume-low':'fas fa-volume-high';
+            }
+            function openOverlay(){
+                syncMeta(); syncPlay(!audio.paused); syncVol();
+                overlay.classList.add('bg-open');
+                setTimeout(function(){ overlay.classList.add('card-open'); }, 20);
+            }
+            function closeOverlay(){
+                overlay.classList.remove('card-open');
+                setTimeout(function(){ overlay.classList.remove('bg-open'); }, 260);
+            }
 
-        function syncVolume(){
-            var v=audio.muted?0:audio.volume;
-            if(ovVolSlider) ovVolSlider.value=v;
-            if(ovVolIcon) ovVolIcon.className=(audio.muted||v===0)?'fas fa-volume-xmark':v<0.4?'fas fa-volume-low':'fas fa-volume-high';
-        }
-
-        function fmt(s){ if(!isFinite(s)||isNaN(s)) return '0:00'; var m=Math.floor(s/60),sc=Math.floor(s%60); return m+':'+(sc<10?'0':'')+sc; }
-
-        audio.addEventListener('timeupdate',function(){
-            if(!overlay.classList.contains('open')||!audio.duration||!isFinite(audio.duration)) return;
-            var pct=(audio.currentTime/audio.duration)*100;
-            if(ovProgFill)  ovProgFill.style.width=pct+'%';
-            if(ovTimeCur)   ovTimeCur.textContent=fmt(audio.currentTime);
-            if(ovTimeTotal) ovTimeTotal.textContent=fmt(audio.duration);
-        });
-        audio.addEventListener('play',  function(){ syncPlayState(true);  });
-        audio.addEventListener('pause', function(){ syncPlayState(false); });
-        audio.addEventListener('emptied',function(){ setTimeout(syncMeta,60); });
-
-        /* Progress seek in overlay */
-        var _seek=false;
-        function seekOv(e){
-            if(!audio.duration||!isFinite(audio.duration)||!ovProgWrap) return;
-            var rect=ovProgWrap.getBoundingClientRect();
-            var cx=e.touches?e.touches[0].clientX:e.clientX;
-            var ratio=Math.max(0,Math.min(1,(cx-rect.left)/rect.width));
-            audio.currentTime=ratio*audio.duration;
-            if(ovProgFill) ovProgFill.style.width=(ratio*100)+'%';
-        }
-        if(ovProgWrap){
-            ovProgWrap.addEventListener('click',function(e){e.stopPropagation();seekOv(e);});
-            ovProgWrap.addEventListener('mousedown',function(e){
-                e.stopPropagation();_seek=true;seekOv(e);
-                var mv=function(e2){seekOv(e2);};
-                var up=function(){_seek=false;window.removeEventListener('mousemove',mv);window.removeEventListener('mouseup',up);};
-                window.addEventListener('mousemove',mv);window.addEventListener('mouseup',up);
+            audio.addEventListener('timeupdate',function(){
+                if(!overlay.classList.contains('bg-open')||!audio.duration||!isFinite(audio.duration)) return;
+                var pct=(audio.currentTime/audio.duration)*100;
+                if(ovProgFill) ovProgFill.style.width=pct+'%';
+                if(ovTimeCur) ovTimeCur.textContent=fmt(audio.currentTime);
+                if(ovTimeTotal) ovTimeTotal.textContent=fmt(audio.duration);
             });
-            ovProgWrap.addEventListener('touchstart',function(e){_seek=true;seekOv(e);},{passive:true});
-            ovProgWrap.addEventListener('touchmove', function(e){seekOv(e);},{passive:true});
-            ovProgWrap.addEventListener('touchend',  function(){_seek=false;});
-        }
+            audio.addEventListener('play',   function(){ syncPlay(true);  });
+            audio.addEventListener('pause',  function(){ syncPlay(false); });
+            audio.addEventListener('emptied',function(){ setTimeout(syncMeta,60); });
 
-        /* Play/pause in overlay */
-        if(ovPlayBtn) ovPlayBtn.addEventListener('click',function(e){
-            e.stopPropagation();
-            if(audio.paused) audio.play().catch(function(){});
-            else audio.pause();
-        });
-
-        /* Prev/next — delegate to _loadSong so both layouts stay synced */
-        if(ovPrev) ovPrev.addEventListener('click',function(e){
-            e.stopPropagation();
-            if(window._loadSong) window._loadSong(window._getIdx()-1,!audio.paused);
-            setTimeout(syncMeta,80);
-        });
-        if(ovNext) ovNext.addEventListener('click',function(e){
-            e.stopPropagation();
-            if(window._loadSong) window._loadSong(window._getIdx()+1,!audio.paused);
-            setTimeout(syncMeta,80);
-        });
-
-        /* Volume in overlay — sync back to both bar elements */
-        if(ovVolSlider){
-            ovVolSlider.addEventListener('input',function(e){
-                e.stopPropagation();
-                var v=parseFloat(ovVolSlider.value);
-                audio.volume=v; audio.muted=(v===0);
-                ['volume-bar','volume-bar-m'].forEach(function(id){
-                    var el=document.getElementById(id); if(el) el.value=v;
+            if(ovProgWrap){
+                function seekOv(e){
+                    if(!audio.duration||!isFinite(audio.duration)) return;
+                    var rect=ovProgWrap.getBoundingClientRect();
+                    var cx=e.touches?e.touches[0].clientX:e.clientX;
+                    var ratio=Math.max(0,Math.min(1,(cx-rect.left)/rect.width));
+                    audio.currentTime=ratio*audio.duration;
+                    if(ovProgFill) ovProgFill.style.width=(ratio*100)+'%';
+                }
+                ovProgWrap.addEventListener('click',function(e){e.stopPropagation();seekOv(e);});
+                ovProgWrap.addEventListener('mousedown',function(e){
+                    e.stopPropagation();
+                    var mv=function(e2){seekOv(e2);}; var up=function(){window.removeEventListener('mousemove',mv);window.removeEventListener('mouseup',up);};
+                    window.addEventListener('mousemove',mv); window.addEventListener('mouseup',up); seekOv(e);
                 });
-                ['vol-pct','vol-pct-m'].forEach(function(id){
-                    var el=document.getElementById(id); if(el) el.textContent=Math.round(v*100)+'%';
+                ovProgWrap.addEventListener('touchstart',function(e){seekOv(e);},{passive:true});
+                ovProgWrap.addEventListener('touchmove', function(e){seekOv(e);},{passive:true});
+            }
+            if(ovPlayBtn) ovPlayBtn.addEventListener('click',function(e){ e.stopPropagation(); audio.paused?audio.play().catch(function(){}):audio.pause(); });
+            if(ovPrev) ovPrev.addEventListener('click',function(e){ e.stopPropagation(); if(miniPrev)miniPrev.click(); setTimeout(syncMeta,80); });
+            if(ovNext) ovNext.addEventListener('click',function(e){ e.stopPropagation(); if(miniNext)miniNext.click(); setTimeout(syncMeta,80); });
+            if(ovVolSlider){
+                ovVolSlider.addEventListener('input',function(e){
+                    e.stopPropagation();
+                    var v=parseFloat(ovVolSlider.value); audio.volume=v; audio.muted=(v===0);
+                    var vb=document.getElementById('volume-bar'); if(vb)vb.value=v;
+                    var vp=document.getElementById('vol-pct'); if(vp)vp.textContent=Math.round(v*100)+'%';
+                    localStorage.setItem('music_volume',v); syncVol();
                 });
-                localStorage.setItem('music_volume',v);
-                syncVolume();
+            }
+            if(ovVolIcon) ovVolIcon.addEventListener('click',function(e){
+                e.stopPropagation(); audio.muted=!audio.muted;
+                if(!audio.muted&&audio.volume===0){audio.volume=0.5;if(ovVolSlider)ovVolSlider.value=0.5;}
+                syncVol();
             });
-        }
-        if(ovVolIcon) ovVolIcon.addEventListener('click',function(e){
-            e.stopPropagation();
-            audio.muted=!audio.muted;
-            if(!audio.muted&&audio.volume===0){audio.volume=0.5;if(ovVolSlider)ovVolSlider.value=0.5;}
-            syncVolume();
-        });
+            if(ovCollapse) ovCollapse.addEventListener('click',closeOverlay);
+            ovBg && ovBg.addEventListener('click',closeOverlay);
+            document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&overlay.classList.contains('bg-open')) closeOverlay(); });
+            var _sy=0;
+            overlay.addEventListener('touchstart',function(e){_sy=e.touches[0].clientY;},{passive:true});
+            overlay.addEventListener('touchend',function(e){ if(e.changedTouches[0].clientY-_sy>60) closeOverlay(); },{passive:true});
 
-        /* ── Open trigger ──
-           Desktop: double-click the PC bar (not on controls)
-           Mobile:  tap cover (handled in player script via _openPlayerOverlay)
-        */
-        var isDesktop=window.matchMedia('(hover:hover) and (pointer:fine)').matches;
-        if(isDesktop && pcBar){
-            pcBar.addEventListener('dblclick',function(e){
-                if(e.target.closest&&e.target.closest('#play-pause-btn-pc,#prev-btn-pc,#next-btn-pc,#mute-btn,#volume-bar,#progress-container')) return;
-                openOverlay();
+            /* Mobile: double-tap pill to open */
+            if(pill){
+                var _lt=0;
+                pill.addEventListener('touchend',function(e){
+                    if(e.target.closest&&e.target.closest('#prev-btn,#play-pause-btn,#next-btn,#mute-btn,#volume-bar,#progress-container')) return;
+                    var now=Date.now();
+                    if(now-_lt<350){ e.preventDefault(); openOverlay(); _lt=0; }
+                    else _lt=now;
+                },{passive:false});
+            }
+        })();
+
+        /* ════ DESKTOP SPOTIFY BAR ════ */
+        (function(){
+            if(window.innerWidth <= 700) return;
+            var bar        = document.getElementById('spotify-bar');
+            if(!bar || !pill) return;
+
+            var spCover    = document.getElementById('sp-cover');
+            var spCoverFb  = document.getElementById('sp-cover-fb');
+            var spTitle    = document.getElementById('sp-title');
+            var spArtist   = document.getElementById('sp-artist');
+            var spPlayBtn  = document.getElementById('sp-play-btn');
+            var spPlayIcon = document.getElementById('sp-play-icon');
+            var spPrev     = document.getElementById('sp-prev');
+            var spNext     = document.getElementById('sp-next');
+            var spProgFill = document.getElementById('sp-prog-fill');
+            var spProgWrap = document.getElementById('sp-prog-wrap');
+            var spTimeCur  = document.getElementById('sp-time-cur');
+            var spTimeTotal= document.getElementById('sp-time-total');
+            var spVolIcon  = document.getElementById('sp-vol-icon');
+            var spVolInput = document.getElementById('sp-vol-input');
+            var spVolFill  = document.getElementById('sp-vol-fill');
+            var spClose    = document.getElementById('sp-close');
+
+            function syncMeta(){
+                var m=getMeta();
+                if(spCover&&m.src){ spCover.style.display='block'; spCover.src=m.src; if(spCoverFb)spCoverFb.style.display='none'; }
+                if(spTitle)  spTitle.textContent=m.title;
+                if(spArtist) spArtist.textContent=m.artist;
+            }
+            function syncPlay(playing){
+                if(spPlayIcon){ spPlayIcon.className='fas '+(playing?'fa-pause':'fa-play'); spPlayIcon.style.marginLeft=playing?'0':'2px'; }
+                if(spCover)  spCover.classList.toggle('spinning',playing);
+            }
+            function syncVol(){
+                var v=audio.muted?0:audio.volume;
+                if(spVolInput) spVolInput.value=v;
+                if(spVolFill)  spVolFill.style.width=(v*100)+'%';
+                if(spVolIcon)  spVolIcon.className=(audio.muted||v===0)?'fas fa-volume-xmark':v<0.4?'fas fa-volume-low':'fas fa-volume-high';
+            }
+
+            var _open=false;
+            function openBar(){
+                if(_open) return; _open=true;
+                syncMeta(); syncPlay(!audio.paused); syncVol();
+                bar.classList.add('open');
+                /* Push pill up so it's not hidden behind bar */
+                pill.style.transition='bottom 0.38s cubic-bezier(0.22,1,0.36,1)';
+                pill.style.bottom='106px';
+            }
+            function closeBar(){
+                if(!_open) return; _open=false;
+                bar.classList.remove('open');
+                pill.style.bottom='';
+                setTimeout(function(){ pill.style.transition=''; }, 400);
+            }
+
+            audio.addEventListener('timeupdate',function(){
+                if(!_open||!audio.duration||!isFinite(audio.duration)) return;
+                var pct=(audio.currentTime/audio.duration)*100;
+                if(spProgFill) spProgFill.style.width=pct+'%';
+                if(spTimeCur) spTimeCur.textContent=fmt(audio.currentTime);
+                if(spTimeTotal) spTimeTotal.textContent=fmt(audio.duration);
             });
-        }
+            audio.addEventListener('play',   function(){ syncPlay(true);  });
+            audio.addEventListener('pause',  function(){ syncPlay(false); });
+            audio.addEventListener('emptied',function(){ setTimeout(syncMeta,60); });
 
-        /* Close */
-        if(ovCollapse) ovCollapse.addEventListener('click',closeOverlay);
-        if(ovBg) ovBg.addEventListener('click',closeOverlay);
-        document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeOverlay(); });
-        var _sy=0;
-        overlay.addEventListener('touchstart',function(e){_sy=e.touches[0].clientY;},{passive:true});
-        overlay.addEventListener('touchend',function(e){
-            if(e.changedTouches[0].clientY-_sy>60) closeOverlay();
-        },{passive:true});
+            /* Seek */
+            if(spProgWrap){
+                function seekSp(e){
+                    if(!audio.duration||!isFinite(audio.duration)) return;
+                    var rect=spProgWrap.getBoundingClientRect();
+                    var cx=e.clientX; var ratio=Math.max(0,Math.min(1,(cx-rect.left)/rect.width));
+                    audio.currentTime=ratio*audio.duration;
+                    if(spProgFill) spProgFill.style.width=(ratio*100)+'%';
+                }
+                spProgWrap.addEventListener('click',function(e){e.stopPropagation();seekSp(e);});
+                spProgWrap.addEventListener('mousedown',function(e){
+                    e.stopPropagation();
+                    var mv=function(e2){seekSp(e2);}; var up=function(){window.removeEventListener('mousemove',mv);window.removeEventListener('mouseup',up);};
+                    window.addEventListener('mousemove',mv); window.addEventListener('mouseup',up); seekSp(e);
+                });
+            }
+            if(spPlayBtn) spPlayBtn.addEventListener('click',function(e){ e.stopPropagation(); audio.paused?audio.play().catch(function(){}):audio.pause(); });
+            if(spPrev) spPrev.addEventListener('click',function(e){ e.stopPropagation(); if(miniPrev)miniPrev.click(); setTimeout(syncMeta,80); });
+            if(spNext) spNext.addEventListener('click',function(e){ e.stopPropagation(); if(miniNext)miniNext.click(); setTimeout(syncMeta,80); });
+            if(spVolInput){
+                spVolInput.addEventListener('input',function(e){
+                    e.stopPropagation();
+                    var v=parseFloat(spVolInput.value); audio.volume=v; audio.muted=(v===0);
+                    var vb=document.getElementById('volume-bar'); if(vb)vb.value=v;
+                    var vp=document.getElementById('vol-pct'); if(vp)vp.textContent=Math.round(v*100)+'%';
+                    localStorage.setItem('music_volume',v); syncVol();
+                });
+            }
+            if(spVolIcon) spVolIcon.addEventListener('click',function(e){
+                e.stopPropagation(); audio.muted=!audio.muted;
+                if(!audio.muted&&audio.volume===0){audio.volume=0.5;if(spVolInput)spVolInput.value=0.5;}
+                syncVol();
+            });
+            if(spClose) spClose.addEventListener('click',function(e){ e.stopPropagation(); closeBar(); });
+
+            /* Desktop: double-click pill to open bar */
+            pill.addEventListener('dblclick',function(e){
+                if(e.target.closest&&e.target.closest('#prev-btn,#play-pause-btn,#next-btn,#mute-btn,#volume-bar,#progress-container')) return;
+                _open ? closeBar() : openBar();
+            });
+
+            document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&_open) closeBar(); });
+        })();
     })();
 
     /* ── Draggable projects panel (desktop) ── */
