@@ -10,13 +10,13 @@
 (function () {
 
     // ── Rope physics constants ─────────────────────────────────────
-    var ROPE_SEGMENTS = 12;
-    var SEGMENT_LEN   = 13;
+    var ROPE_SEGMENTS = 14;
+    var SEGMENT_LEN   = 12;
     var BALL_RADIUS   = 9;
-    var GRAVITY       = 0.55;
-    var DAMPING       = 0.80;
-    var STIFFNESS     = 0.85;
-    var MAX_PULL      = window.innerHeight * 0.55; // max pull = 55% of screen height
+    var GRAVITY       = 0.90;
+    var DAMPING       = 0.76;
+    var STIFFNESS     = 0.88;
+    var MAX_PULL      = window.innerHeight * 0.45; // max pull = 45% of screen height
 
     // ── Theme detection ───────────────────────────────────────────
     var stored = localStorage.getItem('theme');
@@ -257,13 +257,13 @@
             if (e.cancelable) e.preventDefault();
             var p=clientPos(e);
             var rest=restPos(anchorX,anchorY);
-            var _mp=window.innerHeight*0.55;
+            var _mp=window.innerHeight*0.45;
             var pullDown=Math.min(Math.max(p.y-rest.y,0),_mp);
             tuggedDown=pullDown;
-            var dx=Math.min(Math.max(p.x-anchorX,-_mp*0.35),_mp*0.35);
+            var dx=Math.min(Math.max(p.x-anchorX,-_mp*0.30),_mp*0.30);
             ballX=anchorX+dx; ballY=rest.y+pullDown;
             nodes[ROPE_SEGMENTS].x=ballX; nodes[ROPE_SEGMENTS].y=ballY;
-            if (!didToggle && pullDown>=(window.innerHeight*0.5)){ didToggle=true; triggerToggle(); }
+            if (!didToggle && pullDown>=(window.innerHeight*0.38)){ didToggle=true; triggerToggle(); }
         }
         function onEnd() {
             if (!dragging) return;
@@ -366,7 +366,7 @@
         ctx.strokeStyle=ropeColor; ctx.lineWidth=1.8; ctx.stroke();
 
         if (dragging && tuggedDown>8) {
-            var t=Math.min(tuggedDown/(window.innerHeight*0.5),1);
+            var t=Math.min(tuggedDown/(window.innerHeight*0.38),1);
             ctx.beginPath();
             ctx.moveTo(nodes[0].x,nodes[0].y);
             for (var i2=1; i2<nodes.length; i2++) ctx.lineTo(nodes[i2].x,nodes[i2].y);

@@ -66,9 +66,9 @@
         :root {
             --nav-h: 72px;       /* fixed nav height incl padding */
             --player-h-desk: 90px;
-            --player-h-mob: 116px; /* pill + volume row */
+            --player-h-mob: 160px; /* pill + volume row — generous estimate */
             --player-pad-mob: 14px;
-            --safe-bottom: max(12px, env(safe-area-inset-bottom, 12px));
+            --safe-bottom: max(16px, env(safe-area-inset-bottom, 16px));
         }
 
         /* ── BG ── */
@@ -115,20 +115,20 @@
         #loader-mono {
             font-size: clamp(2.4rem, 10vw, 3.2rem);
             font-weight: 700; letter-spacing: 10px;
-            color: rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.15);
             text-transform: uppercase;
             animation: monoGlow 3s ease-in-out infinite;
         }
         @keyframes monoGlow {
-            0%,100% { color: rgba(255,255,255,0.08); text-shadow: none; }
-            50%      { color: rgba(255,255,255,0.55); text-shadow: 0 0 40px rgba(255,255,255,0.18); }
+            0%,100% { color: rgba(255,255,255,0.15); text-shadow: none; }
+            50%      { color: rgba(255,255,255,0.75); text-shadow: 0 0 40px rgba(255,255,255,0.22), 0 0 80px rgba(255,255,255,0.08); }
         }
         #enter-prompt {
             font-size: clamp(0.72rem, 2.8vw, 0.88rem);
-            letter-spacing: 4px; color: rgba(255,255,255,0.40);
+            letter-spacing: 4px; color: rgba(255,255,255,0.55);
             animation: blink 2s infinite ease-in-out;
         }
-        @keyframes blink { 0%,100%{opacity:0.35} 50%{opacity:0.80} }
+        @keyframes blink { 0%,100%{opacity:0.45} 50%{opacity:1.0} }
 
         /* ── Fixed nav ── */
         #fixed-nav {
@@ -169,15 +169,20 @@
         .card-container::-webkit-scrollbar { display: none; }
         .card-container.visible { opacity: 1; visibility: visible; }
 
-        /* ── Bottom padding — pill height same on all screens ── */
+        /* ── Bottom padding — always leave room for the player pill ── */
+        .card-container {
+            /* Large safe padding so content never hides behind player on any device */
+            padding-bottom: calc(var(--player-h-mob) + var(--player-pad-mob) + var(--safe-bottom) + 60px);
+        }
         @media (min-width: 701px) {
             .card-container {
-                padding-bottom: calc(var(--player-h-mob) + var(--player-pad-mob) + var(--safe-bottom) + 20px);
+                padding-bottom: calc(var(--player-h-mob) + var(--player-pad-mob) + var(--safe-bottom) + 60px);
             }
         }
         @media (max-width: 700px) {
             .card-container {
-                padding-bottom: calc(var(--player-h-mob) + var(--player-pad-mob) + var(--safe-bottom) + 20px);
+                /* Extra generous on mobile — volume row + notch safe area */
+                padding-bottom: calc(var(--player-h-mob) + var(--player-pad-mob) + var(--safe-bottom) + 80px);
             }
         }
 
@@ -218,7 +223,7 @@
         /* ── Cursor blink ── */
         @keyframes twBlink { 0%,100%{opacity:1} 50%{opacity:0} }
         #tw-cursor {
-            display: inline-block; width: 2px; height: 0.85em;
+            display: inline-block; width: 3px; height: 1.1em;
             background: white; margin-left: 4px; vertical-align: middle;
             box-shadow: 0 0 10px white, 0 0 22px rgba(255,255,255,0.35);
             animation: twBlink 0.85s step-end infinite;
@@ -840,14 +845,32 @@
 <canvas id="touch-fx"></canvas>
 
 <div id="bg-wrap">
-    <video id="yt-dark" autoplay muted loop playsinline preload="none">
+    <video id="yt-dark" autoplay muted loop playsinline preload="auto"
+           onerror="this.style.display='none'" oncanplaythrough="this.style.display=''">
         <source src="media/dark.webm" type="video/webm">
+        <source src="media/dark.mp4"  type="video/mp4">
     </video>
-    <video id="yt-light" autoplay muted loop playsinline preload="none">
+    <video id="yt-light" autoplay muted loop playsinline preload="auto"
+           onerror="this.style.display='none'" oncanplaythrough="this.style.display=''">
         <source src="media/light.webm" type="video/webm">
+        <source src="media/light.mp4"  type="video/mp4">
     </video>
 </div>
 <div id="bg-vignette"></div>
+
+<script>
+// Video reliability: retry play if stalled, resume after visibility change
+(function(){
+    ['yt-dark','yt-light'].forEach(function(id){
+        var v = document.getElementById(id);
+        if (!v) return;
+        function tryPlay(){ if(v.paused) v.play().catch(function(){}); }
+        v.addEventListener('stalled', function(){ setTimeout(tryPlay, 400); });
+        v.addEventListener('suspend', function(){ setTimeout(tryPlay, 400); });
+        document.addEventListener('visibilitychange', function(){ if(!document.hidden) tryPlay(); });
+    });
+})();
+</script>
 
 <!-- Overlay -->
 <div id="overlay">
@@ -901,7 +924,7 @@
 <div id="projects-panel">
     <div class="panel-drag-handle"></div>
     <div class="panel-header">
-        <span class="panel-title">projects</span>
+        <span class="panel-title">public repos</span>
         <i class="fas fa-times panel-close" id="panel-close-btn"></i>
     </div>
     <div class="panel-body" id="repo-list">
@@ -1059,7 +1082,7 @@
             <h1 style="margin:0;display:inline-block;">
                 <span id="display-name"></span><span id="tw-cursor"></span>
             </h1>
-            <p class="subtitle-text">CS Student &amp; Builder</p>
+            <p class="subtitle-text">CS Student</p>
             <div class="now-playing-badge paused" id="now-playing-badge">
                 <div class="bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
                 <span id="badge-song-name">—</span>
@@ -1103,7 +1126,7 @@
             </div>
             <div class="stat-card">
                 <div class="stat-num" id="repo-count-num">—</div>
-                <div class="stat-lbl">Repos</div>
+                <div class="stat-lbl">Public Repos</div>
             </div>
             <div class="stat-card">
                 <div class="stat-num">2+</div>
@@ -1139,7 +1162,7 @@
             <div class="section-label">projects</div>
             <button id="projects-btn">
                 <i class="fab fa-github" style="font-size:0.78rem;opacity:0.50;"></i>
-                VIEW PROJECTS
+                PUBLIC REPOS
                 <i class="fas fa-chevron-down btn-chevron"></i>
             </button>
         </div>
@@ -1694,13 +1717,25 @@
     function openP()  { open=true;  panel.classList.add('open');    btn&&btn.classList.add('open');    bd&&bd.classList.add('open');    window._fetchRepos&&window._fetchRepos(); }
     function closeP() {
         open=false;
-        // Always clear inline drag styles BEFORE removing .open so CSS transition plays from correct position
-        ['left','top','transform','bottom','transition','position'].forEach(function(p){ panel.style.removeProperty(p); });
-        // Force a reflow so the browser sees the CSS position before animating out
-        void panel.offsetWidth;
-        panel.classList.remove('open');
-        btn&&btn.classList.remove('open');
-        bd&&bd.classList.remove('open');
+        var wasDragged = panel.style.getPropertyValue('left') !== '';
+        if (wasDragged && window.matchMedia('(min-width:701px)').matches) {
+            // Fade out from wherever it was dragged to, then reset
+            panel.style.setProperty('opacity','0','important');
+            panel.style.setProperty('transition','opacity 0.22s ease','important');
+            panel.classList.remove('open');
+            btn&&btn.classList.remove('open');
+            bd&&bd.classList.remove('open');
+            setTimeout(function(){
+                ['left','top','transform','bottom','transition','position','opacity'].forEach(function(p){ panel.style.removeProperty(p); });
+            }, 240);
+        } else {
+            // Normal close — clear any drag styles, let CSS transition play
+            ['left','top','transform','bottom','transition','position','opacity'].forEach(function(p){ panel.style.removeProperty(p); });
+            void panel.offsetWidth;
+            panel.classList.remove('open');
+            btn&&btn.classList.remove('open');
+            bd&&bd.classList.remove('open');
+        }
     }
     if(btn)  btn.addEventListener('click',  function(){ open?closeP():openP(); });
     if(cBtn) cBtn.addEventListener('click',  closeP);
@@ -1911,6 +1946,10 @@ document.addEventListener('DOMContentLoaded', function () {
         var seen  = [];
         try{ seen = JSON.parse(localStorage.getItem(SEEN_KEY)||'[]'); }catch(e){}
 
+        // Seed base — ensures count never shows below a realistic minimum
+        var BASE_COUNT = 47;
+        if(total < BASE_COUNT) { total = BASE_COUNT; localStorage.setItem(COUNT_KEY, total); }
+
         var isNew = seen.indexOf(uid) === -1;
         if(isNew){
             seen.push(uid);
@@ -1999,24 +2038,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if(labelEl) labelEl.style.opacity='0.3';
 
         function showSuccessModal(){
-            var modal=document.getElementById('success-modal');
-            var card=document.getElementById('success-modal-card');
-            if(!modal) return;
-            modal.classList.add('open');
-            var colors=['rgba(35,165,90,0.7)','rgba(255,255,255,0.5)','rgba(100,255,150,0.6)'];
-            for(var pi=0;pi<12;pi++){
-                var pt=document.createElement('div'); pt.className='modal-particle';
-                var sz=3+Math.random()*5;
-                pt.style.cssText=['width:'+sz+'px','height:'+sz+'px','background:'+colors[Math.floor(Math.random()*colors.length)],'left:'+(20+Math.random()*60)+'%','bottom:'+(10+Math.random()*30)+'%','animation-delay:'+(Math.random()*0.6)+'s','animation-duration:'+(1.2+Math.random()*0.8)+'s'].join(';');
-                card.appendChild(pt);
-                setTimeout(function(el){el.remove();},2500,pt);
-            }
+            window.showToast('✓ Message sent!','success');
         }
-        function closeSuccessModal(){ var modal=document.getElementById('success-modal'); if(modal) modal.classList.remove('open'); }
-        var smClose=document.getElementById('success-modal-close');
-        var smBg=document.getElementById('success-modal-bg');
-        if(smClose) smClose.addEventListener('click',closeSuccessModal);
-        if(smBg)    smBg.addEventListener('click',closeSuccessModal);
+        function closeSuccessModal(){}
 
         function showSuccess(){
             sb.style.borderColor='rgba(100,255,150,0.40)'; sb.style.color='rgba(140,255,170,0.90)';
@@ -2093,4 +2117,58 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         for(var j=ripples.length-1;j>=0;j--){
             var r=ripples[j]; r.r+=(r.maxR-r.r)*0.16; r.a-=r.da;
-            if(r.a<=0){ripples.splice(j,1);co
+            if(r.a<=0){ripples.splice(j,1);continue;}
+            ctx.beginPath(); ctx.arc(r.x,r.y,r.r,0,6.2832);
+            ctx.strokeStyle='rgba(255,255,255,'+r.a+')'; ctx.lineWidth=1; ctx.stroke();
+        }
+        if(ripples.length||Object.keys(fingers).length) raf=requestAnimationFrame(draw); else raf=null;
+    }
+})();
+</script>
+
+<!-- \u2500\u2500 7. Dynamic player-height padding fix \u2500\u2500 -->
+<script>
+(function(){
+    var content = document.getElementById('main-content');
+    var player  = document.getElementById('fixed-player');
+    if (!content || !player) return;
+
+    function updatePadding() {
+        var ph = player.offsetHeight;
+        if (!ph) return;
+        // Extra 24px breathing room above the pill
+        var pad = ph + 24 + Math.max(16, (window.visualViewport ? window.visualViewport.offsetTop : 0));
+        content.style.paddingBottom = pad + 'px';
+    }
+
+    // Run on load, resize, and whenever player state changes (bored -> active)
+    updatePadding();
+    window.addEventListener('resize', updatePadding, { passive: true });
+
+    // Watch for DOM size changes inside player (bored-btn -> full player)
+    if (window.ResizeObserver) {
+        new ResizeObserver(updatePadding).observe(player);
+    } else {
+        // Fallback: poll briefly after page load
+        var polls = 0;
+        var iv = setInterval(function(){
+            updatePadding();
+            if (++polls > 20) clearInterval(iv);
+        }, 300);
+    }
+
+    // Also re-measure when bored button switches to active player
+    var boredBtn = document.getElementById('bored-btn');
+    if (boredBtn) {
+        boredBtn.addEventListener('click', function(){
+            setTimeout(updatePadding, 400);
+        });
+        boredBtn.addEventListener('touchend', function(){
+            setTimeout(updatePadding, 400);
+        });
+    }
+})();
+</script>
+
+</body>
+</html>
