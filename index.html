@@ -1083,7 +1083,7 @@
                 <span id="display-name"></span><span id="tw-cursor"></span>
             </h1>
             <p class="subtitle-text">CS Student</p>
-            <div class="now-playing-badge paused" id="now-playing-badge">
+            <div class="now-playing-badge paused" id="now-playing-badge" style="display:none;">
                 <div class="bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
                 <span id="badge-song-name">—</span>
             </div>
@@ -1358,8 +1358,15 @@
         if (ppBtn) { ppBtn.classList.toggle('fa-play', !playing); ppBtn.classList.toggle('fa-pause', playing); }
         // Desktop bar
         if (spPlayIcon) { spPlayIcon.className = 'fas ' + (playing ? 'fa-pause' : 'fa-play'); spPlayIcon.style.marginLeft = playing ? '0' : '2px'; }
-        // Badge
-        if (badgeEl) badgeEl.classList.toggle('paused', !playing);
+        // Badge — show only after music has started at least once
+        if (badgeEl) {
+            if (playing) {
+                badgeEl.style.display = '';   // reveal on first play
+                badgeEl.classList.remove('paused');
+            } else if (badgeEl.style.display !== 'none') {
+                badgeEl.classList.add('paused'); // already revealed — just pause bars
+            }
+        }
         // Mobile cover spin
         if (coverImg) coverImg.classList.toggle('spinning', playing);
         if (spCover)  spCover.classList.toggle('spinning', playing);
@@ -1959,12 +1966,11 @@ document.addEventListener('DOMContentLoaded', function () {
         var vEl = document.querySelector('.visit-count-val');
         if(!vEl) return;
 
-        // ── CONFIGURE THIS ──────────────────────────────────────────
-        var FIREBASE_URL = 'https://YOUR-PROJECT-default-rtdb.firebaseio.com';
-        // ────────────────────────────────────────────────────────────
-
-        var COUNTER_PATH = '/visitors/count.json';
-        var BASE_SEED    = 47; // starting count before Firebase — keeps it realistic
+        // ── Visitor counter via counterapi.dev (free, no setup needed) ──
+        // Uses a unique namespace so the count is scoped to your site.
+        var NAMESPACE = 'francisco-portfolio-v1';
+        var KEY       = 'visitors';
+        var BASE_SEED = 47; // realistic starting point before the counter began
 
         function fmtV(n){ return n >= 1000 ? (n/1000).toFixed(1) + 'k' : String(n); }
 
@@ -1987,58 +1993,29 @@ document.addEventListener('DOMContentLoaded', function () {
             setTimeout(function(){ rollTo(from, safe, 900); }, 350);
         }
 
-        // Guard: only count once per browser session (not per tab refresh)
         var alreadyCounted = sessionStorage.getItem('pf_counted');
 
-        if(FIREBASE_URL.indexOf('YOUR-PROJECT') !== -1){
-            // Firebase not configured yet — fall back to localStorage estimate
-            var lsCount = parseInt(localStorage.getItem('pf_ls_count') || String(BASE_SEED), 10);
-            if(!alreadyCounted){
-                sessionStorage.setItem('pf_counted', '1');
-                lsCount++;
-                localStorage.setItem('pf_ls_count', lsCount);
-            }
-            showCount(lsCount);
-            return;
-        }
-
-        var url = FIREBASE_URL.replace(/\/$/, '') + COUNTER_PATH;
-
         if(alreadyCounted){
-            // Returning tab: just read current count, don't increment
-            fetch(url)
+            // Returning tab: just read current count
+            fetch('https://api.counterapi.dev/v1/' + NAMESPACE + '/' + KEY)
                 .then(function(r){ return r.json(); })
-                .then(function(d){
-                    var n = parseInt(d, 10);
-                    if(!isNaN(n)) showCount(n);
-                })
-                .catch(function(){});
+                .then(function(d){ if(d && d.count) showCount(d.count + BASE_SEED); })
+                .catch(function(){
+                    var n = parseInt(localStorage.getItem('pf_ls_count') || String(BASE_SEED), 10);
+                    showCount(n);
+                });
         } else {
-            // New session: use Firebase transaction to atomically increment
             sessionStorage.setItem('pf_counted', '1');
-
-            // Step 1: read current value
-            fetch(url)
+            // Hit the "up" endpoint to increment and read in one call
+            fetch('https://api.counterapi.dev/v1/' + NAMESPACE + '/' + KEY + '/up')
                 .then(function(r){ return r.json(); })
                 .then(function(d){
-                    var current = parseInt(d, 10);
-                    if(isNaN(current) || current < BASE_SEED) current = BASE_SEED;
-                    var next = current + 1;
-
-                    // Step 2: write incremented value
-                    return fetch(url, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(next)
-                    })
-                    .then(function(r){ return r.json(); })
-                    .then(function(written){
-                        var confirmed = parseInt(written, 10);
-                        showCount(isNaN(confirmed) ? next : confirmed);
-                    });
+                    var n = (d && d.count) ? d.count + BASE_SEED : BASE_SEED;
+                    localStorage.setItem('pf_ls_count', n);
+                    showCount(n);
                 })
                 .catch(function(){
-                    // Firebase unreachable — show localStorage estimate
+                    // Offline fallback
                     var lsCount = parseInt(localStorage.getItem('pf_ls_count') || String(BASE_SEED), 10) + 1;
                     localStorage.setItem('pf_ls_count', lsCount);
                     showCount(lsCount);
@@ -2053,7 +2030,19 @@ document.addEventListener('DOMContentLoaded', function () {
         nav.classList.add('visible');
         player.classList.add('visible');
         window._startNameTypewriter();
-        setTimeout(function(){ if(window._ropeInit) window._ropeInit(); }, 100);
+        setTimeout(function(){
+            if (window._ropeInit) {
+                window._ropeInit();
+            } else {
+                // rope-theme.js may still be loading (defer) — retry
+                var attempts = 0;
+                var ri = setInterval(function(){
+                    attempts++;
+                    if (window._ropeInit) { clearInterval(ri); window._ropeInit(); }
+                    else if (attempts > 30) clearInterval(ri);
+                }, 100);
+            }
+        }, 100);
     }
     function enterSite(){
         if(_ent) return; _ent=true;
