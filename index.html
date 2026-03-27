@@ -134,16 +134,34 @@
 
         /* ── Fixed player ── */
         #fixed-player {
-            position: fixed; bottom: 16px; left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 28px); max-width: 480px;
+            position: fixed; bottom: 0; left: 0; right: 0;
             z-index: 200; opacity: 0; visibility: hidden;
             transition: opacity 1.2s cubic-bezier(0.19,1,0.22,1), visibility 1.2s cubic-bezier(0.19,1,0.22,1);
         }
         #fixed-player.visible { opacity: 1; visibility: visible; }
-        @supports (padding-bottom: env(safe-area-inset-bottom)) {
-            #fixed-player { bottom: max(16px, env(safe-area-inset-bottom, 16px)); }
+
+        /* Desktop Spotify bar */
+        @media (hover: hover) and (pointer: fine) {
+            #fixed-player {
+                background: rgba(10,10,14,0.93);
+                border-top: 1px solid rgba(255,255,255,0.07);
+                backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);
+            }
+            #pc-player-bar   { display: flex !important; }
+            #mobile-player-pill { display: none !important; }
         }
+        /* Mobile pill */
+        @media (hover: none), (pointer: coarse) {
+            #fixed-player {
+                padding: 0 14px max(12px, env(safe-area-inset-bottom, 12px));
+                background: transparent;
+            }
+            #pc-player-bar { display: none !important; }
+            #mobile-player-pill { display: block !important; }
+        }
+        /* PC play/pause button hover */
+        #play-pause-btn-pc:hover { transform: scale(1.08) !important; }
+        #play-pause-btn-pc:active { transform: scale(0.92) !important; }
 
         /* ── Card container ── */
         .card-container {
@@ -156,22 +174,28 @@
             scrollbar-width: none; -ms-overflow-style: none;
             -webkit-overflow-scrolling: touch;
         }
+        @media (hover: hover) and (pointer: fine) {
+            .card-container { padding-bottom: 90px; }
+        }
         .card-container::-webkit-scrollbar { display: none; }
         .card-container.visible { opacity: 1; visibility: visible; }
 
-        /* ── Glass card ── */
+        /* ── Glass card — fix first-load backdrop-filter flash ── */
         .glass-card {
             width: 100%; max-width: 480px;
-            background: rgba(0,0,0,0.28);
-            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(0,0,0,0.32);
+            border: 1px solid rgba(255,255,255,0.09);
             border-radius: 16px; padding: 22px;
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            box-shadow: 0 0 0 1px rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.06);
-            transition: border-color 0.3s, box-shadow 0.3s;
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.03), 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07);
+            transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
         }
         .glass-card:hover {
-            border-color: rgba(255,255,255,0.13);
-            box-shadow: 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.15);
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 12px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.09);
+        }
+        @media (hover: hover) and (pointer: fine) {
+            .glass-card:hover { transform: perspective(900px) rotateX(0.5deg) translateY(-1px); }
         }
 
         /* ── Tabs ── */
@@ -663,6 +687,100 @@
             0%   { opacity: 0.8; transform: translateY(0) scale(1); }
             100% { opacity: 0; transform: translateY(-80px) scale(0.3); }
         }
+
+        /* ── Fun: skill tag shimmer ── */
+        .skill-tag {
+            position: relative; overflow: hidden;
+            transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s;
+        }
+        .skill-tag::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.22) 50%, transparent 65%);
+            transform: translateX(-100%); transition: transform 0.45s ease;
+            pointer-events: none;
+        }
+        .skill-tag:hover::after { transform: translateX(100%); }
+        .skill-tag:hover { transform: translateY(-2px); }
+        .skill-tag:active { transform: scale(0.94); }
+
+        /* ── Fun: stat card number roll glow ── */
+        .stat-num { transition: text-shadow 0.4s; }
+        .stat-card:hover .stat-num {
+            text-shadow: 0 0 18px rgba(255,255,255,0.45), 0 0 40px rgba(255,255,255,0.18);
+        }
+        .stat-card {
+            transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s;
+            cursor: default;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 10px 32px rgba(0,0,0,0.45);
+            border-color: rgba(255,255,255,0.14) !important;
+        }
+        .stat-card:active { transform: scale(0.97); }
+
+        /* ── Fun: nav tab bounce on activate ── */
+        @keyframes navBounce {
+            0%  { transform: scale(1); }
+            38% { transform: scale(1.18); }
+            68% { transform: scale(0.93); }
+            100%{ transform: scale(1); }
+        }
+        .nav-tab.active { animation: navBounce 0.38s cubic-bezier(0.34,1.56,0.64,1); }
+
+        /* ── Fun: song-change floating note ── */
+        .float-note {
+            position: fixed; pointer-events: none; z-index: 9999;
+            font-size: 1.4rem; user-select: none;
+            animation: floatNote 1.1s ease-out forwards;
+        }
+        @keyframes floatNote {
+            0%   { opacity: 1;   transform: translateY(0)    scale(1); }
+            60%  { opacity: 0.7; transform: translateY(-50px) scale(1.2); }
+            100% { opacity: 0;   transform: translateY(-95px) scale(0.6); }
+        }
+
+        /* ── Fun: glow ring on play/pause click ── */
+        @keyframes ppRing {
+            0%  { box-shadow: 0 0 0 0 rgba(255,255,255,0.40); }
+            100%{ box-shadow: 0 0 0 16px rgba(255,255,255,0); }
+        }
+        .pp-ring { animation: ppRing 0.55s ease-out forwards; }
+
+        /* ── Fun: social link stagger hover ── */
+        .social-links:hover a { opacity: 0.38; transform: scale(0.95); transition: opacity 0.22s, transform 0.22s; }
+        .social-links a:hover { opacity: 1 !important; transform: scale(1.22) !important; }
+        .social-links a { transition: opacity 0.22s, transform 0.22s; }
+
+        /* ── Fun: repo card slide ── */
+        .repo-card { transition: background 0.18s, border-color 0.18s, transform 0.18s, box-shadow 0.18s; }
+        .repo-card:hover { transform: translateX(4px); box-shadow: 0 0 18px rgba(255,255,255,0.06); }
+
+        /* ── Fun: bio text subtle reveal ── */
+        .bio-text { transition: color 0.3s; }
+        .glass-card:hover .bio-text { color: rgba(255,255,255,0.62); }
+
+        /* ── Fun: album cover spin on desktop bar ── */
+        #music-cover-pc.spinning {
+            animation: coverSpin 14s linear infinite;
+            border-radius: 50% !important;
+        }
+        @keyframes coverSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+        /* ── Fun: progress bar glow on PC ── */
+        #music-progress { box-shadow: 0 0 8px rgba(255,255,255,0.28); }
+
+        /* ── Fun: Discord card pulse online ── */
+        .ds-online { animation: dsPulse 2.4s ease-in-out infinite; }
+        @keyframes dsPulse {
+            0%,100%{ box-shadow: 0 0 4px rgba(35,165,90,0.55); }
+            50%    { box-shadow: 0 0 10px rgba(35,165,90,0.95); }
+        }
+
+        /* ── Fun: glass card tilt desktop ── */
+        @media (hover: hover) and (pointer: fine) {
+            .glass-card { transition: border-color 0.3s, box-shadow 0.3s, background 0.3s, transform 0.3s; }
+        }
     </style>
 </head>
 <body class="theme-dark">
@@ -765,11 +883,50 @@
 
 <!-- Player -->
 <div id="fixed-player">
-    <div class="glass-card music-player-card" style="padding:14px 16px !important;">
-        <div id="player-collapse-btn"></div>
-        <div id="player-expand-hint">DOUBLE-CLICK TO EXPAND</div>
+    <!-- DESKTOP: Spotify full-width bar (3 cols) -->
+    <div id="pc-player-bar" style="display:none;align-items:center;padding:10px 28px;gap:0;width:100%;">
+        <!-- Left: cover + title -->
+        <div style="display:flex;align-items:center;gap:12px;width:30%;min-width:0;flex-shrink:0;">
+            <div style="position:relative;flex-shrink:0;">
+                <img id="music-cover-pc" src="media/music-cover/cry.jpg" alt=""
+                     style="width:50px;height:50px;border-radius:8px;object-fit:cover;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.5);"
+                     onerror="this.style.display='none'">
+            </div>
+            <div style="min-width:0;">
+                <div class="song-title" id="pc-song-title" style="max-width:200px;font-size:0.82rem;">—</div>
+                <div class="song-artist" id="pc-song-artist" style="max-width:200px;font-size:0.68rem;">—</div>
+            </div>
+        </div>
+        <!-- Center: controls + progress -->
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0;">
+            <div style="display:flex;align-items:center;gap:22px;">
+                <i class="fas fa-backward-step control-icon" id="prev-btn-pc" style="font-size:0.85rem;"></i>
+                <div id="play-pause-btn-pc" style="width:34px;height:34px;background:white;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.15s,background 0.15s;flex-shrink:0;">
+                    <i class="fas fa-play" id="pp-icon-pc" style="color:#000;font-size:0.88rem;margin-left:2px;"></i>
+                </div>
+                <i class="fas fa-forward-step control-icon" id="next-btn-pc" style="font-size:0.85rem;"></i>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;width:100%;max-width:500px;">
+                <span id="pc-time-cur" style="font-size:0.58rem;color:rgba(255,255,255,0.30);font-variant-numeric:tabular-nums;min-width:28px;text-align:right;">0:00</span>
+                <div id="progress-container" style="flex:1;">
+                    <div id="progress-track"><div id="music-progress"></div></div>
+                </div>
+                <span id="music-time" style="font-size:0.58rem;color:rgba(255,255,255,0.30);font-variant-numeric:tabular-nums;min-width:28px;">0:00</span>
+            </div>
+        </div>
+        <!-- Right: volume -->
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;width:30%;flex-shrink:0;">
+            <i class="fas fa-volume-up" id="mute-btn" style="font-size:0.78rem;color:rgba(255,255,255,0.40);cursor:pointer;transition:color 0.2s;"></i>
+            <input type="range" id="volume-bar" min="0" max="1" step="0.02" value="0.8" style="width:90px;height:3px;cursor:pointer;accent-color:rgba(255,255,255,0.65);">
+            <span id="vol-pct" style="font-size:0.58rem;color:rgba(255,255,255,0.28);min-width:30px;">80%</span>
+        </div>
+    </div>
+
+    <!-- MOBILE: pill card -->
+    <div id="mobile-player-pill" class="glass-card music-player-card" style="padding:12px 14px;">
+        <div id="player-expand-hint" style="text-align:center;font-size:0.48rem;letter-spacing:2px;color:rgba(255,255,255,0.14);margin-bottom:4px;user-select:none;pointer-events:none;">TAP COVER TO EXPAND · SWIPE RIGHT FOR NEXT</div>
         <div style="display:flex;align-items:center;gap:12px;">
-            <div class="music-cover-wrap">
+            <div class="music-cover-wrap" id="mobile-cover-wrap" style="cursor:pointer;">
                 <img id="music-cover" src="media/music-cover/cry.jpg"
                      onerror="this.style.display='none';document.getElementById('cover-fallback').style.display='flex';" alt="Cover">
                 <div id="cover-fallback">&#9834;</div>
@@ -778,12 +935,12 @@
                 <div class="song-title" id="song-title-el">—</div>
                 <div class="song-artist" id="song-artist-el">—</div>
                 <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
-                    <div id="progress-container">
-                        <div id="progress-track">
-                            <div id="music-progress"></div>
+                    <div id="mobile-prog-cont" style="flex:1;position:relative;height:20px;display:flex;align-items:center;cursor:pointer;">
+                        <div style="position:absolute;left:0;right:0;height:3px;background:rgba(255,255,255,0.10);border-radius:10px;overflow:hidden;">
+                            <div id="music-progress-m" style="height:100%;width:0%;border-radius:10px;background:rgba(255,255,255,0.60);pointer-events:none;transition:width 0.1s linear;"></div>
                         </div>
                     </div>
-                    <span id="music-time">0:00</span>
+                    <span id="music-time-m" style="font-size:0.60rem;color:rgba(255,255,255,0.30);white-space:nowrap;min-width:72px;text-align:right;">0:00</span>
                 </div>
             </div>
             <div style="display:flex;align-items:center;gap:14px;flex-shrink:0;">
@@ -792,10 +949,10 @@
                 <i class="fas fa-forward control-icon" id="next-btn" style="font-size:0.78rem;"></i>
             </div>
         </div>
-        <div id="player-vol-row">
-            <i class="fas fa-volume-up" id="mute-btn"></i>
-            <input type="range" id="volume-bar" min="0" max="1" step="0.02" value="0.8">
-            <span id="vol-pct">80%</span>
+        <div id="player-vol-row" style="display:flex;align-items:center;gap:8px;border-top:1px solid rgba(255,255,255,0.05);margin-top:12px;padding-top:11px;">
+            <i class="fas fa-volume-up" id="mute-btn-m" style="font-size:0.78rem;color:rgba(255,255,255,0.40);cursor:pointer;"></i>
+            <input type="range" id="volume-bar-m" min="0" max="1" step="0.02" value="0.8" style="flex:1;height:3px;cursor:pointer;accent-color:rgba(255,255,255,0.65);">
+            <span id="vol-pct-m" style="font-size:0.58rem;color:rgba(255,255,255,0.28);min-width:26px;text-align:right;">80%</span>
         </div>
     </div>
 </div>
@@ -926,7 +1083,7 @@
 
 <!-- ══════════ SCRIPTS ══════════ -->
 
-<!-- Player (self-contained) -->
+<!-- Player (unified: desktop Spotify bar + mobile pill with tap-expand & swipe-next) -->
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 (function () {
     'use strict';
@@ -935,22 +1092,44 @@
         { src:'audio/the-night-we-met.mp3', cover:'media/music-cover/the-night-we-met.jpg', title:'the night we met', artist:'Lord Huron' }
     ];
 
-    var audio     = document.getElementById('bg-audio');
-    var ppBtn     = document.getElementById('play-pause-btn');
-    var prevBtn   = document.getElementById('prev-btn');
-    var nextBtn   = document.getElementById('next-btn');
-    var muteBtn   = document.getElementById('mute-btn');
-    var volBar    = document.getElementById('volume-bar');
-    var volPct    = document.getElementById('vol-pct');
-    var progCont  = document.getElementById('progress-container');
-    var progBar   = document.getElementById('music-progress');
-    var timeEl    = document.getElementById('music-time');
-    var coverImg  = document.getElementById('music-cover');
-    var coverFb   = document.getElementById('cover-fallback');
-    var titleEl   = document.getElementById('song-title-el');
-    var artistEl  = document.getElementById('song-artist-el');
-    var badgeEl   = document.getElementById('now-playing-badge');
-    var badgeNm   = document.getElementById('badge-song-name');
+    var audio = document.getElementById('bg-audio');
+
+    /* ── Detect layout ── */
+    var isDesktop = window.matchMedia('(hover:hover) and (pointer:fine)').matches;
+
+    /* ── DOM refs ── */
+    // Mobile refs
+    var ppBtn    = document.getElementById('play-pause-btn');
+    var prevBtn  = document.getElementById('prev-btn');
+    var nextBtn  = document.getElementById('next-btn');
+    var muteBtnM = document.getElementById('mute-btn-m');
+    var volBarM  = document.getElementById('volume-bar-m');
+    var volPctM  = document.getElementById('vol-pct-m');
+    var progBarM = document.getElementById('music-progress-m');
+    var progContM= document.getElementById('mobile-prog-cont');
+    var timeElM  = document.getElementById('music-time-m');
+    var coverImg = document.getElementById('music-cover');
+    var coverFb  = document.getElementById('cover-fallback');
+    var titleEl  = document.getElementById('song-title-el');
+    var artistEl = document.getElementById('song-artist-el');
+    // Desktop refs
+    var ppBtnPC  = document.getElementById('play-pause-btn-pc');
+    var ppIconPC = document.getElementById('pp-icon-pc');
+    var prevBtnPC= document.getElementById('prev-btn-pc');
+    var nextBtnPC= document.getElementById('next-btn-pc');
+    var muteBtn  = document.getElementById('mute-btn');
+    var volBar   = document.getElementById('volume-bar');
+    var volPct   = document.getElementById('vol-pct');
+    var progBar  = document.getElementById('music-progress');
+    var progCont = document.getElementById('progress-container');
+    var timeEl   = document.getElementById('music-time');
+    var timeCurPC= document.getElementById('pc-time-cur');
+    var coverPC  = document.getElementById('music-cover-pc');
+    var titlePC  = document.getElementById('pc-song-title');
+    var artistPC = document.getElementById('pc-song-artist');
+    // Shared
+    var badgeEl  = document.getElementById('now-playing-badge');
+    var badgeNm  = document.getElementById('badge-song-name');
 
     var idx = parseInt(sessionStorage.getItem('song_index') || '-1', 10);
     if (idx < 0 || idx >= SONGS.length) {
@@ -964,41 +1143,46 @@
         return m + ':' + (sec < 10 ? '0' : '') + sec;
     }
 
-    function updateMuteIcon() {
-        if (!muteBtn) return;
-        muteBtn.className = (audio.muted || audio.volume === 0)
-            ? 'fas fa-volume-mute'
-            : (audio.volume < 0.5 ? 'fas fa-volume-down' : 'fas fa-volume-up');
+    function updateMuteIcons() {
+        var muted = audio.muted || audio.volume === 0;
+        var cls = muted ? 'fas fa-volume-mute' : (audio.volume < 0.5 ? 'fas fa-volume-down' : 'fas fa-volume-up');
+        if (muteBtn)  muteBtn.className  = cls;
+        if (muteBtnM) muteBtnM.className = cls;
     }
-    function updateVolPct() {
-        if (volPct) volPct.textContent = Math.round((audio.muted ? 0 : audio.volume) * 100) + '%';
+    function updateVolPcts() {
+        var pct = Math.round((audio.muted ? 0 : audio.volume) * 100) + '%';
+        if (volPct)  volPct.textContent  = pct;
+        if (volPctM) volPctM.textContent = pct;
     }
 
     function loadSong(i, autoplay) {
         idx = ((i % SONGS.length) + SONGS.length) % SONGS.length;
         sessionStorage.setItem('song_index', idx);
         var s = SONGS[idx];
+        audio.pause(); audio.src = s.src; audio.load();
 
-        audio.pause();
-        audio.src = s.src;
-        audio.load();
-
-        coverImg.style.display = '';
-        coverFb.style.display = 'none';
-        coverImg.src = s.cover;
-        coverImg.onerror = function () { coverImg.style.display='none'; coverFb.style.display='flex'; };
-
+        // Mobile cover
+        if (coverImg) { coverImg.style.display=''; coverImg.src=s.cover; coverImg.onerror=function(){coverImg.style.display='none';if(coverFb)coverFb.style.display='flex';}; }
+        if (coverFb) coverFb.style.display='none';
+        // Desktop cover
+        if (coverPC) { coverPC.src=s.cover; }
+        // Titles
         if (titleEl)  titleEl.textContent  = s.title;
         if (artistEl) artistEl.textContent = s.artist;
+        if (titlePC)  titlePC.textContent  = s.title;
+        if (artistPC) artistPC.textContent = s.artist;
         if (badgeNm)  badgeNm.textContent  = s.title + ' — ' + s.artist;
-
-        if (progBar) progBar.style.width = '0%';
-        if (timeEl)  timeEl.textContent  = '0:00 / 0:00';
-
+        // Reset progress
+        if (progBar)  progBar.style.width  = '0%';
+        if (progBarM) progBarM.style.width = '0%';
+        if (timeEl)   timeEl.textContent   = '0:00';
+        if (timeElM)  timeElM.textContent  = '0:00';
+        if (timeCurPC)timeCurPC.textContent= '0:00';
+        // Overlay meta sync
+        setTimeout(function(){ var e=document.createEvent('Event'); e.initEvent('emptied',true,true); audio.dispatchEvent(e); },50);
         if (autoplay) audio.play().catch(function(){});
     }
 
-    /* Restore position after canplay */
     audio.addEventListener('canplay', function restore() {
         var t = parseFloat(sessionStorage.getItem('music_time') || '0');
         if (t > 0 && isFinite(t) && audio.duration && t < audio.duration - 1) audio.currentTime = t;
@@ -1007,85 +1191,186 @@
 
     loadSong(idx, false);
 
-    /* Volume */
+    /* Volume init */
     var sv = parseFloat(localStorage.getItem('music_volume') || '0.8');
     if (!isFinite(sv) || sv < 0 || sv > 1) sv = 0.8;
     audio.volume = sv;
-    if (volBar) volBar.value = sv;
-    updateMuteIcon(); updateVolPct();
+    if (volBar)  volBar.value  = sv;
+    if (volBarM) volBarM.value = sv;
+    updateMuteIcons(); updateVolPcts();
 
-    if (volBar) {
-        volBar.addEventListener('input', function () {
-            var v = parseFloat(volBar.value);
-            audio.volume = v; audio.muted = (v === 0);
-            localStorage.setItem('music_volume', v);
-            updateMuteIcon(); updateVolPct();
-        });
+    function setVolume(v) {
+        audio.volume = v; audio.muted = (v === 0);
+        if (volBar)  volBar.value  = v;
+        if (volBarM) volBarM.value = v;
+        localStorage.setItem('music_volume', v);
+        updateMuteIcons(); updateVolPcts();
     }
-    if (muteBtn) {
-        muteBtn.addEventListener('click', function () {
-            audio.muted = !audio.muted;
-            if (!audio.muted && audio.volume === 0) { audio.volume = 0.5; if (volBar) volBar.value = 0.5; localStorage.setItem('music_volume', 0.5); }
-            updateMuteIcon(); updateVolPct();
-        });
+
+    if (volBar)  volBar.addEventListener('input',  function(){ setVolume(parseFloat(volBar.value)); });
+    if (volBarM) volBarM.addEventListener('input', function(){ setVolume(parseFloat(volBarM.value)); });
+
+    function toggleMute() {
+        audio.muted = !audio.muted;
+        if (!audio.muted && audio.volume === 0) setVolume(0.5);
+        updateMuteIcons(); updateVolPcts();
     }
+    if (muteBtn)  muteBtn.addEventListener('click',  toggleMute);
+    if (muteBtnM) muteBtnM.addEventListener('click', toggleMute);
 
     /* Play/pause */
-    if (ppBtn) ppBtn.addEventListener('click', function () {
+    function togglePlay() {
         if (audio.paused) audio.play().catch(function(){});
         else audio.pause();
-    });
+    }
+    if (ppBtn)   ppBtn.addEventListener('click',   togglePlay);
+    if (ppBtnPC) ppBtnPC.addEventListener('click', function(e){ e.stopPropagation(); togglePlay(); });
 
-    audio.addEventListener('play', function () {
-        if (ppBtn) { ppBtn.classList.remove('fa-play'); ppBtn.classList.add('fa-pause'); }
-        if (badgeEl) badgeEl.classList.remove('paused');
-        if (coverImg) coverImg.classList.add('spinning');
-    });
-    audio.addEventListener('pause', function () {
-        if (ppBtn) { ppBtn.classList.remove('fa-pause'); ppBtn.classList.add('fa-play'); }
-        if (badgeEl) badgeEl.classList.add('paused');
-        if (coverImg) coverImg.classList.remove('spinning');
-    });
+    function syncPlayIcons(playing) {
+        if (ppBtn) { ppBtn.classList.toggle('fa-play', !playing); ppBtn.classList.toggle('fa-pause', playing); }
+        if (ppIconPC) { ppIconPC.className = playing ? 'fas fa-pause' : 'fas fa-play'; ppIconPC.style.marginLeft = playing ? '0' : '2px'; }
+        if (badgeEl) badgeEl.classList.toggle('paused', !playing);
+        if (coverImg) coverImg.classList.toggle('spinning', playing);
+        if (coverPC)  coverPC.classList.toggle('spinning', playing);
+    }
+    audio.addEventListener('play',  function(){ syncPlayIcons(true);  });
+    audio.addEventListener('pause', function(){ syncPlayIcons(false); });
 
-    if (prevBtn) prevBtn.addEventListener('click', function () { loadSong(idx-1, !audio.paused); });
-    if (nextBtn) nextBtn.addEventListener('click', function () { loadSong(idx+1, !audio.paused); });
-    audio.addEventListener('ended', function () { loadSong(idx+1, true); });
+    /* Prev/Next */
+    if (prevBtn)   prevBtn.addEventListener('click',   function(){ loadSong(idx-1, !audio.paused); });
+    if (nextBtn)   nextBtn.addEventListener('click',   function(){ loadSong(idx+1, !audio.paused); });
+    if (prevBtnPC) prevBtnPC.addEventListener('click', function(){ loadSong(idx-1, !audio.paused); });
+    if (nextBtnPC) nextBtnPC.addEventListener('click', function(){ loadSong(idx+1, !audio.paused); });
+    audio.addEventListener('ended', function(){ loadSong(idx+1, true); });
 
-    /* Progress */
+    /* Progress — updates both bars */
     var _seeking = false;
-    audio.addEventListener('timeupdate', function () {
+    audio.addEventListener('timeupdate', function() {
         if (_seeking || !audio.duration || !isFinite(audio.duration)) return;
         var pct = (audio.currentTime / audio.duration) * 100;
-        if (progBar) progBar.style.width = pct + '%';
+        if (progBar)   progBar.style.width   = pct + '%';
+        if (progBarM)  progBarM.style.width  = pct + '%';
         sessionStorage.setItem('music_time', audio.currentTime);
-        if (timeEl) timeEl.textContent = fmt(audio.currentTime) + ' / ' + fmt(audio.duration);
+        var cur = fmt(audio.currentTime), tot = fmt(audio.duration);
+        if (timeEl)    timeEl.textContent    = tot;
+        if (timeCurPC) timeCurPC.textContent = cur;
+        if (timeElM)   timeElM.textContent   = cur + ' / ' + tot;
     });
 
-    function seekFrom(e) {
-        if (!audio.duration || !isFinite(audio.duration) || !progCont) return;
-        var rect = progCont.getBoundingClientRect();
-        var cx = (e.touches ? e.touches[0].clientX : e.clientX);
+    function seekFromEl(cont, e) {
+        if (!audio.duration || !isFinite(audio.duration) || !cont) return;
+        var rect = cont.getBoundingClientRect();
+        var cx = e.touches ? e.touches[0].clientX : e.clientX;
         var ratio = Math.max(0, Math.min(1, (cx - rect.left) / rect.width));
         audio.currentTime = ratio * audio.duration;
-        if (progBar) progBar.style.width = (ratio * 100) + '%';
-    }
-    if (progCont) {
-        progCont.addEventListener('click', seekFrom);
-        progCont.addEventListener('mousedown', function(e) {
-            _seeking = true; seekFrom(e);
-            function mv(e2) { seekFrom(e2); }
-            function up()   { _seeking = false; window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); }
-            window.addEventListener('mousemove', mv);
-            window.addEventListener('mouseup', up);
-        });
-        progCont.addEventListener('touchstart', function(e) { _seeking = true;  seekFrom(e); }, {passive:true});
-        progCont.addEventListener('touchmove',  function(e) { seekFrom(e); },                  {passive:true});
-        progCont.addEventListener('touchend',   function()  { _seeking = false; });
+        if (progBar)  progBar.style.width  = (ratio*100) + '%';
+        if (progBarM) progBarM.style.width = (ratio*100) + '%';
     }
 
-    window._audioPlay = function () { return audio.play(); };
-    window._audioPaused = function () { return audio.paused; };
-    window._audioPPBtn = function () { return ppBtn; };
+    function attachSeek(cont, isTouch) {
+        if (!cont) return;
+        if (!isTouch) {
+            cont.addEventListener('click', function(e){ seekFromEl(cont,e); });
+            cont.addEventListener('mousedown', function(e){
+                _seeking=true; seekFromEl(cont,e);
+                function mv(e2){seekFromEl(cont,e2);}
+                function up(){_seeking=false;window.removeEventListener('mousemove',mv);window.removeEventListener('mouseup',up);}
+                window.addEventListener('mousemove',mv); window.addEventListener('mouseup',up);
+            });
+        } else {
+            cont.addEventListener('touchstart',function(e){_seeking=true; seekFromEl(cont,e);},{passive:true});
+            cont.addEventListener('touchmove', function(e){seekFromEl(cont,e);},{passive:true});
+            cont.addEventListener('touchend',  function(){_seeking=false;});
+        }
+    }
+    attachSeek(progCont,  false);
+    attachSeek(progContM, true);
+
+    /* ── Mobile: tap cover to expand overlay ── */
+    var mobileCoverWrap = document.getElementById('mobile-cover-wrap');
+    if (mobileCoverWrap) {
+        mobileCoverWrap.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var ov = document.getElementById('player-overlay');
+            if (ov && !ov.classList.contains('open')) {
+                // trigger openOverlay — defined later, defer
+                setTimeout(function(){ if(window._openPlayerOverlay) window._openPlayerOverlay(); }, 0);
+            }
+        });
+    }
+
+    /* ── Mobile: swipe right on player pill = next song ── */
+    var mPill = document.getElementById('mobile-player-pill');
+    if (mPill) {
+        var _tsx = 0, _tsy = 0;
+        mPill.addEventListener('touchstart', function(e){
+            _tsx = e.touches[0].clientX; _tsy = e.touches[0].clientY;
+        }, {passive:true});
+        mPill.addEventListener('touchend', function(e){
+            var dx = e.changedTouches[0].clientX - _tsx;
+            var dy = e.changedTouches[0].clientY - _tsy;
+            if (Math.abs(dx) > 55 && Math.abs(dy) < 40) {
+                if (dx > 0) {
+                    // swipe right = next
+                    loadSong(idx+1, !audio.paused);
+                    _swipeFeedback(mPill, 'next');
+                } else {
+                    // swipe left = prev
+                    loadSong(idx-1, !audio.paused);
+                    _swipeFeedback(mPill, 'prev');
+                }
+            }
+        }, {passive:true});
+    }
+
+    function _swipeFeedback(el, dir) {
+        el.style.transition = 'transform 0.12s ease';
+        el.style.transform  = 'translateX(' + (dir==='next'?'8px':'-8px') + ')';
+        setTimeout(function(){
+            el.style.transform = 'translateX(0)';
+            setTimeout(function(){ el.style.transition=''; }, 200);
+        }, 120);
+    }
+
+    window._audioPlay   = function(){ return audio.play(); };
+    window._audioPaused = function(){ return audio.paused; };
+    window._audioPPBtn  = function(){ return ppBtn; };
+    window._loadSong    = loadSong;
+    window._getIdx      = function(){ return idx; };
+
+    /* ── Fun: floating music note on song change ── */
+    function spawnNote(anchorEl) {
+        var notes = ['♪','♫','♩','♬'];
+        var note = document.createElement('div');
+        note.className = 'float-note';
+        note.textContent = notes[Math.floor(Math.random()*notes.length)];
+        var rect = anchorEl ? anchorEl.getBoundingClientRect() : {left:window.innerWidth/2, top:window.innerHeight/2, width:0, height:0};
+        note.style.left = (rect.left + rect.width/2 - 12 + (Math.random()-0.5)*30) + 'px';
+        note.style.top  = (rect.top  + rect.height/2 - 10) + 'px';
+        note.style.color = 'rgba(255,255,255,0.75)';
+        document.body.appendChild(note);
+        setTimeout(function(){ note.remove(); }, 1200);
+    }
+
+    /* Hook into next/prev buttons to spawn notes */
+    ['prev-btn','next-btn','prev-btn-pc','next-btn-pc'].forEach(function(id){
+        var el = document.getElementById(id);
+        if(el) el.addEventListener('click', function(){
+            var anchor = document.getElementById('music-cover') || document.getElementById('music-cover-pc');
+            spawnNote(anchor);
+        });
+    });
+
+    /* ── Fun: play/pause glow ring ── */
+    [ppBtn, ppBtnPC].forEach(function(btn){
+        if(!btn) return;
+        btn.addEventListener('click', function(){
+            btn.classList.remove('pp-ring');
+            void btn.offsetWidth; /* reflow */
+            btn.classList.add('pp-ring');
+            setTimeout(function(){ btn.classList.remove('pp-ring'); }, 600);
+        });
+    });
 })();
 </script>
 
@@ -1260,22 +1545,50 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     window._startNameTypewriter=function(){ clearTimeout(twT);twI=0;twE=false;nmEl.textContent='';setTimeout(twTick,600); };
 
-    /* View counter */
+    /* View counter — with animated roll-up */
     var vEl=document.querySelector('.visit-count-val');
     if(vEl){
         var SEED=1100;
         function fmtV(n){return n>=1000?(n/1000).toFixed(1)+'k':String(n);}
+        function rollTo(el, from, to, dur){
+            var start=null;
+            function step(ts){
+                if(!start) start=ts;
+                var p=Math.min((ts-start)/dur,1);
+                var ease=1-Math.pow(1-p,3);
+                el.textContent=fmtV(Math.round(from+(to-from)*ease));
+                if(p<1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
         if(!localStorage.getItem('unique_views')) localStorage.setItem('unique_views',SEED);
         var cnt=parseInt(localStorage.getItem('unique_views'),10);
         if(isNaN(cnt)||cnt<SEED){cnt=SEED;localStorage.setItem('unique_views',SEED);}
-        vEl.textContent=fmtV(cnt);
+        /* Start from a lower number and roll up */
+        var displayFrom=Math.max(SEED, cnt-Math.floor(cnt*0.05));
+        vEl.textContent=fmtV(displayFrom);
+        setTimeout(function(){ rollTo(vEl, displayFrom, cnt, 1400); }, 600);
         fetch('https://api.ipify.org?format=json').then(function(r){return r.json();}).then(function(j){
             var today=new Date().toDateString();
             if(localStorage.getItem('visitor_ip')!==j.ip||localStorage.getItem('visitor_date')!==today){
-                cnt++;localStorage.setItem('unique_views',cnt);localStorage.setItem('visitor_ip',j.ip);localStorage.setItem('visitor_date',today);vEl.textContent=fmtV(cnt);
+                cnt++;localStorage.setItem('unique_views',cnt);localStorage.setItem('visitor_ip',j.ip);localStorage.setItem('visitor_date',today);
+                setTimeout(function(){ rollTo(vEl, cnt-1, cnt, 600); }, 800);
             }
         }).catch(function(){});
     }
+
+    /* ── Fun: Press P to toggle player overlay (desktop), M to mute ── */
+    document.addEventListener('keydown', function(e){
+        var tag=(document.activeElement&&document.activeElement.tagName)||'';
+        if(tag==='INPUT'||tag==='TEXTAREA') return;
+        if(e.key==='p'||e.key==='P'){
+            var ov=document.getElementById('player-overlay');
+            if(ov){ if(ov.classList.contains('open')){ ov.classList.remove('open'); } else if(window._openPlayerOverlay){ window._openPlayerOverlay(); } }
+        }
+        if(e.key==='m'||e.key==='M'){
+            var mb=document.getElementById('mute-btn'); if(mb) mb.click();
+        }
+    });
 
     /* Enter site */
     var _ent=false;
@@ -1289,8 +1602,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.addEventListener('click',resume,{once:true});
             });
         }
+        /* Sync both play buttons */
         var pp=window._audioPPBtn&&window._audioPPBtn();
         if(pp){ pp.classList.remove('fa-play'); pp.classList.add('fa-pause'); }
+        var pcIcon=document.getElementById('pp-icon-pc');
+        if(pcIcon){ pcIcon.className='fas fa-pause'; pcIcon.style.marginLeft='0'; }
         overlay.style.opacity='0';
         setTimeout(function(){
             overlay.style.display='none';
@@ -1319,6 +1635,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         var pp2=window._audioPPBtn&&window._audioPPBtn();
         if(pp2){ pp2.classList.remove('fa-play'); pp2.classList.add('fa-pause'); }
+        var pcIcon2=document.getElementById('pp-icon-pc');
+        if(pcIcon2){ pcIcon2.className='fas fa-pause'; pcIcon2.style.marginLeft='0'; }
         window._startNameTypewriter();
         if(window.startTitleLoop) window.startTitleLoop('Portfolio',400);
         setTimeout(function(){ if(window._ropeInit) window._ropeInit(); },100);
@@ -1430,14 +1748,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /* ── Player expanded overlay ── */
     (function(){
-        var overlay  = document.getElementById('player-overlay');
-        var pill     = document.getElementById('fixed-player');
-        var audio    = document.getElementById('bg-audio');
-        var ovBars   = document.getElementById('ov-bars');
-        var ovCover  = document.getElementById('ov-cover');
-        var ovCoverFb= document.getElementById('ov-cover-fb');
-        var ovTitle  = document.getElementById('ov-title');
-        var ovArtist = document.getElementById('ov-artist');
+        var overlay   = document.getElementById('player-overlay');
+        var pcBar     = document.getElementById('pc-player-bar');
+        var audio     = document.getElementById('bg-audio');
+        var ovBars    = document.getElementById('ov-bars');
+        var ovCover   = document.getElementById('ov-cover');
+        var ovTitle   = document.getElementById('ov-title');
+        var ovArtist  = document.getElementById('ov-artist');
         var ovProgFill= document.getElementById('ov-prog-fill');
         var ovProgWrap= document.getElementById('ov-prog-wrap');
         var ovTimeCur = document.getElementById('ov-time-cur');
@@ -1450,115 +1767,112 @@ document.addEventListener('DOMContentLoaded', function () {
         var ovVolIcon = document.getElementById('ov-vol-icon');
         var ovVolSlider=document.getElementById('ov-vol-slider');
         var ovBg      = document.getElementById('player-overlay-bg');
-        if(!overlay || !pill) return;
+        if(!overlay) return;
 
-        /* Sync cover/title/artist from player to overlay */
         function syncMeta(){
-            var coverImg = document.getElementById('music-cover');
-            var titleEl  = document.getElementById('song-title-el');
-            var artistEl = document.getElementById('song-artist-el');
-            if(ovCover && coverImg){ ovCover.style.display=''; ovCover.src=coverImg.src; }
-            if(ovTitle  && titleEl)  ovTitle.textContent  = titleEl.textContent;
-            if(ovArtist && artistEl) ovArtist.textContent = artistEl.textContent;
+            /* Pull from whichever element has the data */
+            var src   = (document.getElementById('music-cover')||{}).src
+                      || (document.getElementById('music-cover-pc')||{}).src || '';
+            var title = (document.getElementById('song-title-el')||{}).textContent
+                      || (document.getElementById('pc-song-title')||{}).textContent || '—';
+            var artist= (document.getElementById('song-artist-el')||{}).textContent
+                      || (document.getElementById('pc-song-artist')||{}).textContent || '—';
+            if(ovCover && src){ ovCover.style.display=''; ovCover.src=src; }
+            if(ovTitle)  ovTitle.textContent  = title;
+            if(ovArtist) ovArtist.textContent = artist;
         }
 
         function openOverlay(){
-            syncMeta();
-            syncVolume();
-            syncPlayState(!audio.paused);
+            syncMeta(); syncVolume(); syncPlayState(!audio.paused);
             overlay.classList.add('open');
         }
-        function closeOverlay(){
-            overlay.classList.remove('open');
-        }
+        function closeOverlay(){ overlay.classList.remove('open'); }
+
+        /* Expose so mobile cover-tap can call it */
+        window._openPlayerOverlay = openOverlay;
 
         function syncPlayState(playing){
             if(ovPlayIcon){
-                ovPlayIcon.className = playing ? 'fas fa-pause' : 'fas fa-play';
-                ovPlayIcon.style.marginLeft = playing ? '0' : '2px';
+                ovPlayIcon.className='fas '+(playing?'fa-pause':'fa-play');
+                ovPlayIcon.style.marginLeft=playing?'0':'2px';
             }
-            if(ovBars) ovBars.classList.toggle('paused', !playing);
-            if(ovCover) ovCover.classList.toggle('spinning', playing);
+            if(ovBars)  ovBars.classList.toggle('paused',!playing);
+            if(ovCover) ovCover.classList.toggle('spinning',playing);
         }
 
         function syncVolume(){
-            if(!audio) return;
-            var v = audio.muted ? 0 : audio.volume;
-            if(ovVolSlider) ovVolSlider.value = v;
-            if(ovVolIcon){
-                ovVolIcon.className = (audio.muted||v===0) ? 'fas fa-volume-xmark'
-                    : v<0.4 ? 'fas fa-volume-low' : 'fas fa-volume-high';
-            }
+            var v=audio.muted?0:audio.volume;
+            if(ovVolSlider) ovVolSlider.value=v;
+            if(ovVolIcon) ovVolIcon.className=(audio.muted||v===0)?'fas fa-volume-xmark':v<0.4?'fas fa-volume-low':'fas fa-volume-high';
         }
 
-        function fmt(s){
-            if(!isFinite(s)||isNaN(s)) return '0:00';
-            var m=Math.floor(s/60),sec=Math.floor(s%60);
-            return m+':'+(sec<10?'0':'')+sec;
-        }
+        function fmt(s){ if(!isFinite(s)||isNaN(s)) return '0:00'; var m=Math.floor(s/60),sc=Math.floor(s%60); return m+':'+(sc<10?'0':'')+sc; }
 
-        /* Keep progress in sync while open */
-        if(audio){
-            audio.addEventListener('timeupdate', function(){
-                if(!overlay.classList.contains('open')) return;
-                if(!audio.duration||!isFinite(audio.duration)) return;
-                var pct=(audio.currentTime/audio.duration)*100;
-                if(ovProgFill) ovProgFill.style.width=pct+'%';
-                if(ovTimeCur)   ovTimeCur.textContent  =fmt(audio.currentTime);
-                if(ovTimeTotal) ovTimeTotal.textContent=fmt(audio.duration);
-            });
-            audio.addEventListener('play',  function(){ syncPlayState(true);  });
-            audio.addEventListener('pause', function(){ syncPlayState(false); });
-            /* Re-sync cover on song change */
-            audio.addEventListener('emptied', function(){ setTimeout(syncMeta,50); });
-        }
+        audio.addEventListener('timeupdate',function(){
+            if(!overlay.classList.contains('open')||!audio.duration||!isFinite(audio.duration)) return;
+            var pct=(audio.currentTime/audio.duration)*100;
+            if(ovProgFill)  ovProgFill.style.width=pct+'%';
+            if(ovTimeCur)   ovTimeCur.textContent=fmt(audio.currentTime);
+            if(ovTimeTotal) ovTimeTotal.textContent=fmt(audio.duration);
+        });
+        audio.addEventListener('play',  function(){ syncPlayState(true);  });
+        audio.addEventListener('pause', function(){ syncPlayState(false); });
+        audio.addEventListener('emptied',function(){ setTimeout(syncMeta,60); });
 
-        /* Progress seek */
+        /* Progress seek in overlay */
         var _seek=false;
-        function seekFrom(e){
+        function seekOv(e){
             if(!audio.duration||!isFinite(audio.duration)||!ovProgWrap) return;
             var rect=ovProgWrap.getBoundingClientRect();
-            var cx=(e.touches?e.touches[0].clientX:e.clientX);
+            var cx=e.touches?e.touches[0].clientX:e.clientX;
             var ratio=Math.max(0,Math.min(1,(cx-rect.left)/rect.width));
             audio.currentTime=ratio*audio.duration;
             if(ovProgFill) ovProgFill.style.width=(ratio*100)+'%';
         }
         if(ovProgWrap){
-            ovProgWrap.addEventListener('click',function(e){e.stopPropagation();seekFrom(e);});
+            ovProgWrap.addEventListener('click',function(e){e.stopPropagation();seekOv(e);});
             ovProgWrap.addEventListener('mousedown',function(e){
-                e.stopPropagation(); _seek=true; seekFrom(e);
-                function mv(e2){seekFrom(e2);}
-                function up(){_seek=false;window.removeEventListener('mousemove',mv);window.removeEventListener('mouseup',up);}
-                window.addEventListener('mousemove',mv); window.addEventListener('mouseup',up);
+                e.stopPropagation();_seek=true;seekOv(e);
+                var mv=function(e2){seekOv(e2);};
+                var up=function(){_seek=false;window.removeEventListener('mousemove',mv);window.removeEventListener('mouseup',up);};
+                window.addEventListener('mousemove',mv);window.addEventListener('mouseup',up);
             });
-            ovProgWrap.addEventListener('touchstart',function(e){_seek=true;seekFrom(e);},{passive:true});
-            ovProgWrap.addEventListener('touchmove', function(e){seekFrom(e);},{passive:true});
+            ovProgWrap.addEventListener('touchstart',function(e){_seek=true;seekOv(e);},{passive:true});
+            ovProgWrap.addEventListener('touchmove', function(e){seekOv(e);},{passive:true});
             ovProgWrap.addEventListener('touchend',  function(){_seek=false;});
         }
 
-        /* Play/pause */
+        /* Play/pause in overlay */
         if(ovPlayBtn) ovPlayBtn.addEventListener('click',function(e){
             e.stopPropagation();
             if(audio.paused) audio.play().catch(function(){});
             else audio.pause();
         });
 
-        /* Prev/next */
-        var miniPrev=document.getElementById('prev-btn'), miniNext=document.getElementById('next-btn');
-        if(ovPrev) ovPrev.addEventListener('click',function(e){e.stopPropagation();if(miniPrev) miniPrev.click();});
-        if(ovNext) ovNext.addEventListener('click',function(e){e.stopPropagation();if(miniNext) miniNext.click();});
-        /* Re-sync after song change */
-        if(miniPrev) miniPrev.addEventListener('click',function(){setTimeout(syncMeta,80);});
-        if(miniNext) miniNext.addEventListener('click',function(){setTimeout(syncMeta,80);});
+        /* Prev/next — delegate to _loadSong so both layouts stay synced */
+        if(ovPrev) ovPrev.addEventListener('click',function(e){
+            e.stopPropagation();
+            if(window._loadSong) window._loadSong(window._getIdx()-1,!audio.paused);
+            setTimeout(syncMeta,80);
+        });
+        if(ovNext) ovNext.addEventListener('click',function(e){
+            e.stopPropagation();
+            if(window._loadSong) window._loadSong(window._getIdx()+1,!audio.paused);
+            setTimeout(syncMeta,80);
+        });
 
-        /* Volume */
+        /* Volume in overlay — sync back to both bar elements */
         if(ovVolSlider){
             ovVolSlider.addEventListener('input',function(e){
                 e.stopPropagation();
                 var v=parseFloat(ovVolSlider.value);
                 audio.volume=v; audio.muted=(v===0);
-                var vb=document.getElementById('volume-bar'); if(vb) vb.value=v;
-                var vp=document.getElementById('vol-pct'); if(vp) vp.textContent=Math.round(v*100)+'%';
+                ['volume-bar','volume-bar-m'].forEach(function(id){
+                    var el=document.getElementById(id); if(el) el.value=v;
+                });
+                ['vol-pct','vol-pct-m'].forEach(function(id){
+                    var el=document.getElementById(id); if(el) el.textContent=Math.round(v*100)+'%';
+                });
                 localStorage.setItem('music_volume',v);
                 syncVolume();
             });
@@ -1570,13 +1884,19 @@ document.addEventListener('DOMContentLoaded', function () {
             syncVolume();
         });
 
-        /* Open: dblclick on pill (not on controls) */
-        pill.addEventListener('dblclick',function(e){
-            if(e.target.closest && e.target.closest('#play-pause-btn,#prev-btn,#next-btn,#mute-btn,#volume-bar,#progress-container')) return;
-            openOverlay();
-        });
+        /* ── Open trigger ──
+           Desktop: double-click the PC bar (not on controls)
+           Mobile:  tap cover (handled in player script via _openPlayerOverlay)
+        */
+        var isDesktop=window.matchMedia('(hover:hover) and (pointer:fine)').matches;
+        if(isDesktop && pcBar){
+            pcBar.addEventListener('dblclick',function(e){
+                if(e.target.closest&&e.target.closest('#play-pause-btn-pc,#prev-btn-pc,#next-btn-pc,#mute-btn,#volume-bar,#progress-container')) return;
+                openOverlay();
+            });
+        }
 
-        /* Close: pill on collapse handle, bg click, Escape, swipe down */
+        /* Close */
         if(ovCollapse) ovCollapse.addEventListener('click',closeOverlay);
         if(ovBg) ovBg.addEventListener('click',closeOverlay);
         document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeOverlay(); });
