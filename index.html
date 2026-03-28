@@ -79,6 +79,7 @@
 
         :root {
             --nav-h: 72px;
+            --dot-bg: rgba(8,8,12,0.95);
             --player-h-desk: 90px;
             --player-h-mob: 190px;
             --player-pad-mob: 14px;
@@ -387,6 +388,7 @@
         #discord-decoration.show { display: block; }
 
         #discord-dot { position:absolute; bottom:1px; right:1px; z-index:4; overflow:visible; }
+        body.theme-light { --dot-bg: rgba(238,238,234,0.96); }
 
         #discord-info-body { padding: 10px 14px 14px; }
         #discord-name-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:4px; }
@@ -1134,6 +1136,7 @@
                 var btn=document.getElementById('theme-toggle-btn');
                 var icon=btn.querySelector('i');
                 icon.className = isDark ? 'fas fa-moon' : 'fas fa-sun';
+                setTimeout(function(){ if(window._refreshDiscordDot) window._refreshDiscordDot(); }, 50);
             })();" style="
                 background:rgba(255,255,255,0.05);
                 border:1px solid rgba(255,255,255,0.10);
@@ -1881,11 +1884,11 @@
 
     var avatarUrl = 'https://cdn.discordapp.com/embed/avatars/0.png';
     var avatarSet = false;
-    var lastSeenOnlineTs = null;
+    var lastSeenOnlineTs = parseInt(sessionStorage.getItem('_dsLastSeen')) || null;
 
     function applyData(d) {
         if (!d) {
-            if (dotEl) dotEl.innerHTML = '<rect x="0" y="0" width="16" height="16" rx="8" fill="rgba(12,12,18,0.95)"/><circle cx="8" cy="8" r="3.5" stroke="#80848e" stroke-width="1.5" fill="none"/>';
+            if (dotEl) { var bg=getComputedStyle(document.documentElement).getPropertyValue('--dot-bg').trim()||'rgba(8,8,12,0.95)'; dotEl.innerHTML='<rect x="0" y="0" width="16" height="16" rx="8" fill="'+bg+'"/><circle cx="8" cy="8" r="3.5" stroke="#80848e" stroke-width="1.5" fill="none"/>'; }
             if (stEl)  stEl.style.display = '';
             return;
         }
@@ -1922,37 +1925,26 @@
 
         var s = (d && d.discord_status) || 'offline';
         if (dotEl) {
+            var bg = getComputedStyle(document.documentElement).getPropertyValue('--dot-bg').trim() || 'rgba(8,8,12,0.95)';
             var DOT_SVG = {
-                online:    '<rect x="0" y="0" width="16" height="16" rx="8" fill="rgba(12,12,18,0.95)"/><circle cx="8" cy="8" r="5" fill="#23a55a"/>',
-                idle:      '<rect x="0" y="0" width="16" height="16" rx="8" fill="rgba(12,12,18,0.95)"/><path fill="#f0b232" d="M8 3a5 5 0 1 0 0 10A3.5 3.5 0 0 1 8 3Z"/>',
-                dnd:       '<rect x="0" y="0" width="16" height="16" rx="8" fill="rgba(12,12,18,0.95)"/><circle cx="8" cy="8" r="5" fill="#f23f43"/><rect x="4.5" y="7.25" width="7" height="1.5" rx="0.75" fill="#fff"/>',
-                offline:   '<rect x="0" y="0" width="16" height="16" rx="8" fill="rgba(12,12,18,0.95)"/><circle cx="8" cy="8" r="3.5" stroke="#80848e" stroke-width="1.5" fill="none"/>',
-                streaming: '<rect x="0" y="0" width="16" height="16" rx="8" fill="rgba(12,12,18,0.95)"/><circle cx="8" cy="8" r="5" fill="#593695"/><polygon points="6,5.5 11,8 6,10.5" fill="#fff"/>'
+                online:    '<rect x="0" y="0" width="16" height="16" rx="8" fill="'+bg+'"/><circle cx="8" cy="8" r="5" fill="#23a55a"/>',
+                idle:      '<rect x="0" y="0" width="16" height="16" rx="8" fill="'+bg+'"/><path fill="#f0b232" d="M8 3a5 5 0 1 0 0 10A3.5 3.5 0 0 1 8 3Z"/>',
+                dnd:       '<rect x="0" y="0" width="16" height="16" rx="8" fill="'+bg+'"/><circle cx="8" cy="8" r="5" fill="#f23f43"/><rect x="4.5" y="7.25" width="7" height="1.5" rx="0.75" fill="#fff"/>',
+                offline:   '<rect x="0" y="0" width="16" height="16" rx="8" fill="'+bg+'"/><circle cx="8" cy="8" r="3.5" stroke="#80848e" stroke-width="1.5" fill="none"/>',
+                streaming: '<rect x="0" y="0" width="16" height="16" rx="8" fill="'+bg+'"/><circle cx="8" cy="8" r="5" fill="#593695"/><polygon points="6,5.5 11,8 6,10.5" fill="#fff"/>'
             };
             dotEl.innerHTML = DOT_SVG[s] || DOT_SVG.offline;
         }
         var color = COLORS[s] || COLORS.offline;
 
-        if (s === 'online' || s === 'idle' || s === 'streaming') lastSeenOnlineTs = Date.now();
+        if (s === 'online' || s === 'idle' || s === 'streaming') {
+            lastSeenOnlineTs = Date.now();
+            sessionStorage.setItem('_dsLastSeen', lastSeenOnlineTs);
+        }
 
         var acts = (d && d.activities) || [];
 
-        if (stEl) {
-            if (s === 'offline' || s === 'dnd') {
-                stEl.innerHTML = '';
-            } else {
-                var statusLabel = {online:'Online', idle:'Idle', streaming:'🔴 Live'}[s] || '';
-                var labelPart = statusLabel ? '<span style="font-size:0.70rem;color:rgba(255,255,255,0.55);font-weight:500;">'+statusLabel+'</span>' : '';
-                stEl.innerHTML =
-                    '<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px 3px 7px;background:rgba('+
-                    (s==='online'?'35,165,90':s==='idle'?'240,178,50':'89,54,149')+',0.10);border:1px solid rgba('+
-                    (s==='online'?'35,165,90':s==='idle'?'240,178,50':'89,54,149')+',0.22);border-radius:99px;">'
-                    + '<span style="width:8px;height:8px;border-radius:50%;background:'+color
-                    +   ';box-shadow:0 0 5px '+color+';display:inline-block;flex-shrink:0;"></span>'
-                    + labelPart
-                    + '</span>';
-            }
-        }
+        if (stEl) { stEl.innerHTML = ''; }
 
         var txt = '';
 
@@ -1985,6 +1977,13 @@
         if (skEl) skEl.style.display = 'none';
         if (cEl)  cEl.classList.add('loaded');
     }
+
+    window._refreshDiscordDot = function() {
+        var dot = document.getElementById('discord-dot');
+        if (!dot) return;
+        var bg = getComputedStyle(document.documentElement).getPropertyValue('--dot-bg').trim() || 'rgba(8,8,12,0.95)';
+        dot.innerHTML = dot.innerHTML.replace(/fill="[^"]*" rx="8"/g, 'fill="'+bg+'" rx="8"');
+    };
 
     var ws, hbInterval, reconnectTimer;
 
