@@ -117,7 +117,7 @@
         '.nav-tab:hover,.nav-tabs span:hover{opacity:0.88!important;}',
         '.song-title{color:var(--text)!important;}',
         '#music-time{color:var(--text)!important;opacity:0.45!important;}',
-        '.views-row,.views-row *{color:var(--views-color)!important;}',
+        '.views-row,.views-row *{color:var(--views-color)!important;text-shadow:0 0 8px var(--views-color)!important;}',
         '#display-name{color:#fff!important;text-shadow:0 0 22px rgba(255,255,255,0.65),0 0 50px rgba(255,255,255,0.18)!important;}',
         '#tw-cursor{background:#fff!important;box-shadow:0 0 10px white,0 0 22px rgba(255,255,255,0.35)!important;}',
         '.discord-skeleton,.discord-real{background:var(--input-bg)!important;}',

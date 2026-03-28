@@ -264,15 +264,15 @@
         if (spotifyTopLevel && spotifyTopLevel.song) {
             var startMs = spotifyTopLevel.timestamps && spotifyTopLevel.timestamps.start;
             function refreshSpotify() {
-                var elapsed = startMs ? ' &middot; ' + fmtElapsed(startMs) : '';
+                var elapsed = startMs ? ' · ' + fmtElapsed(startMs) : '';
                 activityEl.innerHTML =
-                    '<span style="color:rgba(255,255,255,0.55);">🎵</span>'
-                  + '<span style="margin-left:4px;color:rgba(255,255,255,0.42);">'
+                    '<span style="color:rgba(255,255,255,0.90);text-shadow:0 0 10px rgba(255,255,255,0.6);">🎵</span>'
+                  + '<span style="margin-left:5px;color:rgba(255,255,255,0.88);text-shadow:0 0 10px rgba(255,255,255,0.45),0 0 20px rgba(255,255,255,0.20);font-weight:600;">'
                   +   escHtml(spotifyTopLevel.song) + '</span>'
-                  + '<span style="color:rgba(255,255,255,0.24);"> — '
+                  + '<span style="color:rgba(255,255,255,0.55);text-shadow:0 0 8px rgba(255,255,255,0.25);"> — '
                   +   escHtml(spotifyTopLevel.artist) + '</span>'
                   + (elapsed
-                      ? '<span style="color:rgba(255,255,255,0.18);font-size:0.60rem;">' + elapsed + '</span>'
+                      ? '<span style="color:rgba(255,255,255,0.35);font-size:0.60rem;">' + elapsed + '</span>'
                       : '');
             }
             refreshSpotify();
@@ -283,15 +283,15 @@
         if (spotify) {
             var spStart = spotify.timestamps && spotify.timestamps.start;
             function refreshSpotifyAct() {
-                var elapsed = spStart ? ' &middot; ' + fmtElapsed(spStart) : '';
+                var elapsed = spStart ? ' · ' + fmtElapsed(spStart) : '';
                 activityEl.innerHTML =
-                    '<span style="color:rgba(255,255,255,0.55);">🎵</span>'
-                  + '<span style="margin-left:4px;color:rgba(255,255,255,0.42);">'
+                    '<span style="color:rgba(255,255,255,0.90);text-shadow:0 0 10px rgba(255,255,255,0.6);">🎵</span>'
+                  + '<span style="margin-left:5px;color:rgba(255,255,255,0.88);text-shadow:0 0 10px rgba(255,255,255,0.45),0 0 20px rgba(255,255,255,0.20);font-weight:600;">'
                   +   escHtml(spotify.details || '') + '</span>'
-                  + '<span style="color:rgba(255,255,255,0.24);"> — '
+                  + '<span style="color:rgba(255,255,255,0.55);text-shadow:0 0 8px rgba(255,255,255,0.25);"> — '
                   +   escHtml(spotify.state   || '') + '</span>'
                   + (elapsed
-                      ? '<span style="color:rgba(255,255,255,0.18);font-size:0.60rem;">' + elapsed + '</span>'
+                      ? '<span style="color:rgba(255,255,255,0.35);font-size:0.60rem;">' + elapsed + '</span>'
                       : '');
             }
             refreshSpotifyAct();
@@ -305,33 +305,33 @@
                 if (custom.emoji.id) {
                     emoji = '<img src="https://cdn.discordapp.com/emojis/'
                         + custom.emoji.id + '.webp?size=20"'
-                        + ' style="width:14px;height:14px;vertical-align:middle;'
-                        + 'margin-right:3px;border-radius:2px;" alt="">';
+                        + ' style="width:15px;height:15px;vertical-align:middle;'
+                        + 'margin-right:4px;border-radius:2px;filter:drop-shadow(0 0 4px rgba(255,255,255,0.5));" alt="">';
                 } else if (custom.emoji.name) {
-                    emoji = escHtml(custom.emoji.name) + ' ';
+                    emoji = '<span style="filter:drop-shadow(0 0 4px rgba(255,255,255,0.5));">' + escHtml(custom.emoji.name) + '</span> ';
                 }
             }
             activityEl.innerHTML =
-                '<span style="color:rgba(255,255,255,0.38);">'
+                '<span style="color:rgba(255,255,255,0.82);text-shadow:0 0 10px rgba(255,255,255,0.40),0 0 22px rgba(255,255,255,0.18);font-weight:500;">'
               + emoji + escHtml(custom.state || '') + '</span>';
             return;
         }
 
         if (stream) {
             activityEl.innerHTML =
-                '<span style="color:#593695;">🔴</span>'
-              + '<span style="margin-left:4px;color:rgba(255,255,255,0.38);">'
+                '<span style="color:#a07fff;text-shadow:0 0 10px rgba(160,127,255,0.7);">🔴</span>'
+              + '<span style="margin-left:5px;color:rgba(255,255,255,0.82);text-shadow:0 0 10px rgba(255,255,255,0.40),0 0 22px rgba(255,255,255,0.18);font-weight:500;">'
               + escHtml(stream.name || 'Streaming') + '</span>';
             return;
         }
 
         if (game) {
             var detail = game.details
-                ? escHtml(game.name) + '<span style="color:rgba(255,255,255,0.24);"> — ' + escHtml(game.details) + '</span>'
+                ? escHtml(game.name) + '<span style="color:rgba(255,255,255,0.50);text-shadow:0 0 8px rgba(255,255,255,0.22);"> — ' + escHtml(game.details) + '</span>'
                 : escHtml(game.name);
             activityEl.innerHTML =
-                '<span style="color:rgba(255,255,255,0.55);">🎮</span>'
-              + '<span style="margin-left:4px;color:rgba(255,255,255,0.38);">' + detail + '</span>';
+                '<span style="color:rgba(255,255,255,0.90);text-shadow:0 0 10px rgba(255,255,255,0.6);">🎮</span>'
+              + '<span style="margin-left:5px;color:rgba(255,255,255,0.82);text-shadow:0 0 10px rgba(255,255,255,0.40),0 0 22px rgba(255,255,255,0.18);font-weight:500;">' + detail + '</span>';
             return;
         }
 
