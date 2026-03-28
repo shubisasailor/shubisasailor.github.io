@@ -1270,8 +1270,7 @@
 
                     <div class="hero-pfp-skeleton" id="hero-pfp-skeleton"></div>
 
-                    <img draggable="false" id="discord-pfp" alt="PFP" style="display:none;"
-                         onerror="this.style.display='none';document.getElementById('hero-pfp-skeleton').style.display='block';">
+                    <img draggable="false" id="discord-pfp" alt="PFP" style="display:none;">
                     <img draggable="false" id="discord-decoration" alt="" style="display:none;">
                     <div class="discord-status-dot ds-offline" id="discord-dot"></div>
                 </div>
@@ -1313,7 +1312,7 @@
 
                     <p class="subtitle-text" style="margin-top:4px;">CS Student</p>
 
-                    <div id="discord-status" style="display:none;"></div>
+                    <div id="discord-status"></div>
                     <div id="discord-activity" style="margin-top:6px;font-size:0.67rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;text-shadow:0 0 12px currentColor,0 0 24px currentColor;"></div>
 
                 </div>
@@ -1328,12 +1327,13 @@
             <div class="card-divider" style="margin:16px 0 14px;"></div>
 
             <div class="social-links" style="margin-top:0;padding-bottom:18px;">
-                <a href="https://github.com/ZetsuoNoShub" target="_blank" rel="noopener"><i class="fab fa-github"></i></a>
-                <a href="https://discord.com/users/748831508776878110" target="_blank" rel="noopener"><i class="fab fa-discord"></i></a>
-                <a href="https://twitter.com/ZetsuoNoShub" target="_blank" rel="noopener"><i class="fab fa-twitter"></i></a>
-                <a href="https://www.youtube.com/@ZetsuoNoShub" target="_blank" rel="noopener"><i class="fab fa-youtube"></i></a>
-                <a href="https://open.spotify.com" target="_blank" rel="noopener"><i class="fab fa-spotify"></i></a>
-                <a href="mailto:shub.professional@gmail.com" rel="noopener"><i class="fas fa-envelope"></i></a>
+                <a href="https://github.com/ZetsuoNoShub" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
+                <a href="https://linkedin.com/in/c3o" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i></a>
+                <a href="https://instagram.com/shub.is.a.sailor/" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>
+                <a href="https://pinterest.com/shubflexin" target="_blank" rel="noopener noreferrer"><i class="fab fa-pinterest"></i></a>
+                <a href="https://youtube.com/@Tarnished_Shubh" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i></a>
+                <a href="https://x.com/ZetsuoNoShub" target="_blank" rel="noopener noreferrer"><i class="fab fa-x-twitter"></i></a>
+                <a href="mailto:shub.professional@gmail.com" rel="noopener noreferrer"><i class="fas fa-envelope"></i></a>
             </div>
 
         </div>
@@ -1897,10 +1897,9 @@
             avatarUrl = 'https://cdn.discordapp.com/avatars/' + ID + '/' + u.avatar + '.' + ext + '?size=128';
             var heroSkel = document.getElementById('hero-pfp-skeleton');
             if (pfp) {
-                pfp.src = avatarUrl;
-                pfp.style.display = 'block';
-                if (heroSkel) heroSkel.style.display = 'none';
                 pfp.onerror = function(){ pfp.style.display='none'; if(heroSkel) heroSkel.style.display='block'; };
+                pfp.onload  = function(){ pfp.style.display='block'; if(heroSkel) heroSkel.style.display='none'; };
+                pfp.src = avatarUrl;
             }
         }
 
