@@ -1428,7 +1428,7 @@
                 <a href="https://x.com/ZetsuoNoShub"                   target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i></a>
                 <a href="https://pinterest.com/shubflexin"             target="_blank" rel="noopener"><i class="fab fa-pinterest"></i></a>
                 <a href="https://linkedin.com/in/c3o"                  target="_blank" rel="noopener"><i class="fab fa-linkedin"></i></a>
-                <a href="mailto:shub.professional@gmail.com" rel="noopener"><i class="fas fa-envelope"></i></a>
+                <a href="/cdn-cgi/l/email-protection#f182998493df81839e97948282989e9f909db1969c90989ddf929e9c" rel="noopener"><i class="fas fa-envelope"></i></a>
             </div>
 
         </div>
@@ -1489,7 +1489,7 @@
             <div class="section-label">reach me at</div>
             <div class="email-row">
                 <i class="fas fa-envelope"></i>
-                <span id="email-display">shub.professional@gmail.com</span>
+                <span id="email-display"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="cdbea5b8afe3bdbfa2aba8bebea4a2a3aca18daaa0aca4a1e3aea2a0">[email&#160;protected]</a></span>
                 <i class="fas fa-copy email-copy" id="copy-btn" title="Copy email"></i>
             </div>
             <div class="card-divider"></div>
@@ -1514,7 +1514,7 @@
 <!-- ══════════ SCRIPTS ══════════ -->
 
 <!-- ── 1. Song data + audio engine ── -->
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 (function () {
     'use strict';
 
@@ -2713,138 +2713,120 @@ document.addEventListener('DOMContentLoaded', function () {
 })();
 </script>
 
-<!-- ── 8. 3D Gravity Tilt Effect ── -->
+<!-- ── 8. 3D Gravity Tilt Effect — desktop pointer only ── -->
 <script>
 (function() {
+    // Touch / mobile devices: skip entirely — no hover, no tilt
     if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
-    var MAX_TILT    = 10;
-    var SCALE_IN    = 1.025;
-    var SCALE_OUT   = 1.0;
+    var MAX_TILT    = 10;    // degrees
     var PERSPECTIVE = 1000;
-
-    // Spring config — how snappy the spring is when returning to rest
-    var SPRING_STIFFNESS = 0.055;  // pull toward target per frame
-    var SPRING_DAMPING   = 0.78;   // velocity decay per frame
+    var STIFFNESS   = 0.12;  // spring pull (higher = snappier)
+    var DAMPING     = 0.75;  // velocity decay (lower = more bounce)
 
     function initTilt(el) {
         var shine = el.querySelector('.tilt-shine');
 
-        // Current rendered state (spring position)
-        var curRotX = 0, curRotY = 0, curScale = 1, curShineAlpha = 0;
-        var velX = 0, velY = 0;
-
-        // Target state
-        var tgtRotX = 0, tgtRotY = 0, tgtScale = 1, tgtShineAlpha = 0;
-        var tgtShineX = 50, tgtShineY = 50; // % for radial-gradient
-
-        var hovering   = false;
-        var rafId      = null;
-        var rect       = null;
+        // Spring state (what's currently rendered)
+        var curX = 0, curY = 0, velX = 0, velY = 0;
+        var curScale = 1, curAlpha = 0;
         var shineX = 50, shineY = 50;
 
-        // ── Spring loop — runs continuously once started ──────────
-        function tick() {
-            // Spring toward target
-            var dX = tgtRotX - curRotX;
-            var dY = tgtRotY - curRotY;
-            velX = (velX + dX * SPRING_STIFFNESS) * SPRING_DAMPING;
-            velY = (velY + dY * SPRING_STIFFNESS) * SPRING_DAMPING;
-            curRotX += velX;
-            curRotY += velY;
+        // Targets
+        var tgtX = 0, tgtY = 0;
+        var tgtScale = 1, tgtAlpha = 0;
+        var tgtShineX = 50, tgtShineY = 50;
 
-            // Lerp scale and shine alpha
-            curScale      += (tgtScale      - curScale)      * 0.10;
-            curShineAlpha += (tgtShineAlpha - curShineAlpha) * 0.10;
-            shineX        += (tgtShineX     - shineX)        * 0.12;
-            shineY        += (tgtShineY     - shineY)        * 0.12;
+        var rafId = null;
+        var rect  = null;
 
-            // Apply
+        function applyDOM() {
             el.style.transition = 'none';
             el.style.transform  =
-                'perspective('+PERSPECTIVE+'px)'
-                + ' rotateX('+curRotX.toFixed(3)+'deg)'
-                + ' rotateY('+curRotY.toFixed(3)+'deg)'
-                + ' scale('+curScale.toFixed(4)+')';
+                'perspective(' + PERSPECTIVE + 'px)'
+                + ' rotateX(' + curX.toFixed(3) + 'deg)'
+                + ' rotateY(' + curY.toFixed(3) + 'deg)'
+                + ' scale('   + curScale.toFixed(4) + ')';
             el.style.boxShadow =
-                (curRotY * 0.8).toFixed(2)+'px '+(curRotX * 0.8).toFixed(2)+'px 28px rgba(0,0,0,0.55), '
+                (curY * 0.7).toFixed(2) + 'px ' + (curX * 0.7).toFixed(2) + 'px 32px rgba(0,0,0,0.50),'
                 + '0 0 0 1px rgba(255,255,255,0.08)';
-
             if (shine) {
-                shine.style.opacity    = curShineAlpha.toFixed(3);
+                shine.style.opacity    = curAlpha.toFixed(3);
                 shine.style.background =
-                    'radial-gradient(circle at '+shineX.toFixed(1)+'% '+shineY.toFixed(1)+'%, rgba(255,255,255,0.13) 0%, transparent 65%)';
-            }
-
-            // Keep looping while anything is still moving
-            var moving =
-                Math.abs(dX) > 0.001 || Math.abs(dY) > 0.001 ||
-                Math.abs(velX) > 0.001 || Math.abs(velY) > 0.001 ||
-                Math.abs(tgtScale - curScale) > 0.0002 ||
-                Math.abs(tgtShineAlpha - curShineAlpha) > 0.002;
-
-            if (moving) {
-                rafId = requestAnimationFrame(tick);
-            } else {
-                rafId = null;
-                // Snap to rest if fully settled at zero
-                if (!hovering) {
-                    curRotX = 0; curRotY = 0; velX = 0; velY = 0;
-                }
+                    'radial-gradient(circle at ' + shineX.toFixed(1) + '% ' + shineY.toFixed(1) + '%,'
+                    + 'rgba(255,255,255,0.14) 0%,transparent 65%)';
             }
         }
 
-        function ensureLoop() {
+        function tick() {
+            var dX = tgtX - curX, dY = tgtY - curY;
+            velX = (velX + dX * STIFFNESS) * DAMPING;
+            velY = (velY + dY * STIFFNESS) * DAMPING;
+            curX += velX;
+            curY += velY;
+            curScale += (tgtScale - curScale) * 0.10;
+            curAlpha += (tgtAlpha - curAlpha) * 0.10;
+            shineX   += (tgtShineX - shineX)  * 0.12;
+            shineY   += (tgtShineY - shineY)  * 0.12;
+
+            applyDOM();
+
+            var settled =
+                Math.abs(dX) < 0.003 && Math.abs(dY) < 0.003 &&
+                Math.abs(velX) < 0.003 && Math.abs(velY) < 0.003 &&
+                Math.abs(tgtScale - curScale) < 0.0003 &&
+                Math.abs(tgtAlpha - curAlpha) < 0.003;
+
+            if (settled) {
+                curX = tgtX; curY = tgtY; velX = 0; velY = 0;
+                applyDOM();
+                rafId = null;
+            } else {
+                rafId = requestAnimationFrame(tick);
+            }
+        }
+
+        function startLoop() {
             if (!rafId) rafId = requestAnimationFrame(tick);
         }
 
-        // ── Mouse tracking ────────────────────────────────────────
-        function onMove(e) {
+        function setTarget(cx, cy) {
+            var x = cx - rect.left, y = cy - rect.top;
+            var mx = rect.width / 2, my = rect.height / 2;
+            tgtY      =  ((x - mx) / mx) * MAX_TILT;
+            tgtX      = -((y - my) / my) * MAX_TILT;
+            tgtShineX = (x / rect.width)  * 100;
+            tgtShineY = (y / rect.height) * 100;
+        }
+
+        el.addEventListener('mouseenter', function(e) {
+            rect      = el.getBoundingClientRect();
+            tgtScale  = 1.025;
+            tgtAlpha  = 1;
+            setTarget(e.clientX, e.clientY);
+            startLoop();
+        });
+
+        el.addEventListener('mousemove', function(e) {
             if (!rect) rect = el.getBoundingClientRect();
-            var x  = e.clientX - rect.left;
-            var y  = e.clientY - rect.top;
-            var cx = rect.width  / 2;
-            var cy = rect.height / 2;
+            setTarget(e.clientX, e.clientY);
+            startLoop();
+        });
 
-            tgtRotY       =  ((x - cx) / cx) * MAX_TILT;
-            tgtRotX       = -((y - cy) / cy) * MAX_TILT;
-            tgtShineX     = (x / rect.width)  * 100;
-            tgtShineY     = (y / rect.height) * 100;
-            tgtScale      = SCALE_IN;
-            tgtShineAlpha = 1;
-
-            ensureLoop();
-        }
-
-        function onEnter() {
-            hovering = true;
-            rect     = el.getBoundingClientRect();
-            tgtScale      = SCALE_IN;
-            tgtShineAlpha = 1;
-            ensureLoop();
-        }
-
-        function onLeave() {
-            hovering = false;
-            // Freeze the tilt angle — tgtRotX/Y stay at their last cursor-driven value.
-            // Only fade scale + shine so it doesn't look "stuck active".
-            // The card holds its angle until the cursor re-enters.
-            tgtScale      = SCALE_OUT;
-            tgtShineAlpha = 0;
-            rect          = null;
-            ensureLoop(); // just for scale/shine fade
-        }
-
-        el.addEventListener('mouseenter', onEnter);
-        el.addEventListener('mousemove',  onMove);
-        el.addEventListener('mouseleave', onLeave);
+        el.addEventListener('mouseleave', function() {
+            rect     = null;
+            tgtScale = 1.0;
+            tgtAlpha = 0;
+            // tgtX / tgtY intentionally NOT reset —
+            // card freezes at its last angle until next hover
+            startLoop(); // animate scale + shine out only
+        });
     }
 
-    // Apply tilt ONLY to cards inside the overview panel
     function applyAll() {
-        var overviewPanel = document.getElementById('panel-overview');
-        if (!overviewPanel) return;
-        overviewPanel.querySelectorAll('.tilt-card').forEach(function(el) {
+        var panel = document.getElementById('panel-overview');
+        if (!panel) return;
+        panel.querySelectorAll('.tilt-card').forEach(function(el) {
             if (el._tiltInit) return;
             el._tiltInit = true;
             initTilt(el);
@@ -2854,19 +2836,8 @@ document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('DOMContentLoaded', applyAll);
     applyAll();
 
-    var observer = new MutationObserver(function(muts) {
-        muts.forEach(function(m) {
-            m.addedNodes.forEach && m.addedNodes.forEach(function(n) {
-                var overviewPanel = document.getElementById('panel-overview');
-                if (!overviewPanel) return;
-                if (n.classList && n.classList.contains('tilt-card') && overviewPanel.contains(n)) {
-                    if (!n._tiltInit) { n._tiltInit = true; initTilt(n); }
-                }
-            });
-        });
-        applyAll();
-    });
-    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+    new MutationObserver(applyAll)
+        .observe(document.body, { childList: true, subtree: true });
 })();
 </script>
 
@@ -2898,13 +2869,4 @@ document.addEventListener('DOMContentLoaded', function () {
         var polls = 0;
         var iv = setInterval(function(){
             updatePadding();
-            if (++polls > 20) clearInterval(iv);
-        }, 300);
-    }
-
-    // Also re-measure when bored button switches to active player
-    var boredBtn = document.getElementById('bored-btn');
-    if (boredBtn) {
-        boredBtn.addEventListener('click', function(){
-            setTimeout(updatePadding, 400);
-      
+            if (++polls > 20) clea
