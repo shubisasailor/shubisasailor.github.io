@@ -309,7 +309,7 @@
         #discord-decoration {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 86px; height: 86px;
+            width: 124px; height: 124px;
             pointer-events: none; z-index: 2;
         }
         .discord-status-dot {
@@ -611,11 +611,11 @@
 
         /* ── Socials ── */
         .social-links { display:flex; justify-content:center; flex-wrap:wrap; gap:20px; margin-top:20px; }
-        .social-links a { display:flex; align-items:center; justify-content:center; width:22px; height:22px; text-decoration:none; transition:0.25s; -webkit-tap-highlight-color:transparent; }
-        .social-links i { color:rgba(255,255,255,0.50); font-size:17px; transition:0.25s; }
-        .social-links a:hover { transform:scale(1.22); }
+        .social-links a { display:flex; align-items:center; justify-content:center; width:22px; height:22px; text-decoration:none; transition:0.25s; -webkit-tap-highlight-color:transparent; color:rgba(255,255,255,0.50); }
+        .social-links i { color:inherit; font-size:17px; transition:0.25s; }
+        .social-links a svg { fill:currentColor; transition:fill 0.25s; }
+        .social-links a:hover { transform:scale(1.22); color:white; }
         .social-links a:hover i { color:white; }
-        .social-links a:hover svg { fill:white !important; }
         .social-links:hover a { opacity:0.38; transform:scale(0.95); }
         .social-links a:hover { opacity:1!important; transform:scale(1.22)!important; }
 
@@ -1442,8 +1442,8 @@
                 <a href="https://x.com/ZetsuoNoShub"                   target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i></a>
                 <a href="https://pinterest.com/shubflexin"             target="_blank" rel="noopener"><i class="fab fa-pinterest"></i></a>
                 <a href="https://linkedin.com/in/c3o"                  target="_blank" rel="noopener"><i class="fab fa-linkedin"></i></a>
-                <a href="https://www.roblox.com/users/3686735227/profile" target="_blank" rel="noopener" title="Roblox">
-                    <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" style="width:17px;height:17px;fill:rgba(255,255,255,0.50);transition:fill 0.25s;"><path d="M115.3 0L0 396.7 396.7 512 512 115.3zm171.9 286.1l-86.1-25.3 25.2-86.1 86.1 25.3z"/></svg>
+                <a href="https://www.roblox.com/users/3686735227/profile" target="_blank" rel="noopener" title="Roblox" style="color:rgba(255,255,255,0.50);">
+                    <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" style="width:17px;height:17px;display:block;fill:currentColor;transition:fill 0.25s;"><path d="M115.3 0L0 396.7 396.7 512 512 115.3zm171.9 286.1l-86.1-25.3 25.2-86.1 86.1 25.3z"/></svg>
                 </a>
                 <a href="/cdn-cgi/l/email-protection#6d1e05180f431d1f020b081e1e0402030c012d0a000c0401430e0200" rel="noopener"><i class="fas fa-envelope"></i></a>
             </div>
@@ -1476,11 +1476,27 @@
             </div>
             <div class="card-divider"></div>
             <div class="section-label">projects</div>
-            <button id="projects-btn">
-                <i class="fab fa-github" style="font-size:0.78rem;opacity:0.50;"></i>
-                PUBLIC REPOS
-                <i class="fas fa-chevron-down btn-chevron"></i>
-            </button>
+            <div style="display:flex;gap:8px;width:100%;">
+                <button id="projects-btn" style="flex:1;">
+                    <i class="fab fa-github" style="font-size:0.78rem;opacity:0.50;"></i>
+                    PUBLIC REPOS
+                    <i class="fas fa-chevron-down btn-chevron"></i>
+                </button>
+                <a href="media/cv" download style="
+                    display:flex; align-items:center; justify-content:center; gap:7px;
+                    padding:11px 14px;
+                    background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.09);
+                    border-radius:10px; color:rgba(255,255,255,0.55);
+                    font-family:'Inter',sans-serif; font-size:clamp(0.62rem,1.8vw,0.68rem); letter-spacing:2.5px;
+                    text-decoration:none; white-space:nowrap;
+                    transition:all 0.2s; position:relative; overflow:hidden;
+                    -webkit-tap-highlight-color:transparent;
+                " onmouseover="this.style.background='rgba(255,255,255,0.08)';this.style.borderColor='rgba(255,255,255,0.18)';this.style.color='rgba(255,255,255,0.88)';"
+                   onmouseout="this.style.background='rgba(255,255,255,0.04)';this.style.borderColor='rgba(255,255,255,0.09)';this.style.color='rgba(255,255,255,0.55)';">
+                    <i class="fas fa-download" style="font-size:0.70rem;opacity:0.70;"></i>
+                    CV
+                </a>
+            </div>
         </div>
     </div>
 
