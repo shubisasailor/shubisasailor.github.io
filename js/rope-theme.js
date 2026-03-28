@@ -177,7 +177,7 @@
         document.body.classList.toggle('theme-dark',  dark);
 
         // ── Refresh Discord dot SVG background to match new theme ──
-        if (window._refreshDiscordDot) window._refreshDiscordDot();
+        setTimeout(function(){ if (window._refreshDiscordDot) window._refreshDiscordDot(); }, 20);
 
         // ── Cursor sync: keep rope-hit grab cursor correct after theme swap ──
         var hit = document.getElementById('rope-hit');

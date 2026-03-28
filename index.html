@@ -1882,6 +1882,7 @@
     var avatarUrl = 'https://cdn.discordapp.com/embed/avatars/0.png';
     var avatarSet = false;
     var lastSeenOnlineTs = parseInt(sessionStorage.getItem('_dsLastSeen')) || null;
+    var lastKnownStatus = 'offline';
 
     function applyData(d) {
         if (!d) {
@@ -1979,7 +1980,14 @@
         var dot = document.getElementById('discord-dot');
         if (!dot) return;
         var bg = getComputedStyle(document.documentElement).getPropertyValue('--dot-bg').trim() || 'rgba(8,8,12,0.95)';
-        dot.innerHTML = dot.innerHTML.replace(/fill="[^"]*" rx="8"/g, 'fill="'+bg+'" rx="8"');
+        var DOT = {
+            online:    '<rect x="0" y="0" width="16" height="16" rx="8" fill="'+bg+'"/><circle cx="8" cy="8" r="5" fill="#23a55a"/>',
+            idle:      '<rect x="0" y="0" width="16" height="16" rx="8" fill="'+bg+'"/><path fill="#f0b232" d="M8 3a5 5 0 1 0 0 10A3.5 3.5 0 0 1 8 3Z"/>',
+            dnd:       '<rect x="0" y="0" width="16" height="16" rx="8" fill="'+bg+'"/><circle cx="8" cy="8" r="5" fill="#f23f43"/><rect x="4.5" y="7.25" width="7" height="1.5" rx="0.75" fill="#fff"/>',
+            offline:   '<rect x="0" y="0" width="16" height="16" rx="8" fill="'+bg+'"/><circle cx="8" cy="8" r="3.5" stroke="#80848e" stroke-width="1.5" fill="none"/>',
+            streaming: '<rect x="0" y="0" width="16" height="16" rx="8" fill="'+bg+'"/><circle cx="8" cy="8" r="5" fill="#593695"/><polygon points="6,5.5 11,8 6,10.5" fill="#fff"/>'
+        };
+        dot.innerHTML = DOT[lastKnownStatus] || DOT.offline;
     };
 
     var ws, hbInterval, reconnectTimer;
