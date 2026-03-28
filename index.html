@@ -24,7 +24,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="css/main.css">
 
-    <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>window.addEventListener('load',function(){ if(typeof emailjs!=='undefined') emailjs.init('ANitUhHu4kV4-js93'); });</script>
 
     <script>
     if (sessionStorage.getItem('site_entered')) {
@@ -1940,10 +1941,7 @@
                 + '<span style="width:8px;height:8px;border-radius:50%;background:'+color
                 +   ';box-shadow:0 0 5px '+color+';display:inline-block;flex-shrink:0;"></span>'
                 + '<span style="font-size:0.70rem;color:rgba(255,255,255,0.42);">'+(SL[s]||'Offline')+ago+'</span>'
-                + '<a href="https://discord.com/users/748831508776878110"
-                +   ' style="color:rgba(255,255,255,0.22);text-decoration:none;font-size:0.62rem;transition:color 0.2s;"'
-                +   ' onmouseover="this.style.color=\'rgba(255,255,255,0.65)\'"'
-                +   ' onmouseout="this.style.color=\'rgba(255,255,255,0.22)\'">· @'+USER+'</a>'
+                + '<a href="https://discord.com/users/748831508776878110" style="color:rgba(255,255,255,0.22);text-decoration:none;font-size:0.62rem;transition:color 0.2s;" onmouseover="this.style.color=\'rgba(255,255,255,0.65)\'" onmouseout="this.style.color=\'rgba(255,255,255,0.22)\'">· @'+USER+'</a>'
                 + '</span>';
         }
 
@@ -2149,8 +2147,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-
-    if (typeof emailjs !== 'undefined') { emailjs.init({publicKey:'ANitUhHu4kV4-js93'}); }
 
     var main    = document.getElementById('main-content');
     var overlay = document.getElementById('overlay');
