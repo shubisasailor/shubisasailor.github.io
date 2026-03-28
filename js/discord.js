@@ -8,7 +8,6 @@
 
     // ── Config ────────────────────────────────────────────────────
     var DISCORD_ID       = '748831508776878110';
-    var USERNAME         = 'shub.is.a.sailor';
     var WS_URL           = 'wss://api.lanyard.rest/socket';
     var REST_URL         = 'https://api.lanyard.rest/v1/users/' + DISCORD_ID;
     var HEARTBEAT_MS     = 30000;        // fallback if server omits interval
@@ -30,13 +29,6 @@
         dnd:       '#f23f43',
         offline:   '#80848e',
         streaming: '#593695'
-    };
-    var STATUS_LABEL = {
-        online:    'Online',
-        idle:      'Idle',
-        dnd:       'Do Not Disturb',
-        offline:   'Offline',
-        streaming: 'Streaming'
     };
 
     // ── Internal state ────────────────────────────────────────────
@@ -165,28 +157,73 @@
     }
 
     // ─────────────────────────────────────────────────────────────
-    //  Status text row
+    //  Status pill — Discord-accurate SVG icons, no @ handle
     // ─────────────────────────────────────────────────────────────
+
+    // Exact SVG shapes Discord uses per status
+    var STATUS_SVG = {
+        online:
+            '<svg width="10" height="10" viewBox="0 0 10 10" fill="none">'
+          + '<circle cx="5" cy="5" r="5" fill="#23a55a"/>'
+          + '</svg>',
+        idle:
+            '<svg width="10" height="10" viewBox="0 0 10 10" fill="none">'
+          + '<path fill="#f0b232" d="M10 5a5 5 0 1 1-5-5 3.5 3.5 0 0 0 0 7A3.5 3.5 0 0 0 10 5Z"/>'
+          + '</svg>',
+        dnd:
+            '<svg width="10" height="10" viewBox="0 0 10 10" fill="none">'
+          + '<circle cx="5" cy="5" r="5" fill="#f23f43"/>'
+          + '<rect x="2.5" y="4.25" width="5" height="1.5" rx="0.75" fill="#fff"/>'
+          + '</svg>',
+        offline:
+            '<svg width="10" height="10" viewBox="0 0 10 10" fill="none">'
+          + '<circle cx="5" cy="5" r="3.5" stroke="#80848e" stroke-width="2" fill="none"/>'
+          + '</svg>',
+        streaming:
+            '<svg width="10" height="10" viewBox="0 0 10 10" fill="none">'
+          + '<circle cx="5" cy="5" r="5" fill="#593695"/>'
+          + '<polygon points="4,3 8,5 4,7" fill="#fff"/>'
+          + '</svg>'
+    };
+
+    var STATUS_LABEL = {
+        online:    'Online',
+        idle:      'Idle',
+        dnd:       'Busy',
+        offline:   'Offline',
+        streaming: 'Streaming'
+    };
+
+    var STATUS_GLOW = {
+        online:    'rgba(35,165,90,',
+        idle:      'rgba(240,178,50,',
+        dnd:       'rgba(242,63,67,',
+        offline:   'rgba(128,132,142,',
+        streaming: 'rgba(89,54,149,'
+    };
 
     function applyStatus(status, lastSeenMs) {
         if (!statusEl) return;
-        var color = STATUS_COLOR[status] || STATUS_COLOR.offline;
+        var s     = STATUS_SVG[status]   || STATUS_SVG.offline;
         var label = STATUS_LABEL[status] || 'Offline';
+        var glow  = STATUS_GLOW[status]  || STATUS_GLOW.offline;
         var ago   = (status === 'offline' && lastSeenMs)
-            ? ' &middot; last seen ' + timeAgo(lastSeenMs) : '';
+            ? '<span style="opacity:0.40;margin-left:3px;font-weight:400;">· ' + timeAgo(lastSeenMs) + '</span>' : '';
 
         statusEl.innerHTML =
-            '<span style="display:inline-flex;align-items:center;gap:5px;">'
-          +   '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;'
-          +     'background:' + color + ';box-shadow:0 0 5px ' + color + ';flex-shrink:0;"></span>'
-          +   '<span style="font-size:0.70rem;color:rgba(255,255,255,0.42);letter-spacing:0.3px;">'
+            '<span style="'
+          +   'display:inline-flex;align-items:center;gap:6px;'
+          +   'background:' + glow + '0.10);'
+          +   'border:1px solid ' + glow + '0.22);'
+          +   'border-radius:99px;padding:3px 10px 3px 7px;'
+          + '">'
+          +   '<span style="display:flex;align-items:center;flex-shrink:0;'
+          +     'filter:drop-shadow(0 0 3px ' + glow + '0.7));">'
+          +     s
+          +   '</span>'
+          +   '<span style="font-size:0.66rem;font-weight:500;letter-spacing:0.3px;color:rgba(255,255,255,0.70);">'
           +     label + ago
           +   '</span>'
-          +   '<a href="https://discord.com/users/' + DISCORD_ID + '" target="_blank" rel="noopener noreferrer"'
-          +     ' style="color:rgba(255,255,255,0.22);text-decoration:none;font-size:0.64rem;'
-          +     'letter-spacing:0.4px;transition:color 0.2s;margin-left:2px;"'
-          +     ' onmouseover="this.style.color=\'rgba(255,255,255,0.65)\'"'
-          +     ' onmouseout="this.style.color=\'rgba(255,255,255,0.22)\'">@' + USERNAME + '</a>'
           + '</span>';
     }
 
