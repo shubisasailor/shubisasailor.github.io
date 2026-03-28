@@ -1075,6 +1075,9 @@
 
         @media (min-width:701px) { #player-expand-hint { display:none!important; } }
         @media (max-width:319px) { #rope-canvas, #rope-hit { display:none!important; } }
+        /* Ensure rope renders above nav */
+        #rope-canvas { z-index: 210 !important; }
+        #rope-hit    { z-index: 211 !important; }
     </style>
 </head>
 <body class="theme-dark">
