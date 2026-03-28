@@ -1928,7 +1928,7 @@
         if (handleEl) handleEl.textContent = '@' + USER;
 
         var s = (d && d.discord_status) || 'offline';
-        if (dotEl) dotEl.className = 'discord-status-dot ' + (SC[s] || 'ds-offline');
+        if (dotEl) dotEl.className = 'discord-status-dot ' + (s === 'dnd' ? 'ds-offline' : (SC[s] || 'ds-offline'));
         var color = COLORS[s] || COLORS.offline;
 
         if (s !== 'offline') lastSeenOnlineTs = Date.now();
@@ -1936,16 +1936,15 @@
         var acts = (d && d.activities) || [];
 
         if (stEl) {
-            if (s === 'offline') {
+            if (s === 'offline' || s === 'dnd') {
                 stEl.innerHTML = '';
             } else {
-                var statusLabel = {online:'Online', idle:'Idle', dnd:'', streaming:'🔴 Live'}[s] || '';
+                var statusLabel = {online:'Online', idle:'Idle', streaming:'🔴 Live'}[s] || '';
                 var labelPart = statusLabel ? '<span style="font-size:0.70rem;color:rgba(255,255,255,0.55);font-weight:500;">'+statusLabel+'</span>' : '';
-                var pillPad = statusLabel ? '3px 10px 3px 7px' : '3px 7px';
                 stEl.innerHTML =
-                    '<span style="display:inline-flex;align-items:center;gap:5px;padding:'+pillPad+';background:rgba('+
-                    (s==='online'?'35,165,90':s==='idle'?'240,178,50':s==='dnd'?'242,63,67':'89,54,149')+',0.10);border:1px solid rgba('+
-                    (s==='online'?'35,165,90':s==='idle'?'240,178,50':s==='dnd'?'242,63,67':'89,54,149')+',0.22);border-radius:99px;">'
+                    '<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px 3px 7px;background:rgba('+
+                    (s==='online'?'35,165,90':s==='idle'?'240,178,50':'89,54,149')+',0.10);border:1px solid rgba('+
+                    (s==='online'?'35,165,90':s==='idle'?'240,178,50':'89,54,149')+',0.22);border-radius:99px;">'
                     + '<span style="width:8px;height:8px;border-radius:50%;background:'+color
                     +   ';box-shadow:0 0 5px '+color+';display:inline-block;flex-shrink:0;"></span>'
                     + labelPart
