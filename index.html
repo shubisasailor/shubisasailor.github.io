@@ -1888,6 +1888,7 @@
 
     var avatarUrl = 'https://cdn.discordapp.com/embed/avatars/0.png';
     var avatarSet = false;
+    var lastSeenOnlineTs = null;
 
     function applyData(d) {
         if (!d) {
@@ -1930,28 +1931,33 @@
         if (dotEl) dotEl.className = 'discord-status-dot ' + (SC[s] || 'ds-offline');
         var color = COLORS[s] || COLORS.offline;
 
+        if (s !== 'offline') lastSeenOnlineTs = Date.now();
+
         var acts = (d && d.activities) || [];
-        var lastTs = null;
-        acts.forEach(function(a){ if (a.timestamps && a.timestamps.start) lastTs = a.timestamps.start; });
 
         if (stEl) {
             if (s === 'offline') {
                 stEl.innerHTML = '';
             } else {
-                var statusLabel = {online:'Online', idle:'Idle', dnd:'Do Not Disturb', streaming:'🔴 Live'}[s] || '';
+                var statusLabel = {online:'Online', idle:'Idle', dnd:'', streaming:'🔴 Live'}[s] || '';
+                var labelPart = statusLabel ? '<span style="font-size:0.70rem;color:rgba(255,255,255,0.55);font-weight:500;">'+statusLabel+'</span>' : '';
+                var pillPad = statusLabel ? '3px 10px 3px 7px' : '3px 7px';
                 stEl.innerHTML =
-                    '<span style="display:inline-flex;align-items:center;gap:5px;">'
+                    '<span style="display:inline-flex;align-items:center;gap:5px;padding:'+pillPad+';background:rgba('+
+                    (s==='online'?'35,165,90':s==='idle'?'240,178,50':s==='dnd'?'242,63,67':'89,54,149')+',0.10);border:1px solid rgba('+
+                    (s==='online'?'35,165,90':s==='idle'?'240,178,50':s==='dnd'?'242,63,67':'89,54,149')+',0.22);border-radius:99px;">'
                     + '<span style="width:8px;height:8px;border-radius:50%;background:'+color
                     +   ';box-shadow:0 0 5px '+color+';display:inline-block;flex-shrink:0;"></span>'
-                    + '<span style="font-size:0.70rem;color:rgba(255,255,255,0.55);font-weight:500;">'+statusLabel+'</span>'
+                    + labelPart
                     + '</span>';
             }
         }
 
         var txt = '';
 
-        if (s === 'offline' && lastTs) {
-            txt = '🕐 last seen ' + timeAgo(lastTs);
+        if (s === 'offline') {
+            var offlineAgo = lastSeenOnlineTs ? timeAgo(lastSeenOnlineTs) : '';
+            txt = offlineAgo ? '🕐 offline · ' + offlineAgo : '🕐 offline';
         } else {
             for (var i = 0; i < acts.length; i++) {
                 if (acts[i].type === 4 && acts[i].state) { txt = acts[i].state; break; }
