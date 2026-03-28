@@ -1933,33 +1933,43 @@
         var acts = (d && d.activities) || [];
         var lastTs = null;
         acts.forEach(function(a){ if (a.timestamps && a.timestamps.start) lastTs = a.timestamps.start; });
-        var ago = (s === 'offline' && lastTs) ? ' · last seen ' + timeAgo(lastTs) : '';
 
         if (stEl) {
-            stEl.innerHTML =
-                '<span style="display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap;">'
-                + '<span style="width:8px;height:8px;border-radius:50%;background:'+color
-                +   ';box-shadow:0 0 5px '+color+';display:inline-block;flex-shrink:0;"></span>'
-                + '<span style="font-size:0.70rem;color:rgba(255,255,255,0.42);">'+(SL[s]||'Offline')+ago+'</span>'
-                + '<a href="https://discord.com/users/748831508776878110" style="color:rgba(255,255,255,0.22);text-decoration:none;font-size:0.62rem;transition:color 0.2s;" onmouseover="this.style.color=\'rgba(255,255,255,0.65)\'" onmouseout="this.style.color=\'rgba(255,255,255,0.22)\'">· @'+USER+'</a>'
-                + '</span>';
+            if (s === 'offline') {
+                stEl.innerHTML = '';
+            } else {
+                var statusLabel = {online:'Online', idle:'Idle', dnd:'Do Not Disturb', streaming:'🔴 Live'}[s] || '';
+                stEl.innerHTML =
+                    '<span style="display:inline-flex;align-items:center;gap:5px;">'
+                    + '<span style="width:8px;height:8px;border-radius:50%;background:'+color
+                    +   ';box-shadow:0 0 5px '+color+';display:inline-block;flex-shrink:0;"></span>'
+                    + '<span style="font-size:0.70rem;color:rgba(255,255,255,0.55);font-weight:500;">'+statusLabel+'</span>'
+                    + '</span>';
+            }
         }
 
         var txt = '';
 
-        for (var i = 0; i < acts.length; i++) {
-            if (acts[i].type === 4 && acts[i].state) { txt = acts[i].state; break; }
-        }
-        if (!txt) {
-            for (var j = 0; j < acts.length; j++) {
-                if (acts[j].type === 2 && acts[j].details) {
-                    txt = '🎵 ' + acts[j].details + (acts[j].state ? ' — ' + acts[j].state : '');
-                    break;
+        if (s === 'offline' && lastTs) {
+            txt = '🕐 last seen ' + timeAgo(lastTs);
+        } else {
+            for (var i = 0; i < acts.length; i++) {
+                if (acts[i].type === 4 && acts[i].state) { txt = acts[i].state; break; }
+            }
+            if (!txt) {
+                for (var j = 0; j < acts.length; j++) {
+                    if (acts[j].type === 2 && acts[j].details) {
+                        txt = '🎵 ' + acts[j].details + (acts[j].state ? ' — ' + acts[j].state : '');
+                        break;
+                    }
+                    if (acts[j].type === 0 && acts[j].name) { txt = '🎮 ' + acts[j].name; break; }
                 }
-                if (acts[j].type === 0 && acts[j].name) { txt = '🎮 ' + acts[j].name; break; }
             }
         }
-        if (acEl) acEl.textContent = txt;
+        if (acEl) {
+            if (txt) { acEl.textContent = txt; acEl.style.display = 'block'; }
+            else { acEl.textContent = ''; acEl.style.display = 'none'; }
+        }
 
         var flags   = (u && u.public_flags) || 0;
         var premium = (u && u.premium_type)  || 0;
