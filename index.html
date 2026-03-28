@@ -196,7 +196,8 @@
             box-shadow: 0 0 0 1px rgba(255,255,255,0.03),
                         0 8px 32px rgba(0,0,0,0.4),
                         inset 0 1px 0 rgba(255,255,255,0.07);
-            transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            position: relative; overflow: hidden;
         }
         .glass-card:hover {
             border-color: rgba(255,255,255,0.15);
@@ -206,7 +207,7 @@
         }
         @media (hover: hover) and (pointer: fine) {
             .glass-card:hover {
-                transform: perspective(900px) rotateX(0.5deg) translateY(-1px);
+                /* transform handled by JS tilt */
             }
         }
 
@@ -258,60 +259,74 @@
         .bio-text { font-size: clamp(0.78rem,2.2vw,0.86rem); line-height: 1.85; color: rgba(255,255,255,0.52); font-weight: 300; }
         .card-divider { height: 1px; background: rgba(255,255,255,0.06); margin: 18px 0; }
 
+        /* ── 3D Tilt Effect ── */
+        .tilt-card {
+            transform-style: preserve-3d;
+            transform: perspective(1000px) rotateX(0deg) rotateY(0deg);
+            transition: transform 0.08s ease-out, box-shadow 0.08s ease-out;
+            will-change: transform;
+        }
+        .tilt-card .tilt-shine {
+            position: absolute; inset: 0; border-radius: inherit;
+            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.12) 0%, transparent 70%);
+            opacity: 0; transition: opacity 0.08s; pointer-events: none; z-index: 1;
+        }
+        .tilt-card:hover .tilt-shine { opacity: 1; }
+        .tilt-card > * { position: relative; z-index: 2; }
+
         /* ── Discord skeleton ── */
-        .discord-skeleton { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.025); border-radius:12px; padding:14px; margin-top:0; }
-        .skeleton-avatar { width:42px; height:42px; border-radius:50%; background:rgba(255,255,255,0.07); flex-shrink:0; animation:skPulse 1.6s ease-in-out infinite; }
+        @keyframes skPulse { 0%,100%{opacity:0.20} 50%{opacity:0.60} }
+        .skeleton-avatar { width:80px; height:80px; border-radius:50%; background:rgba(255,255,255,0.07); flex-shrink:0; animation:skPulse 1.6s ease-in-out infinite; }
         .skeleton-lines { display:flex; flex-direction:column; gap:9px; flex:1; }
         .skeleton-line { height:9px; border-radius:5px; background:rgba(255,255,255,0.07); animation:skPulse 1.6s ease-in-out infinite; }
         .skeleton-line.short { width:55%; animation-delay:0.2s; }
-        @keyframes skPulse { 0%,100%{opacity:0.20} 50%{opacity:0.60} }
-        .discord-real { display:none; background:rgba(255,255,255,0.025); border-radius:12px; padding:14px; margin-top:0; align-items:center; gap:12px; }
-        .discord-real.loaded { display:flex; }
-        .discord-avatar-wrap { position:relative; width:42px; height:42px; flex-shrink:0; }
-        .discord-avatar-wrap img { width:42px; height:42px; border-radius:50%; object-fit:cover; display:block; box-shadow:0 0 0 2px rgba(255,255,255,0.10); }
-        .discord-status-dot { position:absolute; bottom:0; right:0; width:12px; height:12px; border-radius:50%; border:2.5px solid rgba(8,8,8,0.95); box-sizing:border-box; }
-        .ds-online    { background:#23a55a; box-shadow:0 0 6px rgba(35,165,90,0.8); }
-        .ds-idle      { background:#f0b232; box-shadow:0 0 6px rgba(240,178,50,0.8); }
-        .ds-dnd       { background:#f23f43; box-shadow:0 0 6px rgba(242,63,67,0.8); }
-        .ds-offline   { background:transparent; border:2.5px solid #80848e; box-shadow:none; }
-        .ds-streaming { background:#593695; box-shadow:0 0 6px rgba(89,54,149,0.8); }
-        #discord-name { font-weight:600; font-size:clamp(0.82rem,2.2vw,0.90rem); color:rgba(255,255,255,0.85); }
-        #discord-status, #discord-status a { font-size:clamp(0.63rem,1.8vw,0.70rem); margin-top:3px; color:rgba(255,255,255,0.45)!important; text-decoration:none; }
-        #discord-activity { font-size:clamp(0.58rem,1.6vw,0.66rem); margin-top:3px; color:rgba(255,255,255,0.30); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px; }
-        /* Online pulse */
-        .ds-online { animation: dsPulse 2.4s ease-in-out infinite; }
-        @keyframes dsPulse { 0%,100%{box-shadow:0 0 4px rgba(35,165,90,0.55)} 50%{box-shadow:0 0 10px rgba(35,165,90,0.95)} }
 
-        /* ── Discord card ── */
-        #discord-overlap-wrap {
-            padding: 0 0 12px;
-            width: 100%;
-            box-sizing: border-box;
-        }
+        /* ── Expanded Discord card ── */
+        #discord-overlap-wrap { width:100%; box-sizing:border-box; margin-bottom:12px; }
+
         .discord-skeleton {
             display: flex; align-items: center; gap: 12px;
-            background: rgba(255,255,255,0.025);
-            border-radius: 12px; padding: 14px;
+            background: rgba(255,255,255,0.025); border-radius: 14px; padding: 14px;
         }
+
+        /* Full expanded discord card */
         .discord-real {
-            display: none;
-            background: rgba(255,255,255,0.025);
-            border-radius: 12px; padding: 13px 14px;
-            align-items: center; gap: 12px;
+            display: none; flex-direction: column;
+            background: rgba(15,15,20,0.85);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px; overflow: hidden;
         }
         .discord-real.loaded { display: flex; }
 
-        #hero-lower { padding: 4px 0 6px; }
+        /* Banner */
+        #discord-banner {
+            width: 100%; height: 80px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
+            position: relative; flex-shrink: 0;
+            overflow: hidden;
+        }
+        #discord-banner-img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+        }
+        #discord-banner-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(to bottom, transparent 50%, rgba(15,15,20,0.9) 100%);
+        }
 
-        .skeleton-avatar { width:42px; height:42px; border-radius:50%; background:rgba(255,255,255,0.07); flex-shrink:0; animation:skPulse 1.6s ease-in-out infinite; }
-        .skeleton-lines { display:flex; flex-direction:column; gap:9px; flex:1; }
-        .skeleton-line { height:9px; border-radius:5px; background:rgba(255,255,255,0.07); animation:skPulse 1.6s ease-in-out infinite; }
-        .skeleton-line.short { width:55%; animation-delay:0.2s; }
-        @keyframes skPulse { 0%,100%{opacity:0.20} 50%{opacity:0.60} }
-
-        /* avatar + decoration */
-        .discord-avatar-wrap { position:relative; width:42px; height:42px; flex-shrink:0; }
-        .discord-avatar-wrap img#discord-pfp { width:42px; height:42px; border-radius:50%; object-fit:cover; display:block; box-shadow:0 0 0 2px rgba(255,255,255,0.12); }
+        /* Avatar row */
+        #discord-avatar-row {
+            display: flex; align-items: flex-end; justify-content: space-between;
+            padding: 0 14px; margin-top: -36px; position: relative; z-index: 2;
+        }
+        .discord-avatar-wrap {
+            position: relative; flex-shrink: 0;
+        }
+        .discord-avatar-wrap img#discord-pfp {
+            width: 72px; height: 72px; border-radius: 50%; object-fit: cover;
+            display: block;
+            border: 4px solid rgba(15,15,20,0.95);
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.12);
+        }
         #discord-decoration {
             position: absolute;
             top: 50%; left: 50%;
@@ -323,17 +338,91 @@
         }
         #discord-decoration.show { display: block; }
 
-        .discord-status-dot { position:absolute; bottom:0; right:0; width:12px; height:12px; border-radius:50%; border:2.5px solid rgba(12,12,18,0.95); box-sizing:border-box; z-index:3; }
+        .discord-status-dot { position:absolute; bottom:4px; right:4px; width:14px; height:14px; border-radius:50%; border:3px solid rgba(12,12,18,0.95); box-sizing:border-box; z-index:3; }
         .ds-online    { background:#23a55a; box-shadow:0 0 6px rgba(35,165,90,0.8); }
         .ds-idle      { background:#f0b232; box-shadow:0 0 6px rgba(240,178,50,0.8); }
         .ds-dnd       { background:#f23f43; box-shadow:0 0 6px rgba(242,63,67,0.8); }
-        .ds-offline   { background:transparent; border:2.5px solid #80848e; box-shadow:none; }
+        .ds-offline   { background:transparent; border:3px solid #80848e; box-shadow:none; }
         .ds-streaming { background:#593695; box-shadow:0 0 6px rgba(89,54,149,0.8); }
-        #discord-name { font-weight:600; font-size:clamp(0.82rem,2.2vw,0.90rem); color:rgba(255,255,255,0.88); }
-        #discord-status, #discord-status a { font-size:clamp(0.63rem,1.8vw,0.70rem); margin-top:3px; color:rgba(255,255,255,0.45)!important; text-decoration:none; }
-        #discord-activity { font-size:clamp(0.58rem,1.6vw,0.66rem); margin-top:3px; color:rgba(255,255,255,0.30); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px; }
+
+        /* Discord info body */
+        #discord-info-body { padding: 10px 14px 14px; }
+        #discord-name-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:4px; }
+        #discord-name { font-weight:700; font-size:1.0rem; color:rgba(255,255,255,0.92); }
+        #discord-handle { font-size:0.72rem; color:rgba(255,255,255,0.35); }
+        #discord-status, #discord-status a { font-size:0.72rem; margin-top:4px; color:rgba(255,255,255,0.45)!important; text-decoration:none; }
+        #discord-activity { font-size:0.68rem; margin-top:3px; color:rgba(255,255,255,0.30); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+        /* Discord badges row */
+        #discord-badges { display:flex; align-items:center; gap:5px; flex-wrap:wrap; margin-top:8px; }
+        .discord-badge-img {
+            width: 22px; height: 22px; object-fit: contain;
+            filter: drop-shadow(0 0 4px rgba(255,255,255,0.2));
+            transition: transform 0.2s, filter 0.2s;
+        }
+        .discord-badge-img:hover {
+            transform: scale(1.25) translateY(-2px);
+            filter: drop-shadow(0 0 8px rgba(255,255,255,0.5));
+        }
+
+        /* Discord Nitro divider */
+        #discord-divider { height:1px; background:rgba(255,255,255,0.06); margin:10px 0; }
+
         .ds-online { animation: dsPulse 2.4s ease-in-out infinite; }
         @keyframes dsPulse { 0%,100%{box-shadow:0 0 4px rgba(35,165,90,0.55)} 50%{box-shadow:0 0 10px rgba(35,165,90,0.95)} }
+
+        /* ── Roblox card ── */
+        .roblox-card {
+            background: rgba(10,10,14,0.85);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 14px; overflow: hidden;
+            width: 100%; max-width: 480px;
+        }
+        #roblox-banner {
+            width: 100%; height: 60px;
+            background: linear-gradient(135deg, #1a0a0a 0%, #2a0a0a 50%, #1a0505 100%);
+            position: relative;
+        }
+        #roblox-avatar-row {
+            display: flex; align-items: flex-end; justify-content: space-between;
+            padding: 0 14px; margin-top: -28px; position: relative; z-index: 2;
+        }
+        #roblox-pfp-wrap { position: relative; }
+        #roblox-pfp {
+            width: 60px; height: 60px; border-radius: 10px; object-fit: cover;
+            border: 3px solid rgba(10,10,14,0.95);
+            background: rgba(255,255,255,0.05);
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.10);
+            display: block;
+        }
+        #roblox-pfp-skeleton {
+            width: 60px; height: 60px; border-radius: 10px;
+            background: rgba(255,255,255,0.07); animation: skPulse 1.6s ease-in-out infinite;
+            border: 3px solid rgba(10,10,14,0.95);
+        }
+        #roblox-online-dot {
+            position: absolute; bottom: 2px; right: 2px;
+            width: 12px; height: 12px; border-radius: 50%;
+            background: #23a55a; border: 2.5px solid rgba(10,10,14,0.95);
+            box-shadow: 0 0 6px rgba(35,165,90,0.8);
+            display: none;
+        }
+        #roblox-info-body { padding: 8px 14px 14px; }
+        #roblox-name { font-weight: 700; font-size: 0.96rem; color: rgba(255,255,255,0.90); }
+        #roblox-display { font-size: 0.72rem; color: rgba(255,255,255,0.35); margin-top: 2px; }
+        #roblox-stats-row { display:flex; gap:16px; margin-top:10px; }
+        .roblox-stat { display:flex; flex-direction:column; gap:2px; }
+        .roblox-stat-num { font-size:0.82rem; font-weight:700; color:rgba(255,255,255,0.80); }
+        .roblox-stat-lbl { font-size:0.58rem; letter-spacing:1.5px; text-transform:uppercase; color:rgba(255,255,255,0.28); }
+        #roblox-logo-row { display:flex; align-items:center; gap:6px; }
+        #roblox-logo {
+            display:flex; align-items:center; gap:5px;
+            font-size:0.68rem; letter-spacing:1.5px; font-weight:700;
+            color:rgba(255,255,255,0.20); text-decoration:none;
+            transition: color 0.2s;
+        }
+        #roblox-logo:hover { color:rgba(255,255,255,0.55); }
+        #roblox-logo svg { width:14px; height:14px; fill:currentColor; }
 
         /* ── Skills ── */
         .skills-grid { display:flex; flex-wrap:wrap; gap:7px; margin-top:4px; }
@@ -445,9 +534,10 @@
             flex:1; background:rgba(0,0,0,0.28); border:1px solid rgba(255,255,255,0.07);
             border-radius:12px; padding:14px 10px; text-align:center;
             backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
-            transition:transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s; cursor:default;
+            transition:box-shadow 0.22s ease, border-color 0.22s; cursor:default;
+            position: relative; overflow: hidden;
         }
-        .stat-card:hover { transform:translateY(-4px) scale(1.03); box-shadow:0 10px 32px rgba(0,0,0,0.45); border-color:rgba(255,255,255,0.14)!important; }
+        .stat-card:hover { box-shadow:0 10px 32px rgba(0,0,0,0.45); border-color:rgba(255,255,255,0.14)!important; }
         .stat-card:active { transform:scale(0.97); }
         .stat-num { font-size:clamp(1.1rem,4vw,1.4rem); font-weight:700; color:rgba(255,255,255,0.85); letter-spacing:-0.5px; transition:text-shadow 0.4s; }
         .stat-card:hover .stat-num { text-shadow:0 0 18px rgba(255,255,255,0.45), 0 0 40px rgba(255,255,255,0.18); }
@@ -1131,7 +1221,8 @@
 
     <!-- OVERVIEW -->
     <div class="tab-panel active" id="panel-overview">
-        <div class="glass-card hero-card" style="text-align:center;padding:22px;overflow:hidden;">
+        <div class="glass-card hero-card tilt-card" style="text-align:center;padding:22px;overflow:hidden;">
+            <div class="tilt-shine"></div>
 
             <!-- ── Hero text ── -->
             <div id="hero-text" style="padding:10px 0 6px;">
@@ -1157,16 +1248,32 @@
                     </div>
                 </div>
 
-                <!-- Discord real card -->
-                <div class="discord-real" id="discord-card">
-                    <div class="discord-avatar-wrap">
-                        <img id="discord-pfp" alt="Discord PFP">
-                        <!-- decoration overlaid on avatar -->
-                        <img id="discord-decoration" alt="">
-                        <div class="discord-status-dot ds-offline" id="discord-dot"></div>
+                <!-- Discord real card — expanded -->
+                <div class="discord-real tilt-card" id="discord-card">
+                    <div class="tilt-shine"></div>
+                    <!-- Banner -->
+                    <div id="discord-banner">
+                        <img id="discord-banner-img" alt="" style="display:none;" onerror="this.style.display='none'">
+                        <div id="discord-banner-overlay"></div>
                     </div>
-                    <div style="text-align:left;min-width:0;flex:1;">
-                        <div id="discord-name"></div>
+
+                    <!-- Avatar row -->
+                    <div id="discord-avatar-row">
+                        <div class="discord-avatar-wrap">
+                            <img id="discord-pfp" alt="Discord PFP">
+                            <img id="discord-decoration" alt="">
+                            <div class="discord-status-dot ds-offline" id="discord-dot"></div>
+                        </div>
+                        <!-- Badges top-right -->
+                        <div id="discord-badges" style="margin-bottom:6px;"></div>
+                    </div>
+
+                    <!-- Info body -->
+                    <div id="discord-info-body">
+                        <div id="discord-name-row">
+                            <div id="discord-name"></div>
+                            <div id="discord-handle"></div>
+                        </div>
                         <div id="discord-status"></div>
                         <div id="discord-activity"></div>
                     </div>
@@ -1188,17 +1295,47 @@
 
         </div>
 
+        <!-- Roblox Profile Card -->
+        <div class="roblox-card glass-card tilt-card" style="padding:0;overflow:hidden;">
+            <div class="tilt-shine"></div>
+            <div id="roblox-banner"></div>
+            <div id="roblox-avatar-row">
+                <div id="roblox-pfp-wrap">
+                    <div id="roblox-pfp-skeleton"></div>
+                    <img id="roblox-pfp" alt="Roblox avatar" style="display:none;"
+                         onerror="this.style.display='none';document.getElementById('roblox-pfp-skeleton').style.display='block';">
+                    <div id="roblox-online-dot"></div>
+                </div>
+                <a id="roblox-logo" href="https://www.roblox.com/users/748831508/profile" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 6l5.5 20L26 21.5 20.5 1.5z"/></svg>
+                    ROBLOX
+                </a>
+            </div>
+            <div id="roblox-info-body">
+                <div id="roblox-name">Loading...</div>
+                <div id="roblox-display"></div>
+                <div id="roblox-stats-row">
+                    <div class="roblox-stat"><div class="roblox-stat-num" id="roblox-friends">—</div><div class="roblox-stat-lbl">Friends</div></div>
+                    <div class="roblox-stat"><div class="roblox-stat-num" id="roblox-following">—</div><div class="roblox-stat-lbl">Following</div></div>
+                    <div class="roblox-stat"><div class="roblox-stat-num" id="roblox-followers">—</div><div class="roblox-stat-lbl">Followers</div></div>
+                </div>
+            </div>
+        </div>
+
         <!-- Stats -->
         <div class="stats-row">
-            <div class="stat-card">
+            <div class="stat-card tilt-card">
+                <div class="tilt-shine"></div>
                 <div class="stat-num"><span class="visit-count-val">—</span></div>
                 <div class="stat-lbl">Visitors</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card tilt-card">
+                <div class="tilt-shine"></div>
                 <div class="stat-num" id="repo-count-num">—</div>
                 <div class="stat-lbl">Public Repos</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card tilt-card">
+                <div class="tilt-shine"></div>
                 <div class="stat-num">2+</div>
                 <div class="stat-lbl">Years</div>
             </div>
@@ -1207,7 +1344,8 @@
 
     <!-- ABOUT -->
     <div class="tab-panel" id="panel-about">
-        <div class="glass-card">
+        <div class="glass-card tilt-card">
+            <div class="tilt-shine"></div>
             <div class="section-label">who i am</div>
             <p class="bio-text">
                 Hey, I'm Francisco — a CS student with a passion for building things that feel alive.
@@ -1240,7 +1378,8 @@
 
     <!-- CONTACT -->
     <div class="tab-panel" id="panel-contact">
-        <div class="glass-card">
+        <div class="glass-card tilt-card">
+            <div class="tilt-shine"></div>
             <div class="section-label">reach me at</div>
             <div class="email-row">
                 <i class="fas fa-envelope"></i>
@@ -1685,29 +1824,114 @@
 })();
 </script>
 
-<!-- ── 2. Discord ── -->
+<!-- ── 2. Discord (expanded card) ── -->
 <script>
 (function () {
     var ID   = '748831508776878110';
     var USER = 'shub.is.a.sailor';
     var DISP = 'Francisco';
-    var skEl  = document.getElementById('discord-skeleton');
-    var cEl   = document.getElementById('discord-card');
-    var pfp   = document.getElementById('discord-pfp');
-    var nmEl  = document.getElementById('discord-name');
-    var stEl  = document.getElementById('discord-status');
-    var acEl  = document.getElementById('discord-activity');
-    var dotEl = document.getElementById('discord-dot');
+    var skEl    = document.getElementById('discord-skeleton');
+    var cEl     = document.getElementById('discord-card');
+    var pfp     = document.getElementById('discord-pfp');
+    var nmEl    = document.getElementById('discord-name');
+    var handleEl= document.getElementById('discord-handle');
+    var stEl    = document.getElementById('discord-status');
+    var acEl    = document.getElementById('discord-activity');
+    var dotEl   = document.getElementById('discord-dot');
+    var badgesEl= document.getElementById('discord-badges');
+    var bannerImg= document.getElementById('discord-banner-img');
+    var bannerDiv= document.getElementById('discord-banner');
+    var decoEl  = document.getElementById('discord-decoration');
     if (!skEl || !cEl) return;
+
     var SC = {online:'ds-online',idle:'ds-idle',dnd:'ds-dnd',offline:'ds-offline',streaming:'ds-streaming'};
-    var SL = {online:'Online',idle:'Idle',dnd:'Do Not Disturb',offline:'Offline',streaming:'Live'};
+    var SL = {online:'Online',idle:'Idle',dnd:'Do Not Disturb',offline:'Offline',streaming:'🔴 Live'};
+    var STATUS_COLORS = {online:'#23a55a',idle:'#f0b232',dnd:'#f23f43',offline:'#80848e',streaming:'#593695'};
+
+    // Badge URLs from Discord CDN
+    var BADGE_MAP = {
+        'active_developer':   'https://cdn.discordapp.com/badge-icons/6bdc42827a38498929a4920da12695d9.png',
+        'staff':              'https://cdn.discordapp.com/badge-icons/5e74e9b61934fc1f67c2da7e5be1f9c7.png',
+        'partner':            'https://cdn.discordapp.com/badge-icons/3f9748e53446a137a052f3454e2de41e.png',
+        'hypesquad':          'https://cdn.discordapp.com/badge-icons/bf01d1073931f921909045f3a39fd264.png',
+        'bug_hunter_level_1': 'https://cdn.discordapp.com/badge-icons/2717692c7dca7289b35297368a940dd0.png',
+        'bug_hunter_level_2': 'https://cdn.discordapp.com/badge-icons/848f79194d4be5ff5f81505cbd0ce1e6.png',
+        'hypesquad_online_house_1': 'https://cdn.discordapp.com/badge-icons/8a88d63823d8a71cd5e390baa45efa02.png',
+        'hypesquad_online_house_2': 'https://cdn.discordapp.com/badge-icons/011940fd013da3f7fb926e4a1cd2e618.png',
+        'hypesquad_online_house_3': 'https://cdn.discordapp.com/badge-icons/3aa41de486fa12454c3761e8e223442e.png',
+        'premium_early_supporter': 'https://cdn.discordapp.com/badge-icons/7060786766c9c840eb3019e725d2b358.png',
+        'verified_developer': 'https://cdn.discordapp.com/badge-icons/6df5892e0f35b051f8b61eace34f4967.png',
+        'certified_moderator': 'https://cdn.discordapp.com/badge-icons/fee1624003e46d1b35a6ae7d2b33c6d8.png',
+        'nitro':              'https://cdn.discordapp.com/badge-icons/2ba85e8026a8614b640c2837bcdfe21b.png',
+    };
+
+    var FLAG_BITS = {
+        'staff':1,'partner':2,'hypesquad':4,'bug_hunter_level_1':8,
+        'hypesquad_online_house_1':64,'hypesquad_online_house_2':128,'hypesquad_online_house_3':256,
+        'premium_early_supporter':512,'verified_developer':131072,'certified_moderator':262144,
+        'bug_hunter_level_2':16384,'active_developer':4194304
+    };
+
+    function renderBadges(flags, premiumType) {
+        if (!badgesEl) return;
+        badgesEl.innerHTML = '';
+        var shown = [];
+        Object.keys(FLAG_BITS).forEach(function(k) {
+            if ((flags & FLAG_BITS[k]) && BADGE_MAP[k]) shown.push(k);
+        });
+        if (premiumType && premiumType > 0) shown.unshift('nitro');
+        shown.forEach(function(k) {
+            var img = document.createElement('img');
+            img.src = BADGE_MAP[k];
+            img.className = 'discord-badge-img';
+            img.title = k.replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});
+            img.alt = img.title;
+            badgesEl.appendChild(img);
+        });
+    }
+
     function render(av, data) {
+        // Avatar
         pfp.src = av;
-        pfp.onerror = function(){ pfp.style.background='linear-gradient(135deg,#5865F2,#7289da)'; pfp.removeAttribute('src'); };
+        pfp.style.display = 'block';
+        pfp.onerror = function(){ pfp.style.cssText='background:linear-gradient(135deg,#5865F2,#7289da);border-radius:50%;width:72px;height:72px;'; };
+
+        // Banner
+        var u = data && data.discord_user;
+        if (u && u.banner) {
+            var ext = u.banner.startsWith('a_') ? 'gif' : 'webp';
+            var bUrl = 'https://cdn.discordapp.com/banners/'+ID+'/'+u.banner+'.'+ext+'?size=480';
+            bannerImg.src = bUrl;
+            bannerImg.style.display = 'block';
+        } else if (u && u.banner_color) {
+            bannerDiv.style.background = u.banner_color;
+        }
+
+        // Decoration
+        if (decoEl && u && u.avatar_decoration_data && u.avatar_decoration_data.asset) {
+            var durl = 'https://cdn.discordapp.com/avatar-decoration-presets/'+u.avatar_decoration_data.asset+'.png?size=96&passthrough=true';
+            decoEl.src = durl; decoEl.style.display = 'block';
+            decoEl.onerror = function(){ decoEl.style.display='none'; };
+        }
+
+        // Name
+        var displayName = (u && u.global_name) || DISP;
+        nmEl.textContent = displayName;
+        if (handleEl) handleEl.textContent = '@' + USER;
+
+        // Status
         var s = (data && data.discord_status) || 'offline';
         dotEl.className = 'discord-status-dot ' + (SC[s] || 'ds-offline');
-        nmEl.textContent = (data && data.discord_user && data.discord_user.global_name) || DISP;
-        stEl.innerHTML = '<a href="https://discord.com/users/'+ID+'" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;">'+(SL[s]||'Offline')+' · @'+USER+'</a>';
+        var color = STATUS_COLORS[s] || STATUS_COLORS.offline;
+        if (stEl) {
+            stEl.innerHTML = '<span style="display:inline-flex;align-items:center;gap:5px;">'
+                + '<span style="width:8px;height:8px;border-radius:50%;background:'+color+';display:inline-block;flex-shrink:0;"></span>'
+                + '<span>' + (SL[s]||'Offline') + '</span>'
+                + '<a href="https://discord.com/users/'+ID+'" target="_blank" rel="noopener" style="color:rgba(255,255,255,0.22);text-decoration:none;font-size:0.62rem;transition:color 0.2s;" onmouseover="this.style.color=\'rgba(255,255,255,0.65)\'" onmouseout="this.style.color=\'rgba(255,255,255,0.22)\'">· open profile</a>'
+                + '</span>';
+        }
+
+        // Activity
         var acts = (data && data.activities) || [], txt = '';
         for (var i=0; i<acts.length; i++) {
             var a=acts[i];
@@ -1716,9 +1940,16 @@
             if (a.type===4 && a.state && !txt) txt=a.state;
         }
         if (acEl) acEl.textContent = txt;
+
+        // Badges
+        var flags = (u && u.public_flags) || 0;
+        var premium = (u && u.premium_type) || 0;
+        renderBadges(flags, premium);
+
         skEl.style.display = 'none';
         cEl.classList.add('loaded');
     }
+
     var defAv = 'https://cdn.discordapp.com/embed/avatars/'+(parseInt(ID.slice(-4))%6)+'.png';
     var done = false;
     var ft = setTimeout(function(){ if(!done){done=true;render(defAv,null);} }, 4000);
@@ -1727,12 +1958,92 @@
         .then(function(j){
             clearTimeout(ft); if(done) return; done=true;
             var d=j&&j.data, u=d&&d.discord_user, av=defAv;
-            if(u&&u.avatar) av='https://cdn.discordapp.com/avatars/'+ID+'/'+u.avatar+(u.avatar.startsWith('a_')?'.gif':'.webp')+'?size=128';
+            if(u&&u.avatar) av='https://cdn.discordapp.com/avatars/'+ID+'/'+u.avatar+(u.avatar.startsWith('a_')?'.gif':'.webp')+'?size=256';
             render(av,d);
         })
         .catch(function(){ clearTimeout(ft); if(!done){done=true;render(defAv,null);} });
 })();
 </script>
+
+<!-- ── 2b. Roblox Profile ── -->
+<script>
+(function() {
+    var ROBLOX_ID = 748831508; // Using discord ID as placeholder — replace with actual Roblox ID
+    var nameEl   = document.getElementById('roblox-name');
+    var dispEl   = document.getElementById('roblox-display');
+    var pfpEl    = document.getElementById('roblox-pfp');
+    var pfpSkel  = document.getElementById('roblox-pfp-skeleton');
+    var friendsEl   = document.getElementById('roblox-friends');
+    var followingEl = document.getElementById('roblox-following');
+    var followersEl = document.getElementById('roblox-followers');
+    var onlineDot   = document.getElementById('roblox-online-dot');
+
+    function fmt(n) {
+        if (n >= 1000000) return (n/1000000).toFixed(1)+'M';
+        if (n >= 1000) return (n/1000).toFixed(1)+'K';
+        return n.toString();
+    }
+
+    // Proxy via allorigins to avoid CORS
+    function rblx(path) {
+        return fetch('https://corsproxy.io/?url='+encodeURIComponent('https://users.roblox.com'+path))
+            .then(function(r){ return r.json(); });
+    }
+
+    // Fetch user info
+    rblx('/v1/users/'+ROBLOX_ID)
+        .then(function(d) {
+            if (nameEl) nameEl.textContent = d.name || 'Unknown';
+            if (dispEl && d.displayName && d.displayName !== d.name)
+                dispEl.textContent = d.displayName;
+        }).catch(function(){
+            if (nameEl) nameEl.textContent = 'ZetsuoNoShub';
+        });
+
+    // Fetch avatar headshot
+    fetch('https://corsproxy.io/?url='+encodeURIComponent('https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds='+ROBLOX_ID+'&size=150x150&format=Png'))
+        .then(function(r){ return r.json(); })
+        .then(function(d) {
+            var url = d.data && d.data[0] && d.data[0].imageUrl;
+            if (url && pfpEl && pfpSkel) {
+                pfpEl.src = url;
+                pfpEl.onload = function() { pfpEl.style.display='block'; pfpSkel.style.display='none'; };
+                pfpEl.onerror = function() { pfpSkel.style.display='block'; };
+            }
+        }).catch(function(){});
+
+    // Friends count
+    fetch('https://corsproxy.io/?url='+encodeURIComponent('https://friends.roblox.com/v1/users/'+ROBLOX_ID+'/friends/count'))
+        .then(function(r){ return r.json(); })
+        .then(function(d){ if(friendsEl&&d.count!=null) friendsEl.textContent=fmt(d.count); })
+        .catch(function(){});
+
+    // Followers count
+    fetch('https://corsproxy.io/?url='+encodeURIComponent('https://friends.roblox.com/v1/users/'+ROBLOX_ID+'/followers/count'))
+        .then(function(r){ return r.json(); })
+        .then(function(d){ if(followersEl&&d.count!=null) followersEl.textContent=fmt(d.count); })
+        .catch(function(){});
+
+    // Following count
+    fetch('https://corsproxy.io/?url='+encodeURIComponent('https://friends.roblox.com/v1/users/'+ROBLOX_ID+'/followings/count'))
+        .then(function(r){ return r.json(); })
+        .then(function(d){ if(followingEl&&d.count!=null) followingEl.textContent=fmt(d.count); })
+        .catch(function(){});
+
+    // Presence
+    fetch('https://corsproxy.io/?url='+encodeURIComponent('https://presence.roblox.com/v1/presence/users'), {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({userIds:[ROBLOX_ID]})
+    }).then(function(r){ return r.json(); })
+      .then(function(d) {
+          var u = d.userPresences && d.userPresences[0];
+          if (u && u.userPresenceType > 0 && onlineDot) onlineDot.style.display = 'block';
+      }).catch(function(){});
+})();
+</script>
+
+
 
 <!-- ── 3. GitHub repos ── -->
 <script>
@@ -2280,7 +2591,91 @@ document.addEventListener('DOMContentLoaded', function () {
 })();
 </script>
 
-<!-- \u2500\u2500 7. Dynamic player-height padding fix \u2500\u2500 -->
+<!-- ── 8. 3D Gravity Tilt Effect ── -->
+<script>
+(function() {
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+    var MAX_TILT = 10; // degrees
+    var SCALE    = 1.025;
+    var PERSPECTIVE = 1000;
+
+    function initTilt(el) {
+        var shine = el.querySelector('.tilt-shine');
+        var rect, rafId;
+
+        function onMove(e) {
+            if (!rect) rect = el.getBoundingClientRect();
+            var x = e.clientX - rect.left;
+            var y = e.clientY - rect.top;
+            var cx = rect.width  / 2;
+            var cy = rect.height / 2;
+            var rotY =  ((x - cx) / cx) * MAX_TILT;
+            var rotX = -((y - cy) / cy) * MAX_TILT;
+
+            cancelAnimationFrame(rafId);
+            rafId = requestAnimationFrame(function() {
+                el.style.transform =
+                    'perspective('+PERSPECTIVE+'px) rotateX('+rotX+'deg) rotateY('+rotY+'deg) scale('+SCALE+')';
+                el.style.boxShadow =
+                    (rotY * 0.8)+'px '+(rotX * 0.8)+'px 28px rgba(0,0,0,0.55), '
+                    + '0 0 0 1px rgba(255,255,255,0.08)';
+                if (shine) {
+                    var px = (x / rect.width)  * 100;
+                    var py = (y / rect.height) * 100;
+                    shine.style.background = 'radial-gradient(circle at '+px+'% '+py+'%, rgba(255,255,255,0.13) 0%, transparent 65%)';
+                }
+            });
+        }
+
+        function onEnter() {
+            rect = el.getBoundingClientRect();
+            el.style.transition = 'transform 0.08s ease-out, box-shadow 0.08s ease-out';
+        }
+
+        function onLeave() {
+            cancelAnimationFrame(rafId);
+            el.style.transition = 'transform 0.5s cubic-bezier(0.23,1,0.32,1), box-shadow 0.5s cubic-bezier(0.23,1,0.32,1)';
+            el.style.transform  = 'perspective('+PERSPECTIVE+'px) rotateX(0deg) rotateY(0deg) scale(1)';
+            el.style.boxShadow  = '';
+            if (shine) shine.style.background = '';
+            rect = null;
+        }
+
+        el.addEventListener('mouseenter', onEnter);
+        el.addEventListener('mousemove',  onMove);
+        el.addEventListener('mouseleave', onLeave);
+    }
+
+    // Apply to all tilt-card elements (including dynamically loaded ones)
+    function applyAll() {
+        document.querySelectorAll('.tilt-card').forEach(function(el) {
+            if (el._tiltInit) return;
+            el._tiltInit = true;
+            initTilt(el);
+        });
+    }
+
+    // Run on DOM ready and observe for new cards
+    document.addEventListener('DOMContentLoaded', applyAll);
+    applyAll();
+
+    // Re-apply after discord/roblox cards load
+    var observer = new MutationObserver(function(muts) {
+        muts.forEach(function(m) {
+            m.addedNodes.forEach && m.addedNodes.forEach(function(n) {
+                if (n.classList && n.classList.contains('tilt-card')) {
+                    if (!n._tiltInit) { n._tiltInit = true; initTilt(n); }
+                }
+            });
+        });
+        applyAll(); // catch class adds
+    });
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+})();
+</script>
+
+
 <script>
 (function(){
     var content = document.getElementById('main-content');
