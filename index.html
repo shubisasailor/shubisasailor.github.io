@@ -365,6 +365,46 @@
             filter: drop-shadow(0 0 8px rgba(255,255,255,0.5));
         }
 
+        /* Custom badges */
+        .custom-badge {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .custom-badge img {
+            width: 22px; height: 22px; object-fit: contain;
+            transition: transform 0.2s;
+            cursor: default;
+        }
+        .custom-badge:hover img {
+            transform: scale(1.25) translateY(-2px);
+        }
+        /* Tooltip */
+        .custom-badge::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%) scale(0.85);
+            background: rgba(10,10,14,0.95);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.80);
+            font-size: 0.60rem;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            padding: 3px 8px;
+            border-radius: 6px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.18s, transform 0.18s;
+            z-index: 99;
+        }
+        .custom-badge:hover::after {
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+        }
+
         /* Discord Nitro divider */
         #discord-divider { height:1px; background:rgba(255,255,255,0.06); margin:10px 0; }
 
@@ -510,7 +550,8 @@
         .social-links a { display:flex; align-items:center; justify-content:center; width:22px; height:22px; text-decoration:none; transition:0.25s; -webkit-tap-highlight-color:transparent; }
         .social-links i { color:rgba(255,255,255,0.50); font-size:17px; transition:0.25s; }
         .social-links a:hover { transform:scale(1.22); }
-        .social-links a:hover i { color:white; filter:drop-shadow(0 0 8px rgba(255,255,255,0.7)); }
+        .social-links a:hover i { color:white; }
+        .social-links a:hover svg { fill:white !important; }
         .social-links:hover a { opacity:0.38; transform:scale(0.95); }
         .social-links a:hover { opacity:1!important; transform:scale(1.22)!important; }
 
@@ -542,6 +583,14 @@
         .stat-num { font-size:clamp(1.1rem,4vw,1.4rem); font-weight:700; color:rgba(255,255,255,0.85); letter-spacing:-0.5px; transition:text-shadow 0.4s; }
         .stat-card:hover .stat-num { text-shadow:0 0 18px rgba(255,255,255,0.45), 0 0 40px rgba(255,255,255,0.18); }
         .stat-lbl { font-size:clamp(0.50rem,1.4vw,0.56rem); color:rgba(255,255,255,0.30); letter-spacing:2px; text-transform:uppercase; margin-top:4px; }
+        /* Views pill variant */
+        .views-pill-card {
+            display:flex; flex-direction:row !important; align-items:center;
+            justify-content:flex-start; gap:6px; padding:10px 14px !important;
+            background:rgba(0,0,0,0.55) !important;
+            border-radius:20px !important;
+        }
+        .views-pill-card .stat-lbl { margin-top:0; margin-left:2px; }
 
         /* ── Contact ── */
         .email-row { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:12px 14px; font-size:clamp(0.76rem,2.1vw,0.84rem); color:rgba(255,255,255,0.55); word-break:break-all; }
@@ -1265,7 +1314,18 @@
                             <div class="discord-status-dot ds-offline" id="discord-dot"></div>
                         </div>
                         <!-- Badges top-right -->
-                        <div id="discord-badges" style="margin-bottom:6px;"></div>
+                        <div id="discord-badges" style="margin-bottom:6px;">
+                            <!-- Custom badges — images go in media/badges/ folder -->
+                            <div class="custom-badge" data-tip="Owner">
+                                <img src="media/badges/owner.png" alt="Owner" onerror="this.parentElement.style.display='none'">
+                            </div>
+                            <div class="custom-badge" data-tip="Developer">
+                                <img src="media/badges/developer.png" alt="Developer" onerror="this.parentElement.style.display='none'">
+                            </div>
+                            <div class="custom-badge" data-tip="Early Supporter">
+                                <img src="media/badges/early-supporter.png" alt="Early Supporter" onerror="this.parentElement.style.display='none'">
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Info body -->
@@ -1290,43 +1350,22 @@
                     <a href="https://youtube.com/@Tarnished_Shubh"    target="_blank" rel="noopener"><i class="fab fa-youtube"></i></a>
                     <a href="https://x.com/ZetsuoNoShub"              target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i></a>
                     <a href="/cdn-cgi/l/email-protection#6d1e05180f431d1f020b081e1e0402030c012d0a000c0401430e0200" rel="noopener"><i class="fas fa-envelope"></i></a>
+                    <a href="https://www.roblox.com/users/748831508/profile" target="_blank" rel="noopener" title="Roblox">
+                        <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="width:17px;height:17px;fill:rgba(255,255,255,0.50);transition:fill 0.25s;"><path d="M6 6l5.5 20L26 21.5 20.5 1.5z"/></svg>
+                    </a>
                 </div>
             </div>
 
-        </div>
-
-        <!-- Roblox Profile Card -->
-        <div class="roblox-card glass-card tilt-card" style="padding:0;overflow:hidden;">
-            <div class="tilt-shine"></div>
-            <div id="roblox-banner"></div>
-            <div id="roblox-avatar-row">
-                <div id="roblox-pfp-wrap">
-                    <div id="roblox-pfp-skeleton"></div>
-                    <img id="roblox-pfp" alt="Roblox avatar" style="display:none;"
-                         onerror="this.style.display='none';document.getElementById('roblox-pfp-skeleton').style.display='block';">
-                    <div id="roblox-online-dot"></div>
-                </div>
-                <a id="roblox-logo" href="https://www.roblox.com/users/748831508/profile" target="_blank" rel="noopener">
-                    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M6 6l5.5 20L26 21.5 20.5 1.5z"/></svg>
-                    ROBLOX
-                </a>
-            </div>
-            <div id="roblox-info-body">
-                <div id="roblox-name">Loading...</div>
-                <div id="roblox-display"></div>
-                <div id="roblox-stats-row">
-                    <div class="roblox-stat"><div class="roblox-stat-num" id="roblox-friends">—</div><div class="roblox-stat-lbl">Friends</div></div>
-                    <div class="roblox-stat"><div class="roblox-stat-num" id="roblox-following">—</div><div class="roblox-stat-lbl">Following</div></div>
-                    <div class="roblox-stat"><div class="roblox-stat-num" id="roblox-followers">—</div><div class="roblox-stat-lbl">Followers</div></div>
-                </div>
-            </div>
         </div>
 
         <!-- Stats -->
         <div class="stats-row">
-            <div class="stat-card tilt-card">
+            <div class="stat-card tilt-card views-pill-card">
                 <div class="tilt-shine"></div>
-                <div class="stat-num"><span class="visit-count-val">—</span></div>
+                <div style="display:flex;align-items:center;gap:7px;">
+                    <span style="font-size:0.75rem;opacity:0.55;">👁</span>
+                    <span class="stat-num" style="font-size:clamp(0.88rem,3vw,1.05rem);"><span class="visit-count-val">—</span></span>
+                </div>
                 <div class="stat-lbl">Visitors</div>
             </div>
             <div class="stat-card tilt-card">
@@ -2647,29 +2686,31 @@ document.addEventListener('DOMContentLoaded', function () {
         el.addEventListener('mouseleave', onLeave);
     }
 
-    // Apply to all tilt-card elements (including dynamically loaded ones)
+    // Apply tilt ONLY to cards inside the overview panel
     function applyAll() {
-        document.querySelectorAll('.tilt-card').forEach(function(el) {
+        var overviewPanel = document.getElementById('panel-overview');
+        if (!overviewPanel) return;
+        overviewPanel.querySelectorAll('.tilt-card').forEach(function(el) {
             if (el._tiltInit) return;
             el._tiltInit = true;
             initTilt(el);
         });
     }
 
-    // Run on DOM ready and observe for new cards
     document.addEventListener('DOMContentLoaded', applyAll);
     applyAll();
 
-    // Re-apply after discord/roblox cards load
     var observer = new MutationObserver(function(muts) {
         muts.forEach(function(m) {
             m.addedNodes.forEach && m.addedNodes.forEach(function(n) {
-                if (n.classList && n.classList.contains('tilt-card')) {
+                var overviewPanel = document.getElementById('panel-overview');
+                if (!overviewPanel) return;
+                if (n.classList && n.classList.contains('tilt-card') && overviewPanel.contains(n)) {
                     if (!n._tiltInit) { n._tiltInit = true; initTilt(n); }
                 }
             });
         });
-        applyAll(); // catch class adds
+        applyAll();
     });
     observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
 })();
