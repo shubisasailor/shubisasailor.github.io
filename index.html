@@ -1911,10 +1911,10 @@
             bannerDiv.style.background = u.banner_color;
         }
 
-        if (decoEl && u && u.avatar_decoration_data && u.avatar_decoration_data.asset && !decoEl.src) {
-            decoEl.src = 'https://cdn.discordapp.com/avatar-decoration-presets/' + u.avatar_decoration_data.asset + '.png?size=96&passthrough=true';
-            decoEl.style.display = 'block';
+        if (decoEl && u && u.avatar_decoration_data && u.avatar_decoration_data.asset && !decoEl.getAttribute('src')) {
             decoEl.onerror = function(){ decoEl.style.display='none'; };
+            decoEl.onload  = function(){ decoEl.style.display='block'; };
+            decoEl.src = 'https://cdn.discordapp.com/avatar-decoration-presets/' + u.avatar_decoration_data.asset + '.png?size=96&passthrough=true';
         }
 
         if (nmEl) nmEl.textContent = (u && u.global_name) || DISP;
@@ -2143,8 +2143,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    function initEJS(){ if(typeof emailjs!=='undefined') emailjs.init({publicKey:'ANitUhHu4kV4-js93'}); }
-    initEJS(); window.addEventListener('load', initEJS);
+    if (typeof emailjs !== 'undefined') { emailjs.init({publicKey:'ANitUhHu4kV4-js93'}); }
 
     var main    = document.getElementById('main-content');
     var overlay = document.getElementById('overlay');
