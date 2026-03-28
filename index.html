@@ -2719,15 +2719,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // Touch / mobile devices: skip entirely — no hover, no tilt
     if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
-    var MAX_TILT    = 10;    // degrees
-    var PERSPECTIVE = 1000;
-    var STIFFNESS   = 0.12;  // spring pull (higher = snappier)
-    var DAMPING     = 0.75;  // velocity decay (lower = more bounce)
+    var MAX_TILT    = 7;      // reduced — subtle feels more premium than aggressive
+    var PERSPECTIVE = 900;    // slightly tighter perspective for more depth
+    var STIFFNESS   = 0.055;  // low = lazy/fluid lag behind cursor
+    var DAMPING     = 0.82;   // high = smooth decay, barely any bounce
 
     function initTilt(el) {
         var shine = el.querySelector('.tilt-shine');
 
-        // Spring state (what's currently rendered)
+        // Spring state
         var curX = 0, curY = 0, velX = 0, velY = 0;
         var curScale = 1, curAlpha = 0;
         var shineX = 50, shineY = 50;
@@ -2744,38 +2744,43 @@ document.addEventListener('DOMContentLoaded', function () {
             el.style.transition = 'none';
             el.style.transform  =
                 'perspective(' + PERSPECTIVE + 'px)'
-                + ' rotateX(' + curX.toFixed(3) + 'deg)'
-                + ' rotateY(' + curY.toFixed(3) + 'deg)'
-                + ' scale('   + curScale.toFixed(4) + ')';
+                + ' rotateX(' + curX.toFixed(4) + 'deg)'
+                + ' rotateY(' + curY.toFixed(4) + 'deg)'
+                + ' scale('   + curScale.toFixed(5) + ')';
             el.style.boxShadow =
-                (curY * 0.7).toFixed(2) + 'px ' + (curX * 0.7).toFixed(2) + 'px 32px rgba(0,0,0,0.50),'
-                + '0 0 0 1px rgba(255,255,255,0.08)';
+                (curY * 0.6).toFixed(2) + 'px ' + (curX * 0.6).toFixed(2) + 'px 40px rgba(0,0,0,0.45),'
+                + '0 0 0 1px rgba(255,255,255,0.07)';
             if (shine) {
-                shine.style.opacity    = curAlpha.toFixed(3);
+                shine.style.opacity    = curAlpha.toFixed(4);
                 shine.style.background =
-                    'radial-gradient(circle at ' + shineX.toFixed(1) + '% ' + shineY.toFixed(1) + '%,'
-                    + 'rgba(255,255,255,0.14) 0%,transparent 65%)';
+                    'radial-gradient(circle at ' + shineX.toFixed(2) + '% ' + shineY.toFixed(2) + '%,'
+                    + 'rgba(255,255,255,0.11) 0%,transparent 60%)';
             }
         }
 
         function tick() {
+            // Rotation spring — lazy, fluid
             var dX = tgtX - curX, dY = tgtY - curY;
             velX = (velX + dX * STIFFNESS) * DAMPING;
             velY = (velY + dY * STIFFNESS) * DAMPING;
             curX += velX;
             curY += velY;
-            curScale += (tgtScale - curScale) * 0.10;
-            curAlpha += (tgtAlpha - curAlpha) * 0.10;
-            shineX   += (tgtShineX - shineX)  * 0.12;
-            shineY   += (tgtShineY - shineY)  * 0.12;
+
+            // Scale lerps faster than rotation — card "pops" up quick, tilts slowly
+            curScale += (tgtScale - curScale) * 0.07;
+
+            // Shine slightly faster than rotation so it feels responsive
+            curAlpha += (tgtAlpha - curAlpha) * 0.08;
+            shineX   += (tgtShineX - shineX)  * 0.10;
+            shineY   += (tgtShineY - shineY)  * 0.10;
 
             applyDOM();
 
             var settled =
-                Math.abs(dX) < 0.003 && Math.abs(dY) < 0.003 &&
-                Math.abs(velX) < 0.003 && Math.abs(velY) < 0.003 &&
-                Math.abs(tgtScale - curScale) < 0.0003 &&
-                Math.abs(tgtAlpha - curAlpha) < 0.003;
+                Math.abs(dX) < 0.002 && Math.abs(dY) < 0.002 &&
+                Math.abs(velX) < 0.002 && Math.abs(velY) < 0.002 &&
+                Math.abs(tgtScale - curScale) < 0.0002 &&
+                Math.abs(tgtAlpha - curAlpha) < 0.002;
 
             if (settled) {
                 curX = tgtX; curY = tgtY; velX = 0; velY = 0;
@@ -2800,9 +2805,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         el.addEventListener('mouseenter', function(e) {
-            rect      = el.getBoundingClientRect();
-            tgtScale  = 1.025;
-            tgtAlpha  = 1;
+            rect     = el.getBoundingClientRect();
+            tgtScale = 1.018;  // very subtle lift — less is more
+            tgtAlpha = 1;
             setTarget(e.clientX, e.clientY);
             startLoop();
         });
@@ -2817,9 +2822,8 @@ document.addEventListener('DOMContentLoaded', function () {
             rect     = null;
             tgtScale = 1.0;
             tgtAlpha = 0;
-            // tgtX / tgtY intentionally NOT reset —
-            // card freezes at its last angle until next hover
-            startLoop(); // animate scale + shine out only
+            // tgtX / tgtY stay frozen — card holds angle until next hover
+            startLoop();
         });
     }
 
