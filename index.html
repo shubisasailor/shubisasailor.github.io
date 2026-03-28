@@ -6,24 +6,25 @@
     <title>Francisco | Portfolio</title>
 
     <meta property="og:type"        content="website">
-    <meta property="og:url"         content="https:
+    <meta property="og:url"         content="https://francisco.is-a.dev/">
     <meta property="og:title"       content="Francisco | Portfolio">
     <meta property="og:description" content="High school student · Software & game developer · Open to work">
-    <meta property="og:image"       content="https:
+    <meta property="og:image"       content="https://francisco.is-a.dev/media/og.png">
     <meta property="og:image:width"  content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card"        content="summary_large_image">
     <meta name="twitter:site"        content="@ZetsuoNoShub">
     <meta name="twitter:title"       content="Francisco | Portfolio">
     <meta name="twitter:description" content="High school student · Software & game developer · Open to work">
-    <meta name="twitter:image"       content="https:
+    <meta name="twitter:image"       content="https://francisco.is-a.dev/media/og.png">
     <meta name="theme-color"         content="#000000">
-    <link rel="preconnect" href="https:
-    <link href="https:
-    <link rel="stylesheet" href="https:
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="css/main.css">
 
-    <script src="https:
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
     <script>
     if (sessionStorage.getItem('site_entered')) {
@@ -128,17 +129,6 @@
             display: flex; flex-direction: column;
             align-items: center; gap: 20px;
             width: min(300px, 84vw); text-align: center;
-        }
-        #loader-mono {
-            font-size: clamp(2.4rem, 10vw, 3.2rem);
-            font-weight: 700; letter-spacing: 10px;
-            color: rgba(255,255,255,0.15);
-            text-transform: uppercase;
-            animation: monoGlow 3s ease-in-out infinite;
-        }
-        @keyframes monoGlow {
-            0%,100% { color: rgba(255,255,255,0.15); text-shadow: none; }
-            50%      { color: rgba(255,255,255,0.75); text-shadow: 0 0 40px rgba(255,255,255,0.22), 0 0 80px rgba(255,255,255,0.08); }
         }
         #enter-prompt {
             font-size: clamp(0.72rem, 2.8vw, 0.88rem);
@@ -1082,7 +1072,6 @@
 <div id="overlay">
     <div id="overlay-bg"></div>
     <div id="loader-card">
-        <div id="loader-mono">F</div>
         <div id="enter-prompt">click to enter</div>
     </div>
 </div>
@@ -1339,13 +1328,12 @@
             <div class="card-divider" style="margin:16px 0 14px;"></div>
 
             <div class="social-links" style="margin-top:0;padding-bottom:18px;">
-                <a href="https:
-                <a href="https:
-                <a href="https:
-                <a href="https:
-                <a href="https:
-                <a href="https:
-                <a href="/cdn-cgi/l/email-protection#f182998493df81839e97948282989e9f909db1969c90989ddf929e9c" rel="noopener"><i class="fas fa-envelope"></i></a>
+                <a href="https://github.com/ZetsuoNoShub" target="_blank" rel="noopener"><i class="fab fa-github"></i></a>
+                <a href="https://discord.com/users/748831508776878110" target="_blank" rel="noopener"><i class="fab fa-discord"></i></a>
+                <a href="https://twitter.com/ZetsuoNoShub" target="_blank" rel="noopener"><i class="fab fa-twitter"></i></a>
+                <a href="https://www.youtube.com/@ZetsuoNoShub" target="_blank" rel="noopener"><i class="fab fa-youtube"></i></a>
+                <a href="https://open.spotify.com" target="_blank" rel="noopener"><i class="fab fa-spotify"></i></a>
+                <a href="mailto:shub.professional@gmail.com" rel="noopener"><i class="fas fa-envelope"></i></a>
             </div>
 
         </div>
@@ -1842,19 +1830,19 @@
     var COLORS = {online:'#23a55a',idle:'#f0b232',dnd:'#f23f43',offline:'#80848e',streaming:'#593695'};
 
     var BADGE_MAP = {
-        'active_developer':        'https:
-        'staff':                   'https:
-        'partner':                 'https:
-        'hypesquad':               'https:
-        'bug_hunter_level_1':      'https:
-        'bug_hunter_level_2':      'https:
-        'hypesquad_online_house_1':'https:
-        'hypesquad_online_house_2':'https:
-        'hypesquad_online_house_3':'https:
-        'premium_early_supporter': 'https:
-        'verified_developer':      'https:
-        'certified_moderator':     'https:
-        'nitro':                   'https:
+        'active_developer':        'https://cdn.discordapp.com/badge-icons/6bdc42827a38498929a4920da12695d9.png',
+        'staff':                   'https://cdn.discordapp.com/badge-icons/5e74e9b61934fc1f67c2da7e51e97e2a.png',
+        'partner':                 'https://cdn.discordapp.com/badge-icons/3f9748e53446a137a052f3454e2de41e.png',
+        'hypesquad':               'https://cdn.discordapp.com/badge-icons/bf01d1073931f921909045f3a39fd264.png',
+        'bug_hunter_level_1':      'https://cdn.discordapp.com/badge-icons/2717692c7dca7289b35297368a940dd0.png',
+        'bug_hunter_level_2':      'https://cdn.discordapp.com/badge-icons/848f79194d4be5ff5f81505cbd0ce1e6.png',
+        'hypesquad_online_house_1':'https://cdn.discordapp.com/badge-icons/8a88d63823d8a71cd5e390baa45efa02.png',
+        'hypesquad_online_house_2':'https://cdn.discordapp.com/badge-icons/011940fd013082d85d96680709bab528.png',
+        'hypesquad_online_house_3':'https://cdn.discordapp.com/badge-icons/3aa41de486fa12454c3761e8e223442e.png',
+        'premium_early_supporter': 'https://cdn.discordapp.com/badge-icons/early_supporter.png',
+        'verified_developer':      'https://cdn.discordapp.com/badge-icons/6df5892970f2e147baf3e7b29bcae4f3.png',
+        'certified_moderator':     'https://cdn.discordapp.com/badge-icons/fee1624003e2fee35cb398e125dc479d.png',
+        'nitro':                   'https://cdn.discordapp.com/badge-icons/2ba85e8026a8614b640c2837bcdfe21b.png',
     };
     var FLAG_BITS = {
         'staff':1,'partner':2,'hypesquad':4,'bug_hunter_level_1':8,
@@ -1897,7 +1885,7 @@
         });
     }
 
-    var avatarUrl = 'https:
+    var avatarUrl = 'https://cdn.discordapp.com/embed/avatars/0.png';
     var avatarSet = false;
 
     function applyData(d) {
@@ -1906,7 +1894,7 @@
         if (!avatarSet && u && u.avatar) {
             avatarSet = true;
             var ext = u.avatar.startsWith('a_') ? 'gif' : 'webp';
-            avatarUrl = 'https:
+            avatarUrl = 'https://cdn.discordapp.com/avatars/' + ID + '/' + u.avatar + '.' + ext + '?size=128';
             var heroSkel = document.getElementById('hero-pfp-skeleton');
             if (pfp) {
                 pfp.src = avatarUrl;
@@ -1918,14 +1906,14 @@
 
         if (u && u.banner && bannerImg && !bannerImg.src.includes('cdn.discordapp.com/banners')) {
             var bext = u.banner.startsWith('a_') ? 'gif' : 'webp';
-            bannerImg.src = 'https:
+            bannerImg.src = 'https://cdn.discordapp.com/banners/' + ID + '/' + u.banner + '.' + bext + '?size=480';
             bannerImg.style.display = 'block';
         } else if (u && u.banner_color && bannerDiv) {
             bannerDiv.style.background = u.banner_color;
         }
 
         if (decoEl && u && u.avatar_decoration_data && u.avatar_decoration_data.asset && !decoEl.src) {
-            decoEl.src = 'https:
+            decoEl.src = 'https://cdn.discordapp.com/avatar-decoration-presets/' + u.avatar_decoration_data.asset + '.png?size=96&passthrough=true';
             decoEl.style.display = 'block';
             decoEl.onerror = function(){ decoEl.style.display='none'; };
         }
@@ -1948,7 +1936,7 @@
                 + '<span style="width:8px;height:8px;border-radius:50%;background:'+color
                 +   ';box-shadow:0 0 5px '+color+';display:inline-block;flex-shrink:0;"></span>'
                 + '<span style="font-size:0.70rem;color:rgba(255,255,255,0.42);">'+(SL[s]||'Offline')+ago+'</span>'
-                + '<a href="https:
+                + '<a href="https://discord.com/users/748831508776878110"
                 +   ' style="color:rgba(255,255,255,0.22);text-decoration:none;font-size:0.62rem;transition:color 0.2s;"'
                 +   ' onmouseover="this.style.color=\'rgba(255,255,255,0.65)\'"'
                 +   ' onmouseout="this.style.color=\'rgba(255,255,255,0.22)\'">· @'+USER+'</a>'
@@ -1982,7 +1970,7 @@
     var ws, hbInterval, reconnectTimer;
 
     function connect() {
-        ws = new WebSocket('wss:
+        ws = new WebSocket('wss://api.lanyard.rest/socket');
 
         ws.onopen = function() {
             clearTimeout(reconnectTimer);
@@ -2019,7 +2007,7 @@
         };
     }
 
-    fetch('https:
+    fetch('https://api.lanyard.rest/v1/users/748831508776878110')
         .then(function(r){ return r.ok ? r.json() : Promise.reject(); })
         .then(function(j){ applyData(j && j.data); })
         .catch(function(){
@@ -2051,7 +2039,7 @@
     }
     window._fetchRepos = function() {
         if(fetched) return; fetched=true;
-        fetch('https:
+        fetch('https://api.github.com/users/ZetsuoNoShub/repos?per_page=100&sort=updated')
             .then(function(r){ if(!r.ok) throw r; return r.json(); })
             .then(function(repos){
                 repos=repos.filter(function(r){return !r.fork;}).sort(function(a,b){return b.stargazers_count!==a.stargazers_count?b.stargazers_count-a.stargazers_count:new Date(b.updated_at)-new Date(a.updated_at);});
@@ -2061,12 +2049,12 @@
             })
             .catch(function(){
                 listEl.innerHTML='';
-                var fb=document.createElement('a');fb.className='repo-card';fb.href='https:
+                var fb=document.createElement('a');fb.className='repo-card';fb.href='https://github.com/ZetsuoNoShub';fb.target='_blank';fb.rel='noopener noreferrer';
                 fb.innerHTML='<div class="repo-left"><i class="fab fa-github repo-icon"></i><span class="repo-name">View GitHub profile</span></div><i class="fas fa-arrow-up-right-from-square repo-arrow"></i>';
                 listEl.appendChild(fb);
             });
     };
-    fetch('https:
+    fetch('https://api.github.com/users/ZetsuoNoShub')
         .then(function(r){return r.json();})
         .then(function(d){
             if(cntEl && d.public_repos){
@@ -2354,7 +2342,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var alreadyCounted = sessionStorage.getItem('pf_counted');
 
         if(alreadyCounted){
-            fetchWithTimeout('https:
+            fetchWithTimeout('https://api.countapi.xyz/get/francisco-portfolio-v1/visitors', {}, 4000)
                 .then(function(r){ return r.json(); })
                 .then(function(d){ if(d && d.count) showCount(d.count + BASE_SEED); else lsFallback(false); })
                 .catch(function(){ lsFallback(false); });
@@ -2362,7 +2350,7 @@ document.addEventListener('DOMContentLoaded', function () {
             sessionStorage.setItem('pf_counted', '1');
 
             lsFallback(true);
-            fetchWithTimeout('https:
+            fetchWithTimeout('https://api.countapi.xyz/hit/francisco-portfolio-v1/visitors', {}, 4000)
                 .then(function(r){ return r.json(); })
                 .then(function(d){
                     if(d && d.count){
@@ -2701,4 +2689,11 @@ document.addEventListener('DOMContentLoaded', function () {
         var polls = 0;
         var iv = setInterval(function(){
             updatePadding();
-            if (++polls > 20) clea
+            if (++polls > 20) clearInterval(iv);
+        }, 200);
+    }
+})();
+</script>
+
+</body>
+</html>
