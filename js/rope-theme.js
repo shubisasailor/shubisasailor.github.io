@@ -10,12 +10,12 @@
 (function () {
 
     // ── Rope physics constants ─────────────────────────────────────
-    var ROPE_SEGMENTS = 14;
-    var SEGMENT_LEN   = 12;
+    var ROPE_SEGMENTS = 22;
+    var SEGMENT_LEN   = 8;
     var BALL_RADIUS   = 9;
-    var GRAVITY       = 0.90;
-    var DAMPING       = 0.76;
-    var STIFFNESS     = 0.88;
+    var GRAVITY       = 0.55;
+    var DAMPING       = 0.82;
+    var STIFFNESS     = 0.72;
     var MAX_PULL      = window.innerHeight * 0.45; // max pull = 45% of screen height
 
     // ── Theme detection ───────────────────────────────────────────
@@ -344,7 +344,7 @@
             var n=nodes[i], vx=(n.x-n.px)*DAMPING, vy=(n.y-n.py)*DAMPING;
             n.px=n.x; n.py=n.y; n.x+=vx; n.y+=vy+GRAVITY;
         }
-        for (var it=0; it<8; it++) {
+        for (var it=0; it<16; it++) {
             nodes[0].x=anchorX; nodes[0].y=anchorY;
             for (var j=0; j<nodes.length-1; j++) {
                 var a2=nodes[j], b=nodes[j+1];
@@ -385,9 +385,13 @@
         var ropeColor=getRopeColor(), ballColor=getBallColor();
         ctx.beginPath();
         ctx.moveTo(nodes[0].x,nodes[0].y);
-        for (var i=1; i<nodes.length; i++) ctx.lineTo(nodes[i].x,nodes[i].y);
-        ctx.lineTo(ballX,ballY);
-        ctx.strokeStyle=ropeColor; ctx.lineWidth=1.8; ctx.stroke();
+        for (var i=1; i<nodes.length-1; i++) {
+            var mx=(nodes[i].x+nodes[i+1].x)/2, my=(nodes[i].y+nodes[i+1].y)/2;
+            ctx.quadraticCurveTo(nodes[i].x,nodes[i].y,mx,my);
+        }
+        var last=nodes[nodes.length-1];
+        ctx.quadraticCurveTo(last.x,last.y,ballX,ballY);
+        ctx.strokeStyle=ropeColor; ctx.lineWidth=1.6; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.stroke();
 
         if (dragging && tuggedDown > 8) {
             // Red glow as ball approaches 50% screen height trigger
@@ -396,10 +400,14 @@
             var t = Math.min(tuggedDown / Math.max(1, triggerY - restY), 1);
             ctx.beginPath();
             ctx.moveTo(nodes[0].x,nodes[0].y);
-            for (var i2=1; i2<nodes.length; i2++) ctx.lineTo(nodes[i2].x,nodes[i2].y);
-            ctx.lineTo(ballX,ballY);
+            for (var i2=1; i2<nodes.length-1; i2++) {
+                var mx2=(nodes[i2].x+nodes[i2+1].x)/2, my2=(nodes[i2].y+nodes[i2+1].y)/2;
+                ctx.quadraticCurveTo(nodes[i2].x,nodes[i2].y,mx2,my2);
+            }
+            var last2=nodes[nodes.length-1];
+            ctx.quadraticCurveTo(last2.x,last2.y,ballX,ballY);
             ctx.strokeStyle='rgba(255,'+Math.round(80*(1-t))+','+Math.round(80*(1-t))+','+(t*0.50)+')';
-            ctx.lineWidth=1.8; ctx.stroke();
+            ctx.lineWidth=1.6; ctx.lineCap='round'; ctx.stroke();
         }
 
         var glowRgb=isDark?'255,255,255':'0,0,0';

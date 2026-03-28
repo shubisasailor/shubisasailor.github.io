@@ -4,6 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Francisco | Portfolio</title>
+    <!-- Open Graph / Link Preview -->
+    <meta property="og:type"        content="website">
+    <meta property="og:url"         content="https://cswith.me/">
+    <meta property="og:title"       content="Francisco | Portfolio">
+    <meta property="og:description" content="High school student · Software & game developer · Open to work">
+    <meta property="og:image"       content="https://cswith.me/media/preview.png">
+    <meta property="og:image:width"  content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:site"        content="@ZetsuoNoShub">
+    <meta name="twitter:title"       content="Francisco | Portfolio">
+    <meta name="twitter:description" content="High school student · Software & game developer · Open to work">
+    <meta name="twitter:image"       content="https://cswith.me/media/preview.png">
+    <meta name="theme-color"         content="#000000">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -41,6 +55,9 @@
             padding: 0;
         }
 
+
+        /* ── No image drag ── */
+        img, video { -webkit-user-drag: none; user-drag: none; draggable: false; }
         /* ── No zoom / no select globally ── */
         * {
             -webkit-user-select: none !important;
@@ -1142,7 +1159,7 @@
             <div class="ov-bar"></div><div class="ov-bar"></div><div class="ov-bar"></div>
             <div class="ov-bar"></div>
         </div>
-        <img id="ov-cover" src="media/music-cover/cry.jpg"
+        <img draggable="false" id="ov-cover" src="media/music-cover/cry.jpg"
              onerror="this.style.display='none';document.getElementById('ov-cover-fb').style.display='flex';" alt="">
         <div id="ov-cover-fb">&#9834;</div>
         <div id="ov-title">&#8212;</div>
@@ -1222,7 +1239,7 @@
     <div id="pc-player-bar">
         <!-- Left: cover + meta -->
         <div id="sp-left">
-            <img id="sp-cover" src="media/music-cover/cry.jpg" alt=""
+            <img draggable="false" id="sp-cover" src="media/music-cover/cry.jpg" alt=""
                  onerror="this.style.display='none'">
             <div style="min-width:0;">
                 <div id="sp-title">—</div>
@@ -1276,7 +1293,7 @@
                 <div id="player-expand-hint" style="text-align:center;font-size:0.44rem;letter-spacing:2px;color:rgba(255,255,255,0.14);margin-bottom:4px;pointer-events:none;">DOUBLE-CLICK TO EXPAND</div>
                 <div style="display:flex;align-items:center;gap:12px;">
                     <div class="music-cover-wrap" id="mobile-cover-wrap">
-                        <img id="music-cover" src="media/music-cover/cry.jpg" alt="Cover"
+                        <img draggable="false" id="music-cover" src="media/music-cover/cry.jpg" alt="Cover"
                              onerror="this.style.display='none';document.getElementById('cover-fallback').style.display='flex';">
                         <div id="cover-fallback">&#9834;</div>
                     </div>
@@ -1335,9 +1352,9 @@
                     <!-- Skeleton shown while loading -->
                     <div class="hero-pfp-skeleton" id="hero-pfp-skeleton"></div>
                     <!-- Real pfp -->
-                    <img id="discord-pfp" alt="PFP" style="display:none;"
+                    <img draggable="false" id="discord-pfp" alt="PFP" style="display:none;"
                          onerror="this.style.display='none';document.getElementById('hero-pfp-skeleton').style.display='block';">
-                    <img id="discord-decoration" alt="" style="display:none;">
+                    <img draggable="false" id="discord-decoration" alt="" style="display:none;">
                     <div class="discord-status-dot ds-offline" id="discord-dot"></div>
                 </div>
 
@@ -1347,19 +1364,19 @@
                     <div id="discord-badges" style="margin-bottom:8px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
                         <div style="display:inline-flex;align-items:center;gap:3px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:99px;padding:4px 10px;">
                             <div class="custom-badge" data-tip="Owner" style="width:18px;height:18px;">
-                                <img src="media/badges/owner.png" alt="" style="display:none;width:18px;height:18px;"
+                                <img draggable="false" src="media/badges/owner.png" alt="" style="display:none;width:18px;height:18px;"
                                      onload="this.style.display='block';this.nextElementSibling.style.display='none';"
                                      onerror="this.style.display='none';">
                                 <span class="badge-fallback" style="font-size:13px;">👑</span>
                             </div>
                             <div class="custom-badge" data-tip="Developer" style="width:18px;height:18px;">
-                                <img src="media/badges/developer.png" alt="" style="display:none;width:18px;height:18px;"
+                                <img draggable="false" src="media/badges/developer.png" alt="" style="display:none;width:18px;height:18px;"
                                      onload="this.style.display='block';this.nextElementSibling.style.display='none';"
                                      onerror="this.style.display='none';">
                                 <span class="badge-fallback" style="font-size:13px;">⚙️</span>
                             </div>
                             <div class="custom-badge" data-tip="Early Supporter" style="width:18px;height:18px;">
-                                <img src="media/badges/early-supporter.png" alt="" style="display:none;width:18px;height:18px;"
+                                <img draggable="false" src="media/badges/early-supporter.png" alt="" style="display:none;width:18px;height:18px;"
                                      onload="this.style.display='block';this.nextElementSibling.style.display='none';"
                                      onerror="this.style.display='none';">
                                 <span class="badge-fallback" style="font-size:13px;">🌟</span>
@@ -1407,7 +1424,7 @@
                 <a href="https://x.com/ZetsuoNoShub"                   target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i></a>
                 <a href="https://pinterest.com/shubflexin"             target="_blank" rel="noopener"><i class="fab fa-pinterest"></i></a>
                 <a href="https://linkedin.com/in/c3o"                  target="_blank" rel="noopener"><i class="fab fa-linkedin"></i></a>
-                <a href="/cdn-cgi/l/email-protection#6d1e05180f431d1f020b081e1e0402030c012d0a000c0401430e0200" rel="noopener"><i class="fas fa-envelope"></i></a>
+                <a href="mailto:shub.professional@gmail.com" rel="noopener"><i class="fas fa-envelope"></i></a>
             </div>
 
         </div>
