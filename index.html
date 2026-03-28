@@ -1325,21 +1325,6 @@
         <div class="glass-card hero-card tilt-card" style="padding:22px;overflow:visible;">
             <div class="tilt-shine"></div>
 
-            <!-- ── Views counter — left edge of card ── -->
-            <div style="
-                position:absolute;
-                left:0; top:50%;
-                transform:translateY(-50%) rotate(-90deg) translateX(-50%);
-                transform-origin:left center;
-                display:flex; align-items:center; gap:5px;
-                pointer-events:none;
-                white-space:nowrap;
-            ">
-                <span style="opacity:0.30;font-size:0.58rem;">👁</span>
-                <span class="visit-count-val" style="font-size:0.58rem;color:rgba(255,255,255,0.30);font-weight:600;letter-spacing:1px;"></span>
-                <span style="font-size:0.52rem;color:rgba(255,255,255,0.18);letter-spacing:1.5px;text-transform:uppercase;">views</span>
-            </div>
-
             <!-- ── Main profile row: big pfp left, info right ── -->
             <div class="hero-profile-row">
 
@@ -1395,19 +1380,25 @@
                     <!-- Subtitle -->
                     <p class="subtitle-text" style="margin-top:4px;">CS Student</p>
 
-                    <!-- Discord status line -->
-                    <div id="discord-status" style="margin-top:6px;"></div>
-                    <div id="discord-activity" style="margin-top:2px;font-size:0.67rem;color:rgba(255,255,255,0.30);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;"></div>
-
+                    <!-- Discord activity only (no status pill) -->
+                    <div id="discord-status" style="display:none;"></div>
+                    <div id="discord-activity" style="margin-top:6px;font-size:0.67rem;color:rgba(255,255,255,0.38);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;"></div>
 
                 </div>
+            </div>
+
+            <!-- ── Views counter — bottom-left of card ── -->
+            <div style="position:absolute;bottom:14px;left:18px;display:flex;align-items:center;gap:5px;pointer-events:none;">
+                <span style="font-size:0.62rem;opacity:0.30;">👁</span>
+                <span class="visit-count-val" style="font-size:0.62rem;color:rgba(255,255,255,0.30);font-weight:600;letter-spacing:0.5px;"></span>
+                <span style="font-size:0.55rem;color:rgba(255,255,255,0.18);letter-spacing:1.5px;text-transform:uppercase;">views</span>
             </div>
 
             <!-- ── Divider ── -->
             <div class="card-divider" style="margin:16px 0 14px;"></div>
 
             <!-- ── Social links ── -->
-            <div class="social-links" style="margin-top:0;">
+            <div class="social-links" style="margin-top:0;padding-bottom:18px;">
                 <a href="https://discord.com/users/748831508776878110" target="_blank" rel="noopener"><i class="fab fa-discord"></i></a>
                 <a href="https://instagram.com/shub.is.a.sailor/"      target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
                 <a href="https://youtube.com/@Tarnished_Shubh"         target="_blank" rel="noopener"><i class="fab fa-youtube"></i></a>
