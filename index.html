@@ -386,12 +386,7 @@
         }
         #discord-decoration.show { display: block; }
 
-        .discord-status-dot { position:absolute; bottom:2px; right:2px; width:14px; height:14px; border-radius:50%; border:3px solid rgba(12,12,18,0.95); box-sizing:border-box; z-index:3; }
-        .ds-online    { background:#23a55a; box-shadow:0 0 6px rgba(35,165,90,0.8); }
-        .ds-idle      { background:#f0b232; box-shadow:0 0 6px rgba(240,178,50,0.8); }
-        .ds-dnd       { background:#f23f43; box-shadow:0 0 6px rgba(242,63,67,0.8); }
-        .ds-offline   { background:transparent; border:3px solid #80848e; box-shadow:none; }
-        .ds-streaming { background:#593695; box-shadow:0 0 6px rgba(89,54,149,0.8); }
+        #discord-dot { position:absolute; bottom:1px; right:1px; z-index:4; overflow:visible; }
 
         #discord-info-body { padding: 10px 14px 14px; }
         #discord-name-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:4px; }
@@ -469,8 +464,6 @@
 
         #discord-divider { height:1px; background:rgba(255,255,255,0.06); margin:10px 0; }
 
-        .ds-online { animation: dsPulse 2.4s ease-in-out infinite; }
-        @keyframes dsPulse { 0%,100%{box-shadow:0 0 4px rgba(35,165,90,0.55)} 50%{box-shadow:0 0 10px rgba(35,165,90,0.95)} }
 
         .skills-grid { display:flex; flex-wrap:wrap; gap:7px; margin-top:4px; }
         .skill-tag {
@@ -1273,7 +1266,7 @@
 
                     <img draggable="false" id="discord-pfp" alt="PFP" style="display:none;">
                     <img draggable="false" id="discord-decoration" alt="" style="display:none;">
-                    <div class="discord-status-dot ds-offline" id="discord-dot"></div>
+                    <svg id="discord-dot" width="16" height="16" viewBox="0 0 16 16" style="position:absolute;bottom:1px;right:1px;z-index:4;" xmlns="http://www.w3.org/2000/svg"></svg>
                 </div>
 
                 <div class="hero-info-col">
@@ -1892,7 +1885,7 @@
 
     function applyData(d) {
         if (!d) {
-            if (dotEl) dotEl.className = 'discord-status-dot ds-offline';
+            if (dotEl) dotEl.innerHTML = '<rect x="0" y="0" width="16" height="16" rx="8" fill="rgba(12,12,18,0.95)"/><circle cx="8" cy="8" r="3.5" stroke="#80848e" stroke-width="1.5" fill="none"/>';
             if (stEl)  stEl.style.display = '';
             return;
         }
@@ -1928,10 +1921,19 @@
         if (handleEl) handleEl.textContent = '@' + USER;
 
         var s = (d && d.discord_status) || 'offline';
-        if (dotEl) dotEl.className = 'discord-status-dot ' + (s === 'dnd' ? 'ds-offline' : (SC[s] || 'ds-offline'));
+        if (dotEl) {
+            var DOT_SVG = {
+                online:    '<rect x="0" y="0" width="16" height="16" rx="8" fill="rgba(12,12,18,0.95)"/><circle cx="8" cy="8" r="5" fill="#23a55a"/>',
+                idle:      '<rect x="0" y="0" width="16" height="16" rx="8" fill="rgba(12,12,18,0.95)"/><path fill="#f0b232" d="M8 3a5 5 0 1 0 0 10A3.5 3.5 0 0 1 8 3Z"/>',
+                dnd:       '<rect x="0" y="0" width="16" height="16" rx="8" fill="rgba(12,12,18,0.95)"/><circle cx="8" cy="8" r="5" fill="#f23f43"/><rect x="4.5" y="7.25" width="7" height="1.5" rx="0.75" fill="#fff"/>',
+                offline:   '<rect x="0" y="0" width="16" height="16" rx="8" fill="rgba(12,12,18,0.95)"/><circle cx="8" cy="8" r="3.5" stroke="#80848e" stroke-width="1.5" fill="none"/>',
+                streaming: '<rect x="0" y="0" width="16" height="16" rx="8" fill="rgba(12,12,18,0.95)"/><circle cx="8" cy="8" r="5" fill="#593695"/><polygon points="6,5.5 11,8 6,10.5" fill="#fff"/>'
+            };
+            dotEl.innerHTML = DOT_SVG[s] || DOT_SVG.offline;
+        }
         var color = COLORS[s] || COLORS.offline;
 
-        if (s !== 'offline') lastSeenOnlineTs = Date.now();
+        if (s === 'online' || s === 'idle' || s === 'streaming') lastSeenOnlineTs = Date.now();
 
         var acts = (d && d.activities) || [];
 
