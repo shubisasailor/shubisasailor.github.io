@@ -10,8 +10,8 @@
 (function () {
 
     // ── Rope physics constants ─────────────────────────────────────
-    var ROPE_SEGMENTS = 22;
-    var SEGMENT_LEN   = 8;
+    var ROPE_SEGMENTS = 16;
+    var SEGMENT_LEN   = 7;
     var BALL_RADIUS   = 9;
     var GRAVITY       = 0.55;
     var DAMPING       = 0.82;
@@ -197,13 +197,13 @@
     //  ROPE PHYSICS
     // ══════════════════════════════════════════════════════════════
 
-    var ANCHOR_RIGHT = 38;   // px from right edge
-    var ANCHOR_TOP   = 0;    // px from top
+    var ANCHOR_RIGHT = 28;   // px from right edge — aligns with nav right edge
+    var ANCHOR_TOP   = 2;    // px from top
 
     var canvas, ctx, hitDiv;
     var W, H, anchorX, anchorY;
     var nodes = [];
-    var ballX = 0, ballY = 0, ballVx = 0, ballVy = 0;
+    var ballX = -9999, ballY = -9999, ballVx = 0, ballVy = 0;
     var dragging   = false;
     var didToggle  = false;
     var tuggedDown = 0;   // how far down the ball has been pulled
@@ -365,6 +365,7 @@
 
     function draw() {
         ctx.clearRect(0,0,W,H);
+        if (ballX < -100) return; // not yet initialised
         ctx.globalAlpha = 1;
         ctx.shadowBlur  = 0;
         ctx.strokeStyle = 'transparent';
