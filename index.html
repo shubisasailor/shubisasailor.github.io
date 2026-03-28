@@ -486,58 +486,7 @@
         .ds-online { animation: dsPulse 2.4s ease-in-out infinite; }
         @keyframes dsPulse { 0%,100%{box-shadow:0 0 4px rgba(35,165,90,0.55)} 50%{box-shadow:0 0 10px rgba(35,165,90,0.95)} }
 
-        /* ── Roblox card ── */
-        .roblox-card {
-            background: rgba(10,10,14,0.85);
-            border: 1px solid rgba(255,255,255,0.07);
-            border-radius: 14px; overflow: hidden;
-            width: 100%; max-width: 480px;
-        }
-        #roblox-banner {
-            width: 100%; height: 60px;
-            background: linear-gradient(135deg, #1a0a0a 0%, #2a0a0a 50%, #1a0505 100%);
-            position: relative;
-        }
-        #roblox-avatar-row {
-            display: flex; align-items: flex-end; justify-content: space-between;
-            padding: 0 14px; margin-top: -28px; position: relative; z-index: 2;
-        }
-        #roblox-pfp-wrap { position: relative; }
-        #roblox-pfp {
-            width: 60px; height: 60px; border-radius: 10px; object-fit: cover;
-            border: 3px solid rgba(10,10,14,0.95);
-            background: rgba(255,255,255,0.05);
-            box-shadow: 0 0 0 1px rgba(255,255,255,0.10);
-            display: block;
-        }
-        #roblox-pfp-skeleton {
-            width: 60px; height: 60px; border-radius: 10px;
-            background: rgba(255,255,255,0.07); animation: skPulse 1.6s ease-in-out infinite;
-            border: 3px solid rgba(10,10,14,0.95);
-        }
-        #roblox-online-dot {
-            position: absolute; bottom: 2px; right: 2px;
-            width: 12px; height: 12px; border-radius: 50%;
-            background: #23a55a; border: 2.5px solid rgba(10,10,14,0.95);
-            box-shadow: 0 0 6px rgba(35,165,90,0.8);
-            display: none;
-        }
-        #roblox-info-body { padding: 8px 14px 14px; }
-        #roblox-name { font-weight: 700; font-size: 0.96rem; color: rgba(255,255,255,0.90); }
-        #roblox-display { font-size: 0.72rem; color: rgba(255,255,255,0.35); margin-top: 2px; }
-        #roblox-stats-row { display:flex; gap:16px; margin-top:10px; }
-        .roblox-stat { display:flex; flex-direction:column; gap:2px; }
-        .roblox-stat-num { font-size:0.82rem; font-weight:700; color:rgba(255,255,255,0.80); }
-        .roblox-stat-lbl { font-size:0.58rem; letter-spacing:1.5px; text-transform:uppercase; color:rgba(255,255,255,0.28); }
-        #roblox-logo-row { display:flex; align-items:center; gap:6px; }
-        #roblox-logo {
-            display:flex; align-items:center; gap:5px;
-            font-size:0.68rem; letter-spacing:1.5px; font-weight:700;
-            color:rgba(255,255,255,0.20); text-decoration:none;
-            transition: color 0.2s;
-        }
-        #roblox-logo:hover { color:rgba(255,255,255,0.55); }
-        #roblox-logo svg { width:14px; height:14px; fill:currentColor; }
+
 
         /* ── Skills ── */
         .skills-grid { display:flex; flex-wrap:wrap; gap:7px; margin-top:4px; }
@@ -1967,47 +1916,45 @@
 })();
 </script>
 
-<!-- ── 2. Discord (expanded card) ── -->
+<!-- ── 2. Discord — Lanyard WebSocket (live status) ── -->
 <script>
 (function () {
     var ID   = '748831508776878110';
     var USER = 'shub.is.a.sailor';
     var DISP = 'Francisco';
-    var skEl    = document.getElementById('discord-skeleton');
-    var cEl     = document.getElementById('discord-card');
-    var pfp     = document.getElementById('discord-pfp');
-    var nmEl    = document.getElementById('discord-name');
-    var handleEl= document.getElementById('discord-handle');
-    var stEl    = document.getElementById('discord-status');
-    var acEl    = document.getElementById('discord-activity');
-    var dotEl   = document.getElementById('discord-dot');
-    var badgesEl= document.getElementById('discord-badges');
+
+    var pfp      = document.getElementById('discord-pfp');
+    var nmEl     = document.getElementById('discord-name');
+    var handleEl = document.getElementById('discord-handle');
+    var stEl     = document.getElementById('discord-status');
+    var acEl     = document.getElementById('discord-activity');
+    var dotEl    = document.getElementById('discord-dot');
+    var badgesEl = document.getElementById('discord-badges');
     var bannerImg= document.getElementById('discord-banner-img');
     var bannerDiv= document.getElementById('discord-banner');
-    var decoEl  = document.getElementById('discord-decoration');
-    // skEl/cEl are only present in expanded discord card layout; pfp is always present
+    var decoEl   = document.getElementById('discord-decoration');
+    var skEl     = document.getElementById('discord-skeleton');
+    var cEl      = document.getElementById('discord-card');
 
     var SC = {online:'ds-online',idle:'ds-idle',dnd:'ds-dnd',offline:'ds-offline',streaming:'ds-streaming'};
     var SL = {online:'Online',idle:'Idle',dnd:'Do Not Disturb',offline:'Offline',streaming:'🔴 Live'};
-    var STATUS_COLORS = {online:'#23a55a',idle:'#f0b232',dnd:'#f23f43',offline:'#80848e',streaming:'#593695'};
+    var COLORS = {online:'#23a55a',idle:'#f0b232',dnd:'#f23f43',offline:'#80848e',streaming:'#593695'};
 
-    // Badge URLs from Discord CDN
     var BADGE_MAP = {
-        'active_developer':   'https://cdn.discordapp.com/badge-icons/6bdc42827a38498929a4920da12695d9.png',
-        'staff':              'https://cdn.discordapp.com/badge-icons/5e74e9b61934fc1f67c2da7e5be1f9c7.png',
-        'partner':            'https://cdn.discordapp.com/badge-icons/3f9748e53446a137a052f3454e2de41e.png',
-        'hypesquad':          'https://cdn.discordapp.com/badge-icons/bf01d1073931f921909045f3a39fd264.png',
-        'bug_hunter_level_1': 'https://cdn.discordapp.com/badge-icons/2717692c7dca7289b35297368a940dd0.png',
-        'bug_hunter_level_2': 'https://cdn.discordapp.com/badge-icons/848f79194d4be5ff5f81505cbd0ce1e6.png',
-        'hypesquad_online_house_1': 'https://cdn.discordapp.com/badge-icons/8a88d63823d8a71cd5e390baa45efa02.png',
-        'hypesquad_online_house_2': 'https://cdn.discordapp.com/badge-icons/011940fd013da3f7fb926e4a1cd2e618.png',
-        'hypesquad_online_house_3': 'https://cdn.discordapp.com/badge-icons/3aa41de486fa12454c3761e8e223442e.png',
+        'active_developer':        'https://cdn.discordapp.com/badge-icons/6bdc42827a38498929a4920da12695d9.png',
+        'staff':                   'https://cdn.discordapp.com/badge-icons/5e74e9b61934fc1f67c2da7e5be1f9c7.png',
+        'partner':                 'https://cdn.discordapp.com/badge-icons/3f9748e53446a137a052f3454e2de41e.png',
+        'hypesquad':               'https://cdn.discordapp.com/badge-icons/bf01d1073931f921909045f3a39fd264.png',
+        'bug_hunter_level_1':      'https://cdn.discordapp.com/badge-icons/2717692c7dca7289b35297368a940dd0.png',
+        'bug_hunter_level_2':      'https://cdn.discordapp.com/badge-icons/848f79194d4be5ff5f81505cbd0ce1e6.png',
+        'hypesquad_online_house_1':'https://cdn.discordapp.com/badge-icons/8a88d63823d8a71cd5e390baa45efa02.png',
+        'hypesquad_online_house_2':'https://cdn.discordapp.com/badge-icons/011940fd013da3f7fb926e4a1cd2e618.png',
+        'hypesquad_online_house_3':'https://cdn.discordapp.com/badge-icons/3aa41de486fa12454c3761e8e223442e.png',
         'premium_early_supporter': 'https://cdn.discordapp.com/badge-icons/7060786766c9c840eb3019e725d2b358.png',
-        'verified_developer': 'https://cdn.discordapp.com/badge-icons/6df5892e0f35b051f8b61eace34f4967.png',
-        'certified_moderator': 'https://cdn.discordapp.com/badge-icons/fee1624003e46d1b35a6ae7d2b33c6d8.png',
-        'nitro':              'https://cdn.discordapp.com/badge-icons/2ba85e8026a8614b640c2837bcdfe21b.png',
+        'verified_developer':      'https://cdn.discordapp.com/badge-icons/6df5892e0f35b051f8b61eace34f4967.png',
+        'certified_moderator':     'https://cdn.discordapp.com/badge-icons/fee1624003e46d1b35a6ae7d2b33c6d8.png',
+        'nitro':                   'https://cdn.discordapp.com/badge-icons/2ba85e8026a8614b640c2837bcdfe21b.png',
     };
-
     var FLAG_BITS = {
         'staff':1,'partner':2,'hypesquad':4,'bug_hunter_level_1':8,
         'hypesquad_online_house_1':64,'hypesquad_online_house_2':128,'hypesquad_online_house_3':256,
@@ -2015,9 +1962,25 @@
         'bug_hunter_level_2':16384,'active_developer':4194304
     };
 
+    function timeAgo(ms) {
+        if (!ms) return '';
+        var diff = Date.now() - ms;
+        var sec = Math.floor(diff/1000), min = Math.floor(sec/60),
+            hr  = Math.floor(min/60),   day = Math.floor(hr/24);
+        if (sec < 60)  return 'just now';
+        if (min < 60)  return min + 'm ago';
+        if (hr  < 24)  return hr  + 'h ago';
+        return day + 'd ago';
+    }
+
     function renderBadges(flags, premiumType) {
         if (!badgesEl) return;
-        badgesEl.innerHTML = '';
+        // Keep the pill wrapper HTML — only update img badges inside it
+        // Find the pill div (first child of badgesEl)
+        var pill = badgesEl.querySelector('div');
+        if (!pill) return;
+        // Remove any previously injected discord badge imgs
+        pill.querySelectorAll('.discord-badge-img').forEach(function(el){ el.remove(); });
         var shown = [];
         Object.keys(FLAG_BITS).forEach(function(k) {
             if ((flags & FLAG_BITS[k]) && BADGE_MAP[k]) shown.push(k);
@@ -2027,196 +1990,156 @@
             var img = document.createElement('img');
             img.src = BADGE_MAP[k];
             img.className = 'discord-badge-img';
+            img.style.cssText = 'width:18px;height:18px;object-fit:contain;';
             img.title = k.replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});
             img.alt = img.title;
-            badgesEl.appendChild(img);
+            pill.appendChild(img);
         });
     }
 
-    function render(av, data) {
-        // Avatar - hide skeleton, show pfp
-        var heroSkeleton = document.getElementById('hero-pfp-skeleton');
-        if (heroSkeleton) heroSkeleton.style.display = 'none';
-        if (pfp) {
-            pfp.src = av;
-            pfp.style.display = 'block';
-            pfp.onerror = function(){
-                pfp.style.display = 'none';
-                if (heroSkeleton) heroSkeleton.style.display = 'block';
-            };
+    var avatarUrl = 'https://cdn.discordapp.com/embed/avatars/'+(parseInt(ID.slice(-4))%6)+'.png';
+    var avatarSet = false;
+
+    function applyData(d) {
+        var u = d && d.discord_user;
+
+        // Avatar (only set once to avoid flicker)
+        if (!avatarSet && u && u.avatar) {
+            avatarSet = true;
+            var ext = u.avatar.startsWith('a_') ? 'gif' : 'webp';
+            avatarUrl = 'https://cdn.discordapp.com/avatars/'+ID+'/'+u.avatar+'.'+ext+'?size=256';
+            var heroSkel = document.getElementById('hero-pfp-skeleton');
+            if (pfp) {
+                pfp.src = avatarUrl;
+                pfp.style.display = 'block';
+                if (heroSkel) heroSkel.style.display = 'none';
+                pfp.onerror = function(){ pfp.style.display='none'; if(heroSkel) heroSkel.style.display='block'; };
+            }
         }
 
-        // Banner
-        var u = data && data.discord_user;
-        if (u && u.banner) {
-            var ext = u.banner.startsWith('a_') ? 'gif' : 'webp';
-            var bUrl = 'https://cdn.discordapp.com/banners/'+ID+'/'+u.banner+'.'+ext+'?size=480';
-            bannerImg.src = bUrl;
+        // Banner (once)
+        if (u && u.banner && bannerImg && !bannerImg.src.includes('cdn.discordapp.com/banners')) {
+            var bext = u.banner.startsWith('a_') ? 'gif' : 'webp';
+            bannerImg.src = 'https://cdn.discordapp.com/banners/'+ID+'/'+u.banner+'.'+bext+'?size=480';
             bannerImg.style.display = 'block';
-        } else if (u && u.banner_color) {
+        } else if (u && u.banner_color && bannerDiv) {
             bannerDiv.style.background = u.banner_color;
         }
 
-        // Decoration
-        if (decoEl && u && u.avatar_decoration_data && u.avatar_decoration_data.asset) {
-            var durl = 'https://cdn.discordapp.com/avatar-decoration-presets/'+u.avatar_decoration_data.asset+'.png?size=96&passthrough=true';
-            decoEl.src = durl; decoEl.style.display = 'block';
+        // Decoration (once)
+        if (decoEl && u && u.avatar_decoration_data && u.avatar_decoration_data.asset && !decoEl.src) {
+            decoEl.src = 'https://cdn.discordapp.com/avatar-decoration-presets/'+u.avatar_decoration_data.asset+'.png?size=96&passthrough=true';
+            decoEl.style.display = 'block';
             decoEl.onerror = function(){ decoEl.style.display='none'; };
         }
 
         // Name
-        var displayName = (u && u.global_name) || DISP;
-        nmEl.textContent = displayName;
+        if (nmEl) nmEl.textContent = (u && u.global_name) || DISP;
         if (handleEl) handleEl.textContent = '@' + USER;
 
-        // Status
-        var s = (data && data.discord_status) || 'offline';
-        dotEl.className = 'discord-status-dot ' + (SC[s] || 'ds-offline');
-        var color = STATUS_COLORS[s] || STATUS_COLORS.offline;
+        // ── Status (updates every WS message) ──
+        var s = (d && d.discord_status) || 'offline';
+        if (dotEl) dotEl.className = 'discord-status-dot ' + (SC[s] || 'ds-offline');
+        var color = COLORS[s] || COLORS.offline;
 
-        // timeAgo helper
-        function timeAgo(ms) {
-            if (!ms) return null;
-            var diff = Date.now() - ms;
-            var sec = Math.floor(diff/1000), min = Math.floor(sec/60),
-                hr  = Math.floor(min/60),   day = Math.floor(hr/24);
-            if (sec < 60)  return 'just now';
-            if (min < 60)  return min + 'm ago';
-            if (hr  < 24)  return hr  + 'h ago';
-            return day + 'd ago';
-        }
-
-        // Find last seen timestamp from activities
-        var lastSeenTs = null;
-        var acts = (data && data.activities) || [];
-        acts.forEach(function(a) {
-            if (a.timestamps && a.timestamps.start) lastSeenTs = a.timestamps.start;
-        });
-
-        var ago = (s === 'offline' && lastSeenTs) ? ' · last seen ' + timeAgo(lastSeenTs) : '';
+        // last seen from activity timestamps
+        var acts = (d && d.activities) || [];
+        var lastTs = null;
+        acts.forEach(function(a){ if (a.timestamps && a.timestamps.start) lastTs = a.timestamps.start; });
+        var ago = (s === 'offline' && lastTs) ? ' · last seen ' + timeAgo(lastTs) : '';
 
         if (stEl) {
-            stEl.innerHTML = '<span style="display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap;">'
-                + '<span style="width:8px;height:8px;border-radius:50%;background:'+color+';box-shadow:0 0 5px '+color+';display:inline-block;flex-shrink:0;"></span>'
-                + '<span style="font-size:0.70rem;color:rgba(255,255,255,0.42);">' + (SL[s]||'Offline') + ago + '</span>'
-                + '<a href="https://discord.com/users/'+ID+'" target="_blank" rel="noopener" style="color:rgba(255,255,255,0.22);text-decoration:none;font-size:0.62rem;transition:color 0.2s;" onmouseover="this.style.color=\'rgba(255,255,255,0.65)\'" onmouseout="this.style.color=\'rgba(255,255,255,0.22)\'">· @'+USER+'</a>'
+            stEl.innerHTML =
+                '<span style="display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap;">'
+                + '<span style="width:8px;height:8px;border-radius:50%;background:'+color
+                +   ';box-shadow:0 0 5px '+color+';display:inline-block;flex-shrink:0;"></span>'
+                + '<span style="font-size:0.70rem;color:rgba(255,255,255,0.42);">'+(SL[s]||'Offline')+ago+'</span>'
+                + '<a href="https://discord.com/users/'+ID+'" target="_blank" rel="noopener"'
+                +   ' style="color:rgba(255,255,255,0.22);text-decoration:none;font-size:0.62rem;transition:color 0.2s;"'
+                +   ' onmouseover="this.style.color=\'rgba(255,255,255,0.65)\'"'
+                +   ' onmouseout="this.style.color=\'rgba(255,255,255,0.22)\'">· @'+USER+'</a>'
                 + '</span>';
         }
 
-        // Activity — custom status (type 4), music (type 2), game (type 0), or nothing on fail
+        // ── Activity (updates every WS message) ──
         var txt = '';
-        for (var i=0; i<acts.length; i++) {
-            var a = acts[i];
-            if (a.type === 4 && a.state) { txt = a.state; break; }           // Custom status
+        // Priority: custom status → music → game
+        for (var i = 0; i < acts.length; i++) {
+            if (acts[i].type === 4 && acts[i].state) { txt = acts[i].state; break; }
         }
         if (!txt) {
-            for (var j=0; j<acts.length; j++) {
-                var b = acts[j];
-                if (b.type === 2 && b.details) { txt = '🎵 ' + b.details + (b.state ? ' — ' + b.state : ''); break; }
-                if (b.type === 0 && b.name)    { txt = '🎮 ' + b.name; break; }
+            for (var j = 0; j < acts.length; j++) {
+                if (acts[j].type === 2 && acts[j].details) {
+                    txt = '🎵 ' + acts[j].details + (acts[j].state ? ' — ' + acts[j].state : '');
+                    break;
+                }
+                if (acts[j].type === 0 && acts[j].name) { txt = '🎮 ' + acts[j].name; break; }
             }
         }
-        if (acEl) acEl.textContent = txt; // shows nothing if empty — exactly what you want
+        if (acEl) acEl.textContent = txt;
 
         // Badges
-        var flags = (u && u.public_flags) || 0;
-        var premium = (u && u.premium_type) || 0;
+        var flags   = (u && u.public_flags) || 0;
+        var premium = (u && u.premium_type)  || 0;
         renderBadges(flags, premium);
 
         if (skEl) skEl.style.display = 'none';
-        if (cEl) cEl.classList.add('loaded');
+        if (cEl)  cEl.classList.add('loaded');
     }
 
-    var defAv = 'https://cdn.discordapp.com/embed/avatars/'+(parseInt(ID.slice(-4))%6)+'.png';
-    var done = false;
-    var ft = setTimeout(function(){ if(!done){done=true;render(defAv,null);} }, 4000);
+    // ── Lanyard WebSocket ──────────────────────────────────────────
+    var ws, hbInterval, reconnectTimer;
+
+    function connect() {
+        ws = new WebSocket('wss://api.lanyard.rest/socket');
+
+        ws.onopen = function() {
+            clearTimeout(reconnectTimer);
+        };
+
+        ws.onmessage = function(e) {
+            var msg;
+            try { msg = JSON.parse(e.data); } catch(err) { return; }
+
+            switch (msg.op) {
+                case 1: // Hello — start heartbeat + subscribe
+                    hbInterval = setInterval(function() {
+                        if (ws.readyState === 1) ws.send(JSON.stringify({op:3}));
+                    }, msg.d.heartbeat_interval);
+                    ws.send(JSON.stringify({op:2, d:{subscribe_to_id: ID}}));
+                    break;
+
+                case 0: // Event
+                    if (msg.t === 'INIT_STATE' || msg.t === 'PRESENCE_UPDATE') {
+                        applyData(msg.d);
+                    }
+                    break;
+            }
+        };
+
+        ws.onclose = function() {
+            clearInterval(hbInterval);
+            // Reconnect after 3s
+            reconnectTimer = setTimeout(connect, 3000);
+        };
+
+        ws.onerror = function() {
+            ws.close();
+        };
+    }
+
+    // Fallback: REST fetch first so something shows immediately
     fetch('https://api.lanyard.rest/v1/users/'+ID)
-        .then(function(r){ return r.ok?r.json():Promise.reject(); })
-        .then(function(j){
-            clearTimeout(ft); if(done) return; done=true;
-            var d=j&&j.data, u=d&&d.discord_user, av=defAv;
-            if(u&&u.avatar) av='https://cdn.discordapp.com/avatars/'+ID+'/'+u.avatar+(u.avatar.startsWith('a_')?'.gif':'.webp')+'?size=256';
-            render(av,d);
-        })
-        .catch(function(){ clearTimeout(ft); if(!done){done=true;render(defAv,null);} });
-})();
-</script>
-
-<!-- ── 2b. Roblox Profile ── -->
-<script>
-(function() {
-    var ROBLOX_ID = 748831508; // Using discord ID as placeholder — replace with actual Roblox ID
-    var nameEl   = document.getElementById('roblox-name');
-    var dispEl   = document.getElementById('roblox-display');
-    var pfpEl    = document.getElementById('roblox-pfp');
-    var pfpSkel  = document.getElementById('roblox-pfp-skeleton');
-    var friendsEl   = document.getElementById('roblox-friends');
-    var followingEl = document.getElementById('roblox-following');
-    var followersEl = document.getElementById('roblox-followers');
-    var onlineDot   = document.getElementById('roblox-online-dot');
-
-    function fmt(n) {
-        if (n >= 1000000) return (n/1000000).toFixed(1)+'M';
-        if (n >= 1000) return (n/1000).toFixed(1)+'K';
-        return n.toString();
-    }
-
-    // Proxy via allorigins to avoid CORS
-    function rblx(path) {
-        return fetch('https://corsproxy.io/?url='+encodeURIComponent('https://users.roblox.com'+path))
-            .then(function(r){ return r.json(); });
-    }
-
-    // Fetch user info
-    rblx('/v1/users/'+ROBLOX_ID)
-        .then(function(d) {
-            if (nameEl) nameEl.textContent = d.name || 'Unknown';
-            if (dispEl && d.displayName && d.displayName !== d.name)
-                dispEl.textContent = d.displayName;
-        }).catch(function(){
-            if (nameEl) nameEl.textContent = 'ZetsuoNoShub';
+        .then(function(r){ return r.ok ? r.json() : Promise.reject(); })
+        .then(function(j){ applyData(j && j.data); })
+        .catch(function(){
+            // Show offline state if REST also fails
+            applyData(null);
         });
 
-    // Fetch avatar headshot
-    fetch('https://corsproxy.io/?url='+encodeURIComponent('https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds='+ROBLOX_ID+'&size=150x150&format=Png'))
-        .then(function(r){ return r.json(); })
-        .then(function(d) {
-            var url = d.data && d.data[0] && d.data[0].imageUrl;
-            if (url && pfpEl && pfpSkel) {
-                pfpEl.src = url;
-                pfpEl.onload = function() { pfpEl.style.display='block'; pfpSkel.style.display='none'; };
-                pfpEl.onerror = function() { pfpSkel.style.display='block'; };
-            }
-        }).catch(function(){});
+    // Then open WS for live updates
+    connect();
 
-    // Friends count
-    fetch('https://corsproxy.io/?url='+encodeURIComponent('https://friends.roblox.com/v1/users/'+ROBLOX_ID+'/friends/count'))
-        .then(function(r){ return r.json(); })
-        .then(function(d){ if(friendsEl&&d.count!=null) friendsEl.textContent=fmt(d.count); })
-        .catch(function(){});
-
-    // Followers count
-    fetch('https://corsproxy.io/?url='+encodeURIComponent('https://friends.roblox.com/v1/users/'+ROBLOX_ID+'/followers/count'))
-        .then(function(r){ return r.json(); })
-        .then(function(d){ if(followersEl&&d.count!=null) followersEl.textContent=fmt(d.count); })
-        .catch(function(){});
-
-    // Following count
-    fetch('https://corsproxy.io/?url='+encodeURIComponent('https://friends.roblox.com/v1/users/'+ROBLOX_ID+'/followings/count'))
-        .then(function(r){ return r.json(); })
-        .then(function(d){ if(followingEl&&d.count!=null) followingEl.textContent=fmt(d.count); })
-        .catch(function(){});
-
-    // Presence
-    fetch('https://corsproxy.io/?url='+encodeURIComponent('https://presence.roblox.com/v1/presence/users'), {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({userIds:[ROBLOX_ID]})
-    }).then(function(r){ return r.json(); })
-      .then(function(d) {
-          var u = d.userPresences && d.userPresences[0];
-          if (u && u.userPresenceType > 0 && onlineDot) onlineDot.style.display = 'block';
-      }).catch(function(){});
 })();
 </script>
 
@@ -2773,53 +2696,121 @@ document.addEventListener('DOMContentLoaded', function () {
 (function() {
     if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
-    var MAX_TILT = 10; // degrees
-    var SCALE    = 1.025;
+    var MAX_TILT    = 10;
+    var SCALE_IN    = 1.025;
+    var SCALE_OUT   = 1.0;
     var PERSPECTIVE = 1000;
+
+    // Spring config — how snappy the spring is when returning to rest
+    var SPRING_STIFFNESS = 0.055;  // pull toward target per frame
+    var SPRING_DAMPING   = 0.78;   // velocity decay per frame
 
     function initTilt(el) {
         var shine = el.querySelector('.tilt-shine');
-        var rect, rafId;
 
+        // Current rendered state (spring position)
+        var curRotX = 0, curRotY = 0, curScale = 1, curShineAlpha = 0;
+        var velX = 0, velY = 0;
+
+        // Target state
+        var tgtRotX = 0, tgtRotY = 0, tgtScale = 1, tgtShineAlpha = 0;
+        var tgtShineX = 50, tgtShineY = 50; // % for radial-gradient
+
+        var hovering   = false;
+        var rafId      = null;
+        var rect       = null;
+        var shineX = 50, shineY = 50;
+
+        // ── Spring loop — runs continuously once started ──────────
+        function tick() {
+            // Spring toward target
+            var dX = tgtRotX - curRotX;
+            var dY = tgtRotY - curRotY;
+            velX = (velX + dX * SPRING_STIFFNESS) * SPRING_DAMPING;
+            velY = (velY + dY * SPRING_STIFFNESS) * SPRING_DAMPING;
+            curRotX += velX;
+            curRotY += velY;
+
+            // Lerp scale and shine alpha
+            curScale      += (tgtScale      - curScale)      * 0.10;
+            curShineAlpha += (tgtShineAlpha - curShineAlpha) * 0.10;
+            shineX        += (tgtShineX     - shineX)        * 0.12;
+            shineY        += (tgtShineY     - shineY)        * 0.12;
+
+            // Apply
+            el.style.transition = 'none';
+            el.style.transform  =
+                'perspective('+PERSPECTIVE+'px)'
+                + ' rotateX('+curRotX.toFixed(3)+'deg)'
+                + ' rotateY('+curRotY.toFixed(3)+'deg)'
+                + ' scale('+curScale.toFixed(4)+')';
+            el.style.boxShadow =
+                (curRotY * 0.8).toFixed(2)+'px '+(curRotX * 0.8).toFixed(2)+'px 28px rgba(0,0,0,0.55), '
+                + '0 0 0 1px rgba(255,255,255,0.08)';
+
+            if (shine) {
+                shine.style.opacity    = curShineAlpha.toFixed(3);
+                shine.style.background =
+                    'radial-gradient(circle at '+shineX.toFixed(1)+'% '+shineY.toFixed(1)+'%, rgba(255,255,255,0.13) 0%, transparent 65%)';
+            }
+
+            // Keep looping while anything is still moving
+            var moving =
+                Math.abs(dX) > 0.001 || Math.abs(dY) > 0.001 ||
+                Math.abs(velX) > 0.001 || Math.abs(velY) > 0.001 ||
+                Math.abs(tgtScale - curScale) > 0.0002 ||
+                Math.abs(tgtShineAlpha - curShineAlpha) > 0.002;
+
+            if (moving) {
+                rafId = requestAnimationFrame(tick);
+            } else {
+                rafId = null;
+                // Snap to rest if fully settled at zero
+                if (!hovering) {
+                    curRotX = 0; curRotY = 0; velX = 0; velY = 0;
+                }
+            }
+        }
+
+        function ensureLoop() {
+            if (!rafId) rafId = requestAnimationFrame(tick);
+        }
+
+        // ── Mouse tracking ────────────────────────────────────────
         function onMove(e) {
             if (!rect) rect = el.getBoundingClientRect();
-            var x = e.clientX - rect.left;
-            var y = e.clientY - rect.top;
+            var x  = e.clientX - rect.left;
+            var y  = e.clientY - rect.top;
             var cx = rect.width  / 2;
             var cy = rect.height / 2;
-            var rotY =  ((x - cx) / cx) * MAX_TILT;
-            var rotX = -((y - cy) / cy) * MAX_TILT;
 
-            cancelAnimationFrame(rafId);
-            rafId = requestAnimationFrame(function() {
-                el.style.transform =
-                    'perspective('+PERSPECTIVE+'px) rotateX('+rotX+'deg) rotateY('+rotY+'deg) scale('+SCALE+')';
-                el.style.boxShadow =
-                    (rotY * 0.8)+'px '+(rotX * 0.8)+'px 28px rgba(0,0,0,0.55), '
-                    + '0 0 0 1px rgba(255,255,255,0.08)';
-                if (shine) {
-                    var px = (x / rect.width)  * 100;
-                    var py = (y / rect.height) * 100;
-                    shine.style.background = 'radial-gradient(circle at '+px+'% '+py+'%, rgba(255,255,255,0.13) 0%, transparent 65%)';
-                }
-            });
+            tgtRotY       =  ((x - cx) / cx) * MAX_TILT;
+            tgtRotX       = -((y - cy) / cy) * MAX_TILT;
+            tgtShineX     = (x / rect.width)  * 100;
+            tgtShineY     = (y / rect.height) * 100;
+            tgtScale      = SCALE_IN;
+            tgtShineAlpha = 1;
+
+            ensureLoop();
         }
 
         function onEnter() {
-            rect = el.getBoundingClientRect();
-            el.style.transition = 'transform 0.08s ease-out, box-shadow 0.08s ease-out';
+            hovering = true;
+            rect     = el.getBoundingClientRect();
+            tgtScale      = SCALE_IN;
+            tgtShineAlpha = 1;
+            ensureLoop();
         }
 
         function onLeave() {
-            cancelAnimationFrame(rafId);
-            el.style.transition = 'transform 0.5s cubic-bezier(0.23,1,0.32,1), box-shadow 0.5s cubic-bezier(0.23,1,0.32,1)';
-            el.style.transform  = 'perspective('+PERSPECTIVE+'px) rotateX(0deg) rotateY(0deg) scale(1)';
-            el.style.boxShadow  = '';
-            if (shine) {
-                shine.style.opacity = '0';
-                shine.style.background = '';
-            }
-            rect = null;
+            hovering = false;
+            // DON'T reset curRotX/Y — let the spring drift back from wherever it is
+            tgtRotX       = 0;
+            tgtRotY       = 0;
+            tgtScale      = SCALE_OUT;
+            tgtShineAlpha = 0;
+            rect          = null;
+            ensureLoop();
         }
 
         el.addEventListener('mouseenter', onEnter);
