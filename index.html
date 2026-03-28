@@ -1811,7 +1811,6 @@
     var handleEl = document.getElementById('discord-handle');
     var stEl     = document.getElementById('discord-status');
     var acEl     = document.getElementById('discord-activity');
-    var dotEl    = document.getElementById('discord-dot');
     var badgesEl = document.getElementById('discord-badges');
     var bannerImg= document.getElementById('discord-banner-img');
     var bannerDiv= document.getElementById('discord-banner');
@@ -1819,9 +1818,6 @@
     var skEl     = document.getElementById('discord-skeleton');
     var cEl      = document.getElementById('discord-card');
 
-    var SC = {online:'ds-online',idle:'ds-idle',dnd:'ds-dnd',offline:'ds-offline',streaming:'ds-streaming'};
-    var SL = {online:'Online',idle:'Idle',dnd:'Do Not Disturb',offline:'Offline',streaming:'🔴 Live'};
-    var COLORS = {online:'#23a55a',idle:'#f0b232',dnd:'#f23f43',offline:'#80848e',streaming:'#593695'};
 
     var BADGE_MAP = {
         'active_developer':        'https://cdn.discordapp.com/badge-icons/6bdc42827a38498929a4920da12695d9.png',
@@ -1886,8 +1882,7 @@
 
     function applyData(d) {
         if (!d) {
-            if (dotEl) { var bg=getComputedStyle(document.documentElement).getPropertyValue('--dot-bg').trim()||'rgba(8,8,12,0.95)'; dotEl.innerHTML='<rect x="0" y="0" width="16" height="16" rx="8" fill="'+bg+'"/><circle cx="8" cy="8" r="3.5" stroke="#80848e" stroke-width="1.5" fill="none"/>'; }
-            if (stEl)  stEl.style.display = '';
+            if (stEl) stEl.innerHTML = '';
             return;
         }
         var u = d && d.discord_user;
@@ -1922,18 +1917,9 @@
         if (handleEl) handleEl.textContent = '@' + USER;
 
         var s = (d && d.discord_status) || 'offline';
-        if (dotEl) {
-            var bg = getComputedStyle(document.documentElement).getPropertyValue('--dot-bg').trim() || 'rgba(8,8,12,0.95)';
-            var DOT_SVG = {
-                online:    '<rect x="0" y="0" width="16" height="16" rx="8" fill="'+bg+'"/><circle cx="8" cy="8" r="5" fill="#23a55a"/>',
-                idle:      '<rect x="0" y="0" width="16" height="16" rx="8" fill="'+bg+'"/><path fill="#f0b232" d="M8 3a5 5 0 1 0 0 10A3.5 3.5 0 0 1 8 3Z"/>',
-                dnd:       '<rect x="0" y="0" width="16" height="16" rx="8" fill="'+bg+'"/><circle cx="8" cy="8" r="5" fill="#f23f43"/><rect x="4.5" y="7.25" width="7" height="1.5" rx="0.75" fill="#fff"/>',
-                offline:   '<rect x="0" y="0" width="16" height="16" rx="8" fill="'+bg+'"/><circle cx="8" cy="8" r="3.5" stroke="#80848e" stroke-width="1.5" fill="none"/>',
-                streaming: '<rect x="0" y="0" width="16" height="16" rx="8" fill="'+bg+'"/><circle cx="8" cy="8" r="5" fill="#593695"/><polygon points="6,5.5 11,8 6,10.5" fill="#fff"/>'
-            };
-            dotEl.innerHTML = DOT_SVG[s] || DOT_SVG.offline;
-        }
-        var color = COLORS[s] || COLORS.offline;
+        // dot is owned by discord.js — do not write here
+        lastKnownStatus = s;
+        window._lastDiscordStatus = s;
 
         if (s === 'online' || s === 'idle' || s === 'streaming') {
             lastSeenOnlineTs = Date.now();
@@ -1941,8 +1927,6 @@
         }
 
         var acts = (d && d.activities) || [];
-
-        if (stEl) { stEl.innerHTML = ''; }
 
         var txt = '';
 
@@ -1987,7 +1971,7 @@
             offline:   '<rect x="0" y="0" width="16" height="16" rx="8" fill="'+bg+'"/><circle cx="8" cy="8" r="3.5" stroke="#80848e" stroke-width="1.5" fill="none"/>',
             streaming: '<rect x="0" y="0" width="16" height="16" rx="8" fill="'+bg+'"/><circle cx="8" cy="8" r="5" fill="#593695"/><polygon points="6,5.5 11,8 6,10.5" fill="#fff"/>'
         };
-        dot.innerHTML = DOT[lastKnownStatus] || DOT.offline;
+        dot.innerHTML = DOT[window._lastDiscordStatus || lastKnownStatus] || DOT.offline;
     };
 
     var ws, hbInterval, reconnectTimer;
