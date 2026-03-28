@@ -298,11 +298,8 @@
         .hero-pfp-wrap {
             position: relative;
             flex-shrink: 0;
-            width: 124px;
-            height: 124px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 82px;
+            height: 82px;
         }
         .hero-pfp-skeleton {
             width: 82px; height: 82px; border-radius: 50%;
@@ -319,14 +316,16 @@
         #discord-decoration {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 124px; height: 124px;
+            width: 108px; height: 108px;
             pointer-events: none; z-index: 2;
+            display: none;
         }
         .discord-status-dot {
-            position: absolute; bottom: 4px; right: 4px;
-            width: 16px; height: 16px; border-radius: 50%;
+            position: absolute;
+            bottom: 3px; right: 3px;
+            width: 14px; height: 14px; border-radius: 50%;
             border: 3px solid rgba(12,12,18,0.95);
-            box-sizing: border-box; z-index: 3;
+            box-sizing: border-box; z-index: 4;
         }
         .hero-info-col {
             flex: 1; min-width: 0;
@@ -388,14 +387,14 @@
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 124px; height: 124px;
+            width: 108px; height: 108px;
             pointer-events: none;
             display: none;
             z-index: 2;
         }
         #discord-decoration.show { display: block; }
 
-        .discord-status-dot { position:absolute; bottom:4px; right:4px; width:14px; height:14px; border-radius:50%; border:3px solid rgba(12,12,18,0.95); box-sizing:border-box; z-index:3; }
+        .discord-status-dot { position:absolute; bottom:2px; right:2px; width:14px; height:14px; border-radius:50%; border:3px solid rgba(12,12,18,0.95); box-sizing:border-box; z-index:3; }
         .ds-online    { background:#23a55a; box-shadow:0 0 6px rgba(35,165,90,0.8); }
         .ds-idle      { background:#f0b232; box-shadow:0 0 6px rgba(240,178,50,0.8); }
         .ds-dnd       { background:#f23f43; box-shadow:0 0 6px rgba(242,63,67,0.8); }
@@ -624,6 +623,9 @@
         .social-links a { display:flex; align-items:center; justify-content:center; width:22px; height:22px; text-decoration:none; transition:0.25s; -webkit-tap-highlight-color:transparent; color:rgba(255,255,255,0.50); }
         .social-links i { color:inherit; font-size:17px; transition:0.25s; }
         .social-links a svg { fill:currentColor; transition:fill 0.25s; }
+        /* Roblox icon: suppress drop-shadow from main.css, keep same visual weight as FA icons */
+        .social-links a.social-roblox svg,
+        .social-links a.social-roblox:hover svg { filter: none !important; }
         .social-links a:hover { transform:scale(1.22); color:white; }
         .social-links a:hover i { color:white; }
         .social-links:hover a { opacity:0.38; transform:scale(0.95); }
@@ -1452,8 +1454,8 @@
                 <a href="https://x.com/ZetsuoNoShub"                   target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i></a>
                 <a href="https://pinterest.com/shubflexin"             target="_blank" rel="noopener"><i class="fab fa-pinterest"></i></a>
                 <a href="https://linkedin.com/in/c3o"                  target="_blank" rel="noopener"><i class="fab fa-linkedin"></i></a>
-                <a href="https://www.roblox.com/users/3686735227/profile" target="_blank" rel="noopener" title="Roblox" style="color:rgba(255,255,255,0.50);width:24px;height:24px;">
-                    <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;flex-shrink:0;fill:currentColor;transition:fill 0.25s;"><path d="M115.3 0L0 396.7 396.7 512 512 115.3zm171.9 286.1l-86.1-25.3 25.2-86.1 86.1 25.3z"/></svg>
+                <a href="https://www.roblox.com/users/3686735227/profile" target="_blank" rel="noopener" title="Roblox" class="social-roblox" style="color:rgba(255,255,255,0.50);">
+                    <svg viewBox="80 80 352 352" xmlns="http://www.w3.org/2000/svg" style="width:17px;height:17px;fill:currentColor;transition:fill 0.25s;display:block;"><path d="M115.3 0L0 396.7 396.7 512 512 115.3zm171.9 286.1l-86.1-25.3 25.2-86.1 86.1 25.3z"/></svg>
                 </a>
                 <a href="/cdn-cgi/l/email-protection#6d1e05180f431d1f020b081e1e0402030c012d0a000c0401430e0200" rel="noopener"><i class="fas fa-envelope"></i></a>
             </div>
