@@ -64,7 +64,8 @@
             '--under-process-bg':      'rgba(255,255,255,0.04)',
             '--under-process-border':  'rgba(255,255,255,0.08)',
             '--under-process-text':    'rgba(255,255,255,0.45)',
-            '--under-process-dot':     'rgba(255,255,255,0.45)'
+            '--under-process-dot':     'rgba(255,255,255,0.45)',
+            '--dot-bg':                'rgba(8,8,12,0.95)'
         },
         light: {
             '--card-bg':               'rgba(255,255,255,0.18)',
@@ -97,7 +98,8 @@
             '--under-process-bg':      'rgba(255,255,255,0.20)',
             '--under-process-border':  'rgba(255,255,255,0.40)',
             '--under-process-text':    '#ffffff',
-            '--under-process-dot':     '#ffffff'
+            '--under-process-dot':     '#ffffff',
+            '--dot-bg':                'rgba(238,238,234,0.96)'
         }
     };
 
@@ -173,6 +175,9 @@
         Object.keys(t).forEach(function (k) { r.style.setProperty(k, t[k]); });
         document.body.classList.toggle('theme-light', !dark);
         document.body.classList.toggle('theme-dark',  dark);
+
+        // ── Refresh Discord dot SVG background to match new theme ──
+        if (window._refreshDiscordDot) window._refreshDiscordDot();
 
         // ── Cursor sync: keep rope-hit grab cursor correct after theme swap ──
         var hit = document.getElementById('rope-hit');

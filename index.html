@@ -79,7 +79,6 @@
 
         :root {
             --nav-h: 72px;
-            --dot-bg: rgba(8,8,12,0.95);
             --player-h-desk: 90px;
             --player-h-mob: 190px;
             --player-pad-mob: 14px;
@@ -388,7 +387,6 @@
         #discord-decoration.show { display: block; }
 
         #discord-dot { position:absolute; bottom:1px; right:1px; z-index:4; overflow:visible; }
-        body.theme-light { --dot-bg: rgba(238,238,234,0.96); }
 
         #discord-info-body { padding: 10px 14px 14px; }
         #discord-name-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:4px; }
@@ -1136,7 +1134,6 @@
                 var btn=document.getElementById('theme-toggle-btn');
                 var icon=btn.querySelector('i');
                 icon.className = isDark ? 'fas fa-moon' : 'fas fa-sun';
-                setTimeout(function(){ if(window._refreshDiscordDot) window._refreshDiscordDot(); }, 50);
             })();" style="
                 background:rgba(255,255,255,0.05);
                 border:1px solid rgba(255,255,255,0.10);
