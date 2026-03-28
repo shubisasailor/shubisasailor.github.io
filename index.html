@@ -2719,9 +2719,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // Touch / mobile devices: skip entirely — no hover, no tilt
     if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
-    var MAX_TILT    = 7;      // reduced — subtle feels more premium than aggressive
+    var MAX_TILT    = 15;     // increased — more dramatic tilt
     var PERSPECTIVE = 900;    // slightly tighter perspective for more depth
-    var STIFFNESS   = 0.055;  // low = lazy/fluid lag behind cursor
+    var STIFFNESS   = 0.075;  // slightly snappier to keep up with bigger range
     var DAMPING     = 0.82;   // high = smooth decay, barely any bounce
 
     function initTilt(el) {
