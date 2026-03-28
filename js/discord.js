@@ -1,5 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════
-//  discord.js — status, avatar, decoration via Lanyard
+//  discord.js — pfp, status dot, status text via Lanyard
+//  New flat layout: no separate card, renders directly into hero
 // ═══════════════════════════════════════════════════════════════════
 
 (function () {
@@ -7,14 +8,11 @@
     var USERNAME   = 'shub.is.a.sailor';
     var DISPLAY    = 'Shub';
 
-    var skeletonEl  = document.getElementById('discord-skeleton');
-    var cardEl      = document.getElementById('discord-card');
-    var pfpEl       = document.getElementById('discord-pfp');
-    var decoEl      = document.getElementById('discord-decoration');
-    var nameEl      = document.getElementById('discord-name');
-    var statusEl    = document.getElementById('discord-status');
-
-    if (!skeletonEl || !cardEl) return;
+    var pfpEl      = document.getElementById('discord-pfp');
+    var decoEl     = document.getElementById('discord-decoration');
+    var skeletonEl = document.getElementById('hero-pfp-skeleton');
+    var statusEl   = document.getElementById('discord-status');
+    var activityEl = document.getElementById('discord-activity');
 
     var STATUS_COLORS = {
         online:    '#23a55a',
@@ -42,45 +40,30 @@
         return d + 'd ago';
     }
 
-    function dot(color) {
-        return '<span style="display:inline-block;width:9px;height:9px;border-radius:50%;'
-            + 'background:' + color + ';box-shadow:0 0 6px ' + color + ';'
-            + 'margin-right:5px;flex-shrink:0;vertical-align:middle;"></span>';
-    }
-
-    // ── Decoration ────────────────────────────────────────────────
-    // Lanyard exposes avatar_decoration_data.asset on discord_user
     function applyDecoration(user) {
         if (!decoEl) return;
         var deco = user && user.avatar_decoration_data;
-        if (!deco || !deco.asset) return;
-
+        if (!deco || !deco.asset) { decoEl.style.display = 'none'; return; }
         var url = 'https://cdn.discordapp.com/avatar-decoration-presets/'
             + deco.asset + '.png?size=96&passthrough=true';
-        decoEl.onload  = function () { decoEl.classList.add('show'); };
+        decoEl.onload  = function () { decoEl.style.display = 'block'; };
         decoEl.onerror = function () { decoEl.style.display = 'none'; };
         decoEl.src = url;
     }
 
-    // ── Main render ───────────────────────────────────────────────
     function render(avatarSrc, lanyardData) {
+        // Show PFP, hide skeleton
+        if (skeletonEl) skeletonEl.style.display = 'none';
+        if (pfpEl) {
+            pfpEl.onerror = function () {
+                pfpEl.style.display = 'none';
+                if (skeletonEl) skeletonEl.style.display = 'block';
+            };
+            pfpEl.style.display = 'block';
+            pfpEl.src = avatarSrc;
+        }
 
-        // Avatar — attach onerror BEFORE setting src
-        pfpEl.onerror = function () {
-            pfpEl.style.display = 'none';
-            var init = document.createElement('div');
-            init.style.cssText = 'width:42px;height:42px;border-radius:50%;'
-                + 'background:linear-gradient(135deg,#5865F2,#7289da);'
-                + 'display:flex;align-items:center;justify-content:center;'
-                + 'font-weight:bold;font-size:1.1rem;color:white;flex-shrink:0;';
-            init.textContent = DISPLAY.charAt(0).toUpperCase();
-            pfpEl.parentNode.insertBefore(init, pfpEl);
-        };
-        pfpEl.src = avatarSrc;
-
-        nameEl.textContent = DISPLAY;
-
-        // Status
+        // Status dot
         var status = 'offline', lastSeenTs = null;
         if (lanyardData) {
             status = lanyardData.discord_status || 'offline';
@@ -92,44 +75,41 @@
         var dotEl = document.getElementById('discord-dot');
         if (dotEl) dotEl.className = 'discord-status-dot ds-' + status;
 
-        var color = STATUS_COLORS[status] || STATUS_COLORS.offline;
-        var label = STATUS_LABELS[status] || 'Offline';
-        var ago   = (status === 'offline' && lastSeenTs)
-            ? ' · last seen ' + timeAgo(lastSeenTs) : '';
-
-        statusEl.innerHTML =
-            '<div style="display:flex;align-items:center;margin-top:2px;">'
-            + dot(color)
-            + '<span style="font-size:0.72rem;color:rgba(255,255,255,0.45);letter-spacing:0.4px;">'
-            + label + ago + '</span></div>'
-            + '<div style="margin-top:3px;">'
-            + '<a href="https://discord.com/users/' + DISCORD_ID + '" target="_blank" rel="noopener noreferrer"'
-            + ' style="color:rgba(255,255,255,0.30);text-decoration:none;font-size:0.68rem;letter-spacing:0.5px;transition:color 0.2s;"'
-            + ' onmouseover="this.style.color=\'rgba(255,255,255,0.75)\'"'
-            + ' onmouseout="this.style.color=\'rgba(255,255,255,0.30)\'">@ ' + USERNAME + '</a></div>';
+        // Status text
+        if (statusEl) {
+            var color = STATUS_COLORS[status] || STATUS_COLORS.offline;
+            var label = STATUS_LABELS[status] || 'Offline';
+            var ago   = (status === 'offline' && lastSeenTs)
+                ? ' · last seen ' + timeAgo(lastSeenTs) : '';
+            statusEl.innerHTML =
+                '<span style="display:inline-flex;align-items:center;gap:5px;">'
+                + '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;'
+                + 'background:' + color + ';box-shadow:0 0 5px ' + color + ';flex-shrink:0;"></span>'
+                + '<span style="font-size:0.70rem;color:rgba(255,255,255,0.42);letter-spacing:0.3px;">'
+                + label + ago + '</span>'
+                + '<a href="https://discord.com/users/' + DISCORD_ID + '" target="_blank" rel="noopener noreferrer"'
+                + ' style="color:rgba(255,255,255,0.22);text-decoration:none;font-size:0.64rem;letter-spacing:0.4px;transition:color 0.2s;margin-left:2px;"'
+                + ' onmouseover="this.style.color=\'rgba(255,255,255,0.65)\'"'
+                + ' onmouseout="this.style.color=\'rgba(255,255,255,0.22)\'">@' + USERNAME + '</a>'
+                + '</span>';
+        }
 
         // Activity
-        var acts = (lanyardData && lanyardData.activities) || [];
-        var activity = null;
-        for (var j = 0; j < acts.length; j++) {
-            if (acts[j].type === 2) {
-                activity = '🎵 ' + acts[j].details + ' — ' + acts[j].state;
-                break;
+        if (activityEl) {
+            var acts = (lanyardData && lanyardData.activities) || [];
+            var activity = null;
+            for (var j = 0; j < acts.length; j++) {
+                if (acts[j].type === 2) {
+                    activity = '🎵 ' + acts[j].details + ' — ' + acts[j].state;
+                    break;
+                }
+                if (acts[j].type === 0 && !activity) activity = '🎮 ' + acts[j].name;
             }
-            if (acts[j].type === 0 && !activity) activity = '🎮 ' + acts[j].name;
+            activityEl.textContent = activity || '';
         }
-        if (activity) {
-            statusEl.innerHTML +=
-                '<div style="margin-top:4px;font-size:0.68rem;color:rgba(255,255,255,0.35);'
-                + 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;">'
-                + activity + '</div>';
-        }
-
-        skeletonEl.style.display = 'none';
-        cardEl.classList.add('loaded');
     }
 
-    // ── Fallback ──────────────────────────────────────────────────
+    // Fallback
     var defaultIdx    = parseInt(DISCORD_ID.slice(-4)) % 6;
     var defaultAvatar = 'https://cdn.discordapp.com/embed/avatars/' + defaultIdx + '.png';
     var done = false;
@@ -142,25 +122,20 @@
 
     var timer = setTimeout(fallback, 4000);
 
-    // ── Fetch ─────────────────────────────────────────────────────
     fetch('https://api.lanyard.rest/v1/users/' + DISCORD_ID)
-        .then(function (r) { return r.ok ? r.json() : Promise.reject('bad response'); })
+        .then(function (r) { return r.ok ? r.json() : Promise.reject('bad'); })
         .then(function (json) {
             clearTimeout(timer);
             if (done) return;
             done = true;
-
             var d    = json.data;
             var user = d && d.discord_user;
-
-            // Avatar
             var avatarUrl = defaultAvatar;
             if (user && user.avatar) {
                 var ext = user.avatar.startsWith('a_') ? 'gif' : 'webp';
                 avatarUrl = 'https://cdn.discordapp.com/avatars/'
                     + DISCORD_ID + '/' + user.avatar + '.' + ext + '?size=128';
             }
-
             applyDecoration(user);
             render(avatarUrl, d);
         })

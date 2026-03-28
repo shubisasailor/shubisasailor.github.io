@@ -84,6 +84,11 @@
             transform: translate(-50%,-50%);
             object-fit: cover; pointer-events: none;
             transition: opacity 0.65s ease;
+            will-change: opacity;
+            -webkit-transform: translate(-50%,-50%) translateZ(0);
+            transform: translate(-50%,-50%) translateZ(0);
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
         }
         #yt-dark  { opacity: 1; z-index: 1; }
         #yt-light { opacity: 0; z-index: 2; }
@@ -169,20 +174,18 @@
         .card-container::-webkit-scrollbar { display: none; }
         .card-container.visible { opacity: 1; visibility: visible; }
 
-        /* ── Bottom padding — always leave room for the player pill ── */
+        /* ── Bottom padding — leave room for the player pill ── */
         .card-container {
-            /* Large safe padding so content never hides behind player on any device */
-            padding-bottom: calc(var(--player-h-mob) + var(--player-pad-mob) + var(--safe-bottom) + 120px);
+            padding-bottom: calc(var(--player-h-mob) + var(--player-pad-mob) + var(--safe-bottom) + 24px);
         }
         @media (min-width: 701px) {
             .card-container {
-                padding-bottom: calc(var(--player-h-mob) + var(--player-pad-mob) + var(--safe-bottom) + 120px);
+                padding-bottom: calc(var(--player-h-mob) + var(--player-pad-mob) + var(--safe-bottom) + 20px);
             }
         }
         @media (max-width: 700px) {
             .card-container {
-                /* Extra generous on mobile — volume row + notch safe area */
-                padding-bottom: calc(var(--player-h-mob) + var(--player-pad-mob) + var(--safe-bottom) + 140px);
+                padding-bottom: calc(var(--player-h-mob) + var(--player-pad-mob) + var(--safe-bottom) + 28px);
             }
         }
 
@@ -281,6 +284,50 @@
         .skeleton-line { height:9px; border-radius:5px; background:rgba(255,255,255,0.07); animation:skPulse 1.6s ease-in-out infinite; }
         .skeleton-line.short { width:55%; animation-delay:0.2s; }
 
+        /* ── Hero profile layout ── */
+        .hero-profile-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 18px;
+        }
+        .hero-pfp-wrap {
+            position: relative;
+            flex-shrink: 0;
+        }
+        .hero-pfp-skeleton {
+            width: 82px; height: 82px; border-radius: 50%;
+            background: rgba(255,255,255,0.07);
+            animation: skPulse 1.6s ease-in-out infinite;
+            border: 3px solid rgba(255,255,255,0.10);
+        }
+        #discord-pfp {
+            width: 82px; height: 82px; border-radius: 50%; object-fit: cover;
+            display: block;
+            border: 3px solid rgba(255,255,255,0.12);
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 4px 20px rgba(0,0,0,0.5);
+        }
+        #discord-decoration {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 86px; height: 86px;
+            pointer-events: none; z-index: 2;
+        }
+        .discord-status-dot {
+            position: absolute; bottom: 4px; right: 4px;
+            width: 16px; height: 16px; border-radius: 50%;
+            border: 3px solid rgba(12,12,18,0.95);
+            box-sizing: border-box; z-index: 3;
+        }
+        .hero-info-col {
+            flex: 1; min-width: 0;
+            display: flex; flex-direction: column;
+            align-items: flex-start;
+            padding-top: 2px;
+        }
+        .hero-views-row {
+            display: flex; align-items: center; gap: 5px;
+        }
+
         /* ── Expanded Discord card ── */
         #discord-overlap-wrap { width:100%; box-sizing:border-box; margin-bottom:12px; }
 
@@ -371,14 +418,31 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            width: 24px; height: 24px;
+            cursor: default;
+            flex-shrink: 0;
         }
+        /* Image badge */
         .custom-badge img {
             width: 22px; height: 22px; object-fit: contain;
             transition: transform 0.2s;
-            cursor: default;
+            border-radius: 4px;
         }
-        .custom-badge:hover img {
-            transform: scale(1.25) translateY(-2px);
+        /* Emoji / text fallback badge */
+        .custom-badge .badge-fallback {
+            width: 22px; height: 22px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 6px;
+            font-size: 13px;
+            line-height: 1;
+            transition: transform 0.2s;
+            user-select: none;
+        }
+        .custom-badge:hover img,
+        .custom-badge:hover .badge-fallback {
+            transform: scale(1.28) translateY(-2px);
         }
         /* Tooltip */
         .custom-badge::after {
@@ -1051,15 +1115,43 @@
 <div id="bg-vignette"></div>
 
 <script>
-// Video reliability: retry play if stalled, resume after visibility change
+// Video reliability: smooth playback, retry on stall/suspend, iOS low-power workaround
 (function(){
-    ['yt-dark','yt-light'].forEach(function(id){
+    var ids = ['yt-dark','yt-light'];
+    ids.forEach(function(id){
         var v = document.getElementById(id);
         if (!v) return;
-        function tryPlay(){ if(v.paused) v.play().catch(function(){}); }
-        v.addEventListener('stalled', function(){ setTimeout(tryPlay, 400); });
-        v.addEventListener('suspend', function(){ setTimeout(tryPlay, 400); });
-        document.addEventListener('visibilitychange', function(){ if(!document.hidden) tryPlay(); });
+
+        // Force GPU layer
+        v.style.transform = 'translate(-50%,-50%) translateZ(0)';
+
+        function tryPlay(){
+            if (v.paused) {
+                var p = v.play();
+                if (p && p.catch) p.catch(function(){});
+            }
+        }
+
+        // Start as soon as enough data loaded
+        v.addEventListener('canplay',   tryPlay);
+        v.addEventListener('canplaythrough', tryPlay);
+        // Recovery from stall/suspend (common on mobile/low-power)
+        v.addEventListener('stalled',   function(){ setTimeout(tryPlay, 300); });
+        v.addEventListener('suspend',   function(){ setTimeout(tryPlay, 300); });
+        v.addEventListener('waiting',   function(){ setTimeout(tryPlay, 300); });
+        v.addEventListener('emptied',   function(){ setTimeout(tryPlay, 600); });
+        // Re-play after tab becomes visible again
+        document.addEventListener('visibilitychange', function(){
+            if (!document.hidden) setTimeout(tryPlay, 100);
+        });
+        // iOS: play on first user interaction if still paused
+        var userEvt = function(){
+            tryPlay();
+            document.removeEventListener('touchstart', userEvt);
+            document.removeEventListener('click', userEvt);
+        };
+        document.addEventListener('touchstart', userEvt, { passive: true, once: true });
+        document.addEventListener('click',      userEvt, { once: true });
     });
 })();
 </script>
@@ -1270,114 +1362,92 @@
 
     <!-- OVERVIEW -->
     <div class="tab-panel active" id="panel-overview">
-        <div class="glass-card hero-card tilt-card" style="text-align:center;padding:22px;overflow:hidden;">
+        <div class="glass-card hero-card tilt-card" style="padding:22px;overflow:hidden;">
             <div class="tilt-shine"></div>
 
-            <!-- ── Hero text ── -->
-            <div id="hero-text" style="padding:10px 0 6px;">
-                <h1 style="margin:0;display:inline-block;">
-                    <span id="display-name"></span><span id="tw-cursor"></span>
-                </h1>
-                <p class="subtitle-text" style="margin-top:6px;">CS Student</p>
-                <div class="now-playing-badge paused" id="now-playing-badge" style="display:none;margin-top:10px;justify-content:center;">
-                    <div class="bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
-                    <span id="badge-song-name">—</span>
-                </div>
-            </div>
+            <!-- ── Main profile row: big pfp left, info right ── -->
+            <div class="hero-profile-row">
 
-            <!-- ── Lower section (normal padding) ── -->
-            <div id="discord-overlap-wrap">
-
-                <!-- Discord skeleton -->
-                <div class="discord-skeleton" id="discord-skeleton">
-                    <div class="skeleton-avatar"></div>
-                    <div class="skeleton-lines">
-                        <div class="skeleton-line"></div>
-                        <div class="skeleton-line short"></div>
-                    </div>
+                <!-- Left: big PFP with status dot -->
+                <div class="hero-pfp-wrap" id="discord-skeleton-pfp">
+                    <!-- Skeleton shown while loading -->
+                    <div class="hero-pfp-skeleton" id="hero-pfp-skeleton"></div>
+                    <!-- Real pfp -->
+                    <img id="discord-pfp" alt="PFP" style="display:none;"
+                         onerror="this.style.display='none';document.getElementById('hero-pfp-skeleton').style.display='block';">
+                    <img id="discord-decoration" alt="" style="display:none;">
+                    <div class="discord-status-dot ds-offline" id="discord-dot"></div>
                 </div>
 
-                <!-- Discord real card — expanded -->
-                <div class="discord-real tilt-card" id="discord-card">
-                    <div class="tilt-shine"></div>
-                    <!-- Banner -->
-                    <div id="discord-banner">
-                        <img id="discord-banner-img" alt="" style="display:none;" onerror="this.style.display='none'">
-                        <div id="discord-banner-overlay"></div>
-                    </div>
-
-                    <!-- Avatar row -->
-                    <div id="discord-avatar-row">
-                        <div class="discord-avatar-wrap">
-                            <img id="discord-pfp" alt="Discord PFP">
-                            <img id="discord-decoration" alt="">
-                            <div class="discord-status-dot ds-offline" id="discord-dot"></div>
+                <!-- Right: name, subtitle, status, now-playing -->
+                <div class="hero-info-col">
+                    <!-- Badges row — images load from media/badges/, emoji shown as fallback -->
+                    <div id="discord-badges" style="margin-bottom:6px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
+                        <div class="custom-badge" data-tip="Owner">
+                            <img src="media/badges/owner.png" alt="" style="display:none;"
+                                 onload="this.style.display='block';this.nextElementSibling.style.display='none';"
+                                 onerror="this.style.display='none';">
+                            <span class="badge-fallback">👑</span>
                         </div>
-                        <!-- Badges top-right -->
-                        <div id="discord-badges" style="margin-bottom:6px;">
-                            <!-- Custom badges — images go in media/badges/ folder -->
-                            <div class="custom-badge" data-tip="Owner">
-                                <img src="media/badges/owner.png" alt="Owner" onerror="this.parentElement.style.display='none'">
-                            </div>
-                            <div class="custom-badge" data-tip="Developer">
-                                <img src="media/badges/developer.png" alt="Developer" onerror="this.parentElement.style.display='none'">
-                            </div>
-                            <div class="custom-badge" data-tip="Early Supporter">
-                                <img src="media/badges/early-supporter.png" alt="Early Supporter" onerror="this.parentElement.style.display='none'">
-                            </div>
+                        <div class="custom-badge" data-tip="Developer">
+                            <img src="media/badges/developer.png" alt="" style="display:none;"
+                                 onload="this.style.display='block';this.nextElementSibling.style.display='none';"
+                                 onerror="this.style.display='none';">
+                            <span class="badge-fallback">⚙️</span>
                         </div>
+                        <div class="custom-badge" data-tip="Early Supporter">
+                            <img src="media/badges/early-supporter.png" alt="" style="display:none;"
+                                 onload="this.style.display='block';this.nextElementSibling.style.display='none';"
+                                 onerror="this.style.display='none';">
+                            <span class="badge-fallback">🌟</span>
+                        </div>
+                        <!-- Add more badges below — copy the pattern above -->
                     </div>
 
-                    <!-- Info body -->
-                    <div id="discord-info-body">
-                        <div id="discord-name-row">
-                            <div id="discord-name"></div>
-                            <div id="discord-handle"></div>
-                        </div>
-                        <div id="discord-status"></div>
-                        <div id="discord-activity"></div>
+                    <!-- Name -->
+                    <h1 style="margin:0;font-size:clamp(1.5rem,6vw,2.1rem);">
+                        <span id="display-name"></span><span id="tw-cursor"></span>
+                    </h1>
+
+                    <!-- Subtitle -->
+                    <p class="subtitle-text" style="margin-top:4px;">CS Student</p>
+
+                    <!-- Discord status line -->
+                    <div id="discord-status" style="margin-top:6px;"></div>
+                    <div id="discord-activity" style="margin-top:2px;font-size:0.67rem;color:rgba(255,255,255,0.30);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;"></div>
+
+                    <!-- Now playing badge -->
+                    <div class="now-playing-badge paused" id="now-playing-badge" style="display:none;margin-top:8px;">
+                        <div class="bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                        <span id="badge-song-name">—</span>
+                    </div>
+
+                    <!-- Views counter -->
+                    <div class="hero-views-row" style="margin-top:8px;">
+                        <span style="opacity:0.45;font-size:0.72rem;">👁</span>
+                        <span class="visit-count-val" style="font-size:0.72rem;color:rgba(255,255,255,0.50);font-weight:600;"></span>
+                        <span style="font-size:0.60rem;color:rgba(255,255,255,0.25);letter-spacing:1.5px;text-transform:uppercase;">visits</span>
                     </div>
                 </div>
-
             </div>
 
-            <!-- Socials -->
-            <div id="hero-lower">
-                <div class="social-links">
-                    <a href="https://linkedin.com/in/c3o"             target="_blank" rel="noopener"><i class="fab fa-linkedin"></i></a>
-                    <a href="https://instagram.com/shub.is.a.sailor/" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
-                    <a href="https://pinterest.com/shubflexin"        target="_blank" rel="noopener"><i class="fab fa-pinterest"></i></a>
-                    <a href="https://youtube.com/@Tarnished_Shubh"    target="_blank" rel="noopener"><i class="fab fa-youtube"></i></a>
-                    <a href="https://x.com/ZetsuoNoShub"              target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i></a>
-                    <a href="/cdn-cgi/l/email-protection#6d1e05180f431d1f020b081e1e0402030c012d0a000c0401430e0200" rel="noopener"><i class="fas fa-envelope"></i></a>
-                    <a href="https://www.roblox.com/users/748831508/profile" target="_blank" rel="noopener" title="Roblox">
-                        <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="width:17px;height:17px;fill:rgba(255,255,255,0.50);transition:fill 0.25s;"><path d="M6 6l5.5 20L26 21.5 20.5 1.5z"/></svg>
-                    </a>
-                </div>
+            <!-- ── Divider ── -->
+            <div class="card-divider" style="margin:16px 0 14px;"></div>
+
+            <!-- ── Social links ── -->
+            <div class="social-links" style="margin-top:0;">
+                <a href="https://discord.com/users/748831508776878110" target="_blank" rel="noopener"><i class="fab fa-discord"></i></a>
+                <a href="https://instagram.com/shub.is.a.sailor/"      target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
+                <a href="https://youtube.com/@Tarnished_Shubh"         target="_blank" rel="noopener"><i class="fab fa-youtube"></i></a>
+                <a href="https://x.com/ZetsuoNoShub"                   target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i></a>
+                <a href="https://pinterest.com/shubflexin"             target="_blank" rel="noopener"><i class="fab fa-pinterest"></i></a>
+                <a href="https://linkedin.com/in/c3o"                  target="_blank" rel="noopener"><i class="fab fa-linkedin"></i></a>
+                <a href="https://www.roblox.com/users/3686735227/profile" target="_blank" rel="noopener" title="Roblox">
+                    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="width:17px;height:17px;fill:rgba(255,255,255,0.50);transition:fill 0.25s;"><path d="M6 6l5.5 20L26 21.5 20.5 1.5z"/></svg>
+                </a>
+                <a href="/cdn-cgi/l/email-protection#6d1e05180f431d1f020b081e1e0402030c012d0a000c0401430e0200" rel="noopener"><i class="fas fa-envelope"></i></a>
             </div>
 
-        </div>
-
-        <!-- Stats -->
-        <div class="stats-row">
-            <div class="stat-card tilt-card views-pill-card">
-                <div class="tilt-shine"></div>
-                <div style="display:flex;align-items:center;gap:7px;">
-                    <span style="font-size:0.75rem;opacity:0.55;">👁</span>
-                    <span class="stat-num" style="font-size:clamp(0.88rem,3vw,1.05rem);"><span class="visit-count-val">—</span></span>
-                </div>
-                <div class="stat-lbl">Visitors</div>
-            </div>
-            <div class="stat-card tilt-card">
-                <div class="tilt-shine"></div>
-                <div class="stat-num" id="repo-count-num">—</div>
-                <div class="stat-lbl">Public Repos</div>
-            </div>
-            <div class="stat-card tilt-card">
-                <div class="tilt-shine"></div>
-                <div class="stat-num">2+</div>
-                <div class="stat-lbl">Years</div>
-            </div>
         </div>
     </div>
 
@@ -2725,9 +2795,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function updatePadding() {
         var ph = player.offsetHeight;
-        if (!ph) return;
-        // Extra 24px breathing room above the pill
-        var pad = ph + 24 + Math.max(16, (window.visualViewport ? window.visualViewport.offsetTop : 0));
+        if (!ph || ph < 10) return;
+        // Player height + safe-area offset + a little breathing room
+        var safeBottom = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-bottom')) || 16;
+        var pad = ph + safeBottom + 16;
         content.style.paddingBottom = pad + 'px';
     }
 
