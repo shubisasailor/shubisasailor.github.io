@@ -627,9 +627,9 @@
         .social-links a svg { fill:currentColor; transition:fill 0.25s; }
         /* Roblox png icon hover */
         .social-links a.social-roblox img { filter: brightness(0.5); transition: filter 0.25s; }
-        .social-links a.social-roblox:hover img { filter: brightness(1) drop-shadow(0 0 5px rgba(255,255,255,0.8)); }
-        .social-links:hover a.social-roblox img { filter: brightness(0.25); }
-        .social-links a.social-roblox:hover img { filter: brightness(1) drop-shadow(0 0 5px rgba(255,255,255,0.8)) !important; }
+        .social-links a.social-roblox:hover img { filter: brightness(1) drop-shadow(0 0 6px rgba(255,255,255,0.85)); }
+        .social-links:hover a.social-roblox img { filter: brightness(0.2); }
+        .social-links a.social-roblox:hover img { filter: brightness(1) drop-shadow(0 0 6px rgba(255,255,255,0.85)) !important; }
         .social-links a:hover { transform:scale(1.22); color:white; }
         .social-links a:hover i { color:white; }
         .social-links:hover a { opacity:0.38; transform:scale(0.95); }
@@ -1463,7 +1463,7 @@
                 <a href="https://pinterest.com/shubflexin"             target="_blank" rel="noopener"><i class="fab fa-pinterest"></i></a>
                 <a href="https://linkedin.com/in/c3o"                  target="_blank" rel="noopener"><i class="fab fa-linkedin"></i></a>
                 <a href="https://www.roblox.com/users/3686735227/profile" target="_blank" rel="noopener" title="Roblox" class="social-roblox">
-                    <img src="media/roblox.png" alt="Roblox" style="width:19px;height:19px;object-fit:contain;display:block;filter:brightness(0.5);transition:filter 0.25s;">
+                    <img src="media/roblox.png" alt="Roblox" style="width:17px;height:17px;object-fit:contain;display:block;filter:brightness(0.5);transition:filter 0.25s;">
                 </a>
                 <a href="/cdn-cgi/l/email-protection#6d1e05180f431d1f020b081e1e0402030c012d0a000c0401430e0200" rel="noopener"><i class="fas fa-envelope"></i></a>
             </div>
@@ -2073,23 +2073,50 @@
         var s = (data && data.discord_status) || 'offline';
         dotEl.className = 'discord-status-dot ' + (SC[s] || 'ds-offline');
         var color = STATUS_COLORS[s] || STATUS_COLORS.offline;
+
+        // timeAgo helper
+        function timeAgo(ms) {
+            if (!ms) return null;
+            var diff = Date.now() - ms;
+            var sec = Math.floor(diff/1000), min = Math.floor(sec/60),
+                hr  = Math.floor(min/60),   day = Math.floor(hr/24);
+            if (sec < 60)  return 'just now';
+            if (min < 60)  return min + 'm ago';
+            if (hr  < 24)  return hr  + 'h ago';
+            return day + 'd ago';
+        }
+
+        // Find last seen timestamp from activities
+        var lastSeenTs = null;
+        var acts = (data && data.activities) || [];
+        acts.forEach(function(a) {
+            if (a.timestamps && a.timestamps.start) lastSeenTs = a.timestamps.start;
+        });
+
+        var ago = (s === 'offline' && lastSeenTs) ? ' · last seen ' + timeAgo(lastSeenTs) : '';
+
         if (stEl) {
-            stEl.innerHTML = '<span style="display:inline-flex;align-items:center;gap:5px;">'
-                + '<span style="width:8px;height:8px;border-radius:50%;background:'+color+';display:inline-block;flex-shrink:0;"></span>'
-                + '<span>' + (SL[s]||'Offline') + '</span>'
-                + '<a href="https://discord.com/users/'+ID+'" target="_blank" rel="noopener" style="color:rgba(255,255,255,0.22);text-decoration:none;font-size:0.62rem;transition:color 0.2s;" onmouseover="this.style.color=\'rgba(255,255,255,0.65)\'" onmouseout="this.style.color=\'rgba(255,255,255,0.22)\'">· open profile</a>'
+            stEl.innerHTML = '<span style="display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap;">'
+                + '<span style="width:8px;height:8px;border-radius:50%;background:'+color+';box-shadow:0 0 5px '+color+';display:inline-block;flex-shrink:0;"></span>'
+                + '<span style="font-size:0.70rem;color:rgba(255,255,255,0.42);">' + (SL[s]||'Offline') + ago + '</span>'
+                + '<a href="https://discord.com/users/'+ID+'" target="_blank" rel="noopener" style="color:rgba(255,255,255,0.22);text-decoration:none;font-size:0.62rem;transition:color 0.2s;" onmouseover="this.style.color=\'rgba(255,255,255,0.65)\'" onmouseout="this.style.color=\'rgba(255,255,255,0.22)\'">· @'+USER+'</a>'
                 + '</span>';
         }
 
-        // Activity
-        var acts = (data && data.activities) || [], txt = '';
+        // Activity — custom status (type 4), music (type 2), game (type 0), or nothing on fail
+        var txt = '';
         for (var i=0; i<acts.length; i++) {
-            var a=acts[i];
-            if (a.type===2 && a.details){ txt='🎵 '+a.details+(a.state?' — '+a.state:''); break; }
-            if (a.type===0 && a.name && !txt) txt='🎮 Playing '+a.name;
-            if (a.type===4 && a.state && !txt) txt=a.state;
+            var a = acts[i];
+            if (a.type === 4 && a.state) { txt = a.state; break; }           // Custom status
         }
-        if (acEl) acEl.textContent = txt;
+        if (!txt) {
+            for (var j=0; j<acts.length; j++) {
+                var b = acts[j];
+                if (b.type === 2 && b.details) { txt = '🎵 ' + b.details + (b.state ? ' — ' + b.state : ''); break; }
+                if (b.type === 0 && b.name)    { txt = '🎮 ' + b.name; break; }
+            }
+        }
+        if (acEl) acEl.textContent = txt; // shows nothing if empty — exactly what you want
 
         // Badges
         var flags = (u && u.public_flags) || 0;
