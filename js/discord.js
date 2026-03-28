@@ -189,7 +189,7 @@
     var STATUS_LABEL = {
         online:    'Online',
         idle:      'Idle',
-        dnd:       'Busy',
+        dnd:       '',
         offline:   'Offline',
         streaming: 'Streaming'
     };
@@ -204,26 +204,37 @@
 
     function applyStatus(status, lastSeenMs) {
         if (!statusEl) return;
-        var s     = STATUS_SVG[status]   || STATUS_SVG.offline;
-        var label = STATUS_LABEL[status] || 'Offline';
-        var glow  = STATUS_GLOW[status]  || STATUS_GLOW.offline;
-        var ago   = (status === 'offline' && lastSeenMs)
-            ? '<span style="opacity:0.40;margin-left:3px;font-weight:400;">· ' + timeAgo(lastSeenMs) + '</span>' : '';
+        var s    = STATUS_SVG[status]  || STATUS_SVG.offline;
+        var glow = STATUS_GLOW[status] || STATUS_GLOW.offline;
+
+        // Build the label string
+        var label = '';
+        if (status === 'offline') {
+            label = lastSeenMs ? 'Offline · ' + timeAgo(lastSeenMs) : 'Offline';
+        } else if (status === 'dnd') {
+            label = ''; // no text — activity line handles it
+        } else {
+            label = STATUS_LABEL[status] || '';
+        }
+
+        // Tighten pill when no text
+        var padding = label ? '3px 10px 3px 7px' : '3px 7px';
+        var labelHtml = label
+            ? '<span style="font-size:0.66rem;font-weight:500;letter-spacing:0.3px;color:rgba(255,255,255,0.70);">' + label + '</span>'
+            : '';
 
         statusEl.innerHTML =
             '<span style="'
           +   'display:inline-flex;align-items:center;gap:6px;'
           +   'background:' + glow + '0.10);'
           +   'border:1px solid ' + glow + '0.22);'
-          +   'border-radius:99px;padding:3px 10px 3px 7px;'
+          +   'border-radius:99px;padding:' + padding + ';'
           + '">'
           +   '<span style="display:flex;align-items:center;flex-shrink:0;'
           +     'filter:drop-shadow(0 0 3px ' + glow + '0.7));">'
           +     s
           +   '</span>'
-          +   '<span style="font-size:0.66rem;font-weight:500;letter-spacing:0.3px;color:rgba(255,255,255,0.70);">'
-          +     label + ago
-          +   '</span>'
+          +   labelHtml
           + '</span>';
     }
 

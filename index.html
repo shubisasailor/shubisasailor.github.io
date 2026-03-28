@@ -1325,6 +1325,21 @@
         <div class="glass-card hero-card tilt-card" style="padding:22px;overflow:visible;">
             <div class="tilt-shine"></div>
 
+            <!-- ── Views counter — left edge of card ── -->
+            <div style="
+                position:absolute;
+                left:0; top:50%;
+                transform:translateY(-50%) rotate(-90deg) translateX(-50%);
+                transform-origin:left center;
+                display:flex; align-items:center; gap:5px;
+                pointer-events:none;
+                white-space:nowrap;
+            ">
+                <span style="opacity:0.30;font-size:0.58rem;">👁</span>
+                <span class="visit-count-val" style="font-size:0.58rem;color:rgba(255,255,255,0.30);font-weight:600;letter-spacing:1px;"></span>
+                <span style="font-size:0.52rem;color:rgba(255,255,255,0.18);letter-spacing:1.5px;text-transform:uppercase;">views</span>
+            </div>
+
             <!-- ── Main profile row: big pfp left, info right ── -->
             <div class="hero-profile-row">
 
@@ -1364,13 +1379,6 @@
                             </div>
                             <!-- Add more badges inside this pill by copying the pattern above -->
                         </div>
-                    </div>
-
-                    <!-- Views counter — shown right under badges -->
-                    <div class="hero-views-row" style="margin-bottom:6px;">
-                        <span style="opacity:0.45;font-size:0.70rem;">👁</span>
-                        <span class="visit-count-val" style="font-size:0.70rem;color:rgba(255,255,255,0.50);font-weight:600;"></span>
-                        <span style="font-size:0.58rem;color:rgba(255,255,255,0.25);letter-spacing:1.5px;text-transform:uppercase;">visits</span>
                     </div>
 
                     <!-- Name -->
