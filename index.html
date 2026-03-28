@@ -24,7 +24,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="css/main.css">
 
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
 
     <script>
     if (sessionStorage.getItem('site_entered')) {
@@ -1889,6 +1889,11 @@
     var avatarSet = false;
 
     function applyData(d) {
+        if (!d) {
+            if (dotEl) dotEl.className = 'discord-status-dot ds-offline';
+            if (stEl)  stEl.style.display = '';
+            return;
+        }
         var u = d && d.discord_user;
 
         if (!avatarSet && u && u.avatar) {
@@ -1988,7 +1993,9 @@
                     break;
 
                 case 0:
-                    if (msg.t === 'INIT_STATE' || msg.t === 'PRESENCE_UPDATE') {
+                    if (msg.t === 'INIT_STATE') {
+                        applyData(msg.d && msg.d[ID]);
+                    } else if (msg.t === 'PRESENCE_UPDATE') {
                         applyData(msg.d);
                     }
                     break;
@@ -2469,17 +2476,24 @@ document.addEventListener('DOMContentLoaded', function () {
             if(planeEl) planeEl.className='fas fa-paper-plane';
             if(labelEl){labelEl.textContent='SEND MESSAGE';labelEl.style.opacity='1';}
         }
-        function mailto(){
-            window.open('mailto:shub.professional@gmail.com?subject='+encodeURIComponent('Message from '+n)+'&body='+encodeURIComponent('From: '+n+' <'+e+'>\n\n'+m));
-            window.showToast('Opening mail client...','');
-            setTimeout(resetBtn,2000);
-        }
 
-        if(typeof emailjs==='undefined'){ setTimeout(function(){mailto();if(planeEl){planeEl.classList.remove('send-flying');planeEl.className='fas fa-paper-plane';}if(labelEl)labelEl.style.opacity='1';sb.disabled=false;},650); return; }
+
         setTimeout(function(){
+            if(typeof emailjs==='undefined'){
+                window.showToast('Email service not loaded. Please try again.','error');
+                if(planeEl){planeEl.classList.remove('send-flying');planeEl.className='fas fa-paper-plane';}
+                if(labelEl)labelEl.style.opacity='1';
+                sb.disabled=false;
+                return;
+            }
             emailjs.send('service_wfciems','template_srqhd09',{name:n,email:e,message:m})
                 .then(showSuccess)
-                .catch(function(){mailto();if(planeEl){planeEl.classList.remove('send-flying');planeEl.className='fas fa-paper-plane';}if(labelEl)labelEl.style.opacity='1';sb.disabled=false;});
+                .catch(function(){
+                    window.showToast('Failed to send. Please try again.','error');
+                    if(planeEl){planeEl.classList.remove('send-flying');planeEl.className='fas fa-paper-plane';}
+                    if(labelEl)labelEl.style.opacity='1';
+                    sb.disabled=false;
+                });
         },650);
     });
 
