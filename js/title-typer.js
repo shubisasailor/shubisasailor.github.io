@@ -1,2 +1,3 @@
-(function (){
-window.startTitleLoop =function (){};})();
+(function(){
+    window.startTitleLoop=function(){};
+})();
