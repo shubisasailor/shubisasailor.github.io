@@ -272,7 +272,7 @@
         .tilt-card .tilt-shine {
             position: absolute; inset: 0; border-radius: inherit;
             background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.12) 0%, transparent 70%);
-            opacity: 0; transition: opacity 0.08s; pointer-events: none; z-index: 1;
+            opacity: 0; transition: opacity 0.08s, background 0.08s; pointer-events: none; z-index: 1;
         }
         .tilt-card:hover .tilt-shine { opacity: 1; }
         .tilt-card > * { position: relative; z-index: 2; }
@@ -1409,18 +1409,18 @@
                         <span id="display-name"></span><span id="tw-cursor"></span>
                     </h1>
 
+                    <!-- Now playing badge — sits between name and subtitle -->
+                    <div class="now-playing-badge paused" id="now-playing-badge" style="display:none;margin-top:8px;">
+                        <div class="bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                        <span id="badge-song-name">—</span>
+                    </div>
+
                     <!-- Subtitle -->
                     <p class="subtitle-text" style="margin-top:4px;">CS Student</p>
 
                     <!-- Discord status line -->
                     <div id="discord-status" style="margin-top:6px;"></div>
                     <div id="discord-activity" style="margin-top:2px;font-size:0.67rem;color:rgba(255,255,255,0.30);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;"></div>
-
-                    <!-- Now playing badge -->
-                    <div class="now-playing-badge paused" id="now-playing-badge" style="display:none;margin-top:8px;">
-                        <div class="bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
-                        <span id="badge-song-name">—</span>
-                    </div>
 
                     <!-- Views counter -->
                     <div class="hero-views-row" style="margin-top:8px;">
@@ -1443,7 +1443,7 @@
                 <a href="https://pinterest.com/shubflexin"             target="_blank" rel="noopener"><i class="fab fa-pinterest"></i></a>
                 <a href="https://linkedin.com/in/c3o"                  target="_blank" rel="noopener"><i class="fab fa-linkedin"></i></a>
                 <a href="https://www.roblox.com/users/3686735227/profile" target="_blank" rel="noopener" title="Roblox">
-                    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="width:17px;height:17px;fill:rgba(255,255,255,0.50);transition:fill 0.25s;"><path d="M6 6l5.5 20L26 21.5 20.5 1.5z"/></svg>
+                    <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" style="width:17px;height:17px;fill:rgba(255,255,255,0.50);transition:fill 0.25s;"><path d="M115.3 0L0 396.7 396.7 512 512 115.3zm171.9 286.1l-86.1-25.3 25.2-86.1 86.1 25.3z"/></svg>
                 </a>
                 <a href="/cdn-cgi/l/email-protection#6d1e05180f431d1f020b081e1e0402030c012d0a000c0401430e0200" rel="noopener"><i class="fas fa-envelope"></i></a>
             </div>
@@ -1453,8 +1453,7 @@
 
     <!-- ABOUT -->
     <div class="tab-panel" id="panel-about">
-        <div class="glass-card tilt-card">
-            <div class="tilt-shine"></div>
+        <div class="glass-card">
             <div class="section-label">who i am</div>
             <p class="bio-text">
                 Hey, I'm Francisco — a CS student with a passion for building things that feel alive.
@@ -1487,8 +1486,7 @@
 
     <!-- CONTACT -->
     <div class="tab-panel" id="panel-contact">
-        <div class="glass-card tilt-card">
-            <div class="tilt-shine"></div>
+        <div class="glass-card">
             <div class="section-label">reach me at</div>
             <div class="email-row">
                 <i class="fas fa-envelope"></i>
@@ -1951,7 +1949,7 @@
     var bannerImg= document.getElementById('discord-banner-img');
     var bannerDiv= document.getElementById('discord-banner');
     var decoEl  = document.getElementById('discord-decoration');
-    if (!skEl || !cEl) return;
+    // skEl/cEl are only present in expanded discord card layout; pfp is always present
 
     var SC = {online:'ds-online',idle:'ds-idle',dnd:'ds-dnd',offline:'ds-offline',streaming:'ds-streaming'};
     var SL = {online:'Online',idle:'Idle',dnd:'Do Not Disturb',offline:'Offline',streaming:'🔴 Live'};
@@ -2000,10 +1998,17 @@
     }
 
     function render(av, data) {
-        // Avatar
-        pfp.src = av;
-        pfp.style.display = 'block';
-        pfp.onerror = function(){ pfp.style.cssText='background:linear-gradient(135deg,#5865F2,#7289da);border-radius:50%;width:72px;height:72px;'; };
+        // Avatar - hide skeleton, show pfp
+        var heroSkeleton = document.getElementById('hero-pfp-skeleton');
+        if (heroSkeleton) heroSkeleton.style.display = 'none';
+        if (pfp) {
+            pfp.src = av;
+            pfp.style.display = 'block';
+            pfp.onerror = function(){
+                pfp.style.display = 'none';
+                if (heroSkeleton) heroSkeleton.style.display = 'block';
+            };
+        }
 
         // Banner
         var u = data && data.discord_user;
@@ -2055,8 +2060,8 @@
         var premium = (u && u.premium_type) || 0;
         renderBadges(flags, premium);
 
-        skEl.style.display = 'none';
-        cEl.classList.add('loaded');
+        if (skEl) skEl.style.display = 'none';
+        if (cEl) cEl.classList.add('loaded');
     }
 
     var defAv = 'https://cdn.discordapp.com/embed/avatars/'+(parseInt(ID.slice(-4))%6)+'.png';
@@ -2747,7 +2752,10 @@ document.addEventListener('DOMContentLoaded', function () {
             el.style.transition = 'transform 0.5s cubic-bezier(0.23,1,0.32,1), box-shadow 0.5s cubic-bezier(0.23,1,0.32,1)';
             el.style.transform  = 'perspective('+PERSPECTIVE+'px) rotateX(0deg) rotateY(0deg) scale(1)';
             el.style.boxShadow  = '';
-            if (shine) shine.style.background = '';
+            if (shine) {
+                shine.style.opacity = '0';
+                shine.style.background = '';
+            }
             rect = null;
         }
 
