@@ -531,24 +531,43 @@
         .panel-body::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.10); border-radius:10px; }
 
         .repo-card { 
-            display:flex; flex-direction:column; gap:8px; padding:10px 11px; background:rgba(255,255,255,0.03); 
-            border:1px solid rgba(255,255,255,0.06); border-radius:10px; margin-bottom:10px; transition:all 0.18s; 
+            display:flex; flex-direction:column; gap:12px; padding:12px 14px; 
+            background:rgba(255,255,255,0.04); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+            border:1px solid rgba(255,255,255,0.08); border-radius:14px; margin-bottom:12px; 
+            transition:all 0.28s cubic-bezier(0.23,1,0.32,1); 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .repo-card:hover { 
+            background:rgba(255,255,255,0.07); transform:translateY(-4px); 
+            border-color:rgba(255,255,255,0.18);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.35);
         }
         .repo-card:last-child { margin-bottom:0; }
-        .repo-info { display:flex; align-items:center; gap:8px; min-width:0; margin-bottom:2px; }
-        .repo-icon { font-size:0.68rem; color:rgba(255,255,255,0.25); flex-shrink:0; }
-        .repo-name { font-size:0.75rem; font-weight:700; color:rgba(255,255,255,0.85); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; letter-spacing:-0.2px; }
-        .repo-lang-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; margin-left:auto; box-shadow:0 0 8px currentColor; }
-        
-        .repo-actions { display:flex; gap:8px; margin-top:4px; }
-        .repo-btn { 
-            width:30px; height:30px; display:flex; align-items:center; justify-content:center; 
-            border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);
-            font-size:0.8rem; text-decoration:none; color:rgba(255,255,255,0.40); transition:all 0.2s cubic-bezier(0.23,1,0.32,1);
+        .repo-info { display:flex; align-items:center; gap:10px; min-width:0; }
+        .repo-name { 
+            font-size:0.82rem; font-weight:700; color:rgba(255,255,255,0.92); 
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; 
+            letter-spacing:-0.2px; text-shadow: 0 0 12px rgba(255,255,255,0.05);
         }
-        .repo-btn:hover { background:rgba(255,255,255,0.10); border-color:rgba(255,255,255,0.20); color:white; transform:translateY(-2px); }
-        .repo-btn.live { border-color:rgba(255,255,255,0.15); color:rgba(255,255,255,0.70); }
-        .repo-btn:active { transform:scale(0.90); }
+        .repo-lang-dot { 
+            width:6px; height:6px; border-radius:50%; flex-shrink:0; margin-left:auto; 
+            box-shadow:0 0 10px currentColor; animation: dotPulse 2s infinite ease-in-out;
+        }
+        @keyframes dotPulse { 
+            0%,100% { transform:scale(1); opacity:0.85; filter:brightness(1); }
+            50% { transform:scale(1.2); opacity:1; filter:brightness(1.5); }
+        }
+        
+        .repo-actions { display:flex; gap:8px; margin-top:2px; }
+        .repo-btn { 
+            width:32px; height:32px; display:flex; align-items:center; justify-content:center; 
+            border-radius:50%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.10);
+            font-size:0.85rem; text-decoration:none; color:rgba(255,255,255,0.45); 
+            transition:all 0.25s cubic-bezier(0.23,1,0.32,1);
+        }
+        .repo-btn:hover { background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.22); color:white; transform:scale(1.1); }
+        .repo-btn.live { color:rgba(255,255,255,0.85); background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.15); }
+        .repo-btn:active { transform:scale(0.92); }
         
         .repo-skeleton { height:64px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:10px; margin-bottom:10px; animation:skPulse 1.6s ease-in-out infinite; }
         #panel-backdrop { display:none; position:fixed; inset:0; z-index:299; background:rgba(0,0,0,0.50); opacity:0; visibility:hidden; transition:opacity 0.26s, visibility 0.26s; }
@@ -2051,7 +2070,19 @@ document.addEventListener('DOMContentLoaded', function () {
     function twTick(){ nmEl.textContent=twN.slice(0,++twI); if(twI<twN.length)twT=setTimeout(twTick,100); }
     window._startNameTypewriter = function(){ clearTimeout(twT); twI=0; nmEl.textContent=''; if(twCursor)twCursor.style.display='inline-block'; setTimeout(twTick,600); };
 
-    var _ent = false;
+    function updatePlayerState() {
+        var active = sessionStorage.getItem('music_active');
+        var bored = document.getElementById('bored-state');
+        var playerS = document.getElementById('player-state');
+        if (active) {
+            if (bored) bored.style.display = 'none';
+            if (playerS) playerS.style.display = 'flex';
+        } else {
+            if (bored) bored.style.display = 'flex';
+            if (playerS) playerS.style.display = 'none';
+        }
+    }
+
     function show(){
         main.classList.add('visible');
         nav.classList.add('visible');
@@ -2065,6 +2096,8 @@ document.addEventListener('DOMContentLoaded', function () {
     function enterSite(){
         if(_ent) return; _ent=true;
         sessionStorage.setItem('site_entered','1');
+        updatePlayerState();
+        if(window._audioPlay && sessionStorage.getItem('music_active')) window._audioPlay().catch(function(){});
         overlay.style.opacity='0';
         setTimeout(function(){ overlay.style.display='none'; show(); }, 850);
     }
@@ -2074,18 +2107,14 @@ document.addEventListener('DOMContentLoaded', function () {
         _ent=true;
         overlay.style.display='none';
         show();
-        if(sessionStorage.getItem('music_active')){
-            var bs=document.getElementById('bored-state'),ps=document.getElementById('player-state');
-            if(bs)bs.style.display='none';
-            if(ps)ps.style.display='block';
+        updatePlayerState();
+        if (sessionStorage.getItem('music_active')) {
             if(window._audioPlay)window._audioPlay().catch(function(){});
             if(window._syncPlayIcons)setTimeout(function(){window._syncPlayIcons(!window._audioPaused());},300);
         }
     } else if(window._earlyEnterFired){
-
         enterSite();
     } else {
-
         var _entryFired = false;
         function _tryEnter(e){ if(_entryFired)return; _entryFired=true; if(e&&e.cancelable)e.preventDefault(); enterSite(); }
         overlay.addEventListener('click',     _tryEnter);
@@ -2287,30 +2316,23 @@ document.addEventListener('DOMContentLoaded', function () {
         var card=document.createElement('div');
         card.className='repo-card';
         if (r.featured) card.classList.add('featured-repo');
-        
         var info=document.createElement('div');
         info.className='repo-info';
-        var ic=document.createElement('i');
-        ic.className='fab fa-github repo-icon';
         var nm=document.createElement('span');
         nm.className='repo-name';
         nm.textContent=r.name;
-        info.appendChild(ic);
         info.appendChild(nm);
-        
         if (r.language){
             var d=document.createElement('span');
             d.className='repo-lang-dot';
             d.style.background=LC[r.language]||'rgba(255,255,255,0.28)';
+            d.style.color=LC[r.language]||'rgba(255,255,255,0.28)';
             d.title=r.language;
             info.appendChild(d);
         }
         card.appendChild(info);
-
         var actions=document.createElement('div');
         actions.className='repo-actions';
-        
-        // GH Repo Button (for all projects)
         if (r.html_url && !r.featured){
             var ghBtn=document.createElement('a');
             ghBtn.className='repo-btn';
@@ -2320,8 +2342,6 @@ document.addEventListener('DOMContentLoaded', function () {
             ghBtn.innerHTML='<i class="fab fa-github"></i>';
             actions.appendChild(ghBtn);
         }
-
-        // Live Button (if has homepage or is featured)
         if (r.homepage || r.featured){
             var liveBtn=document.createElement('a');
             liveBtn.className='repo-btn live';
@@ -2331,7 +2351,6 @@ document.addEventListener('DOMContentLoaded', function () {
             liveBtn.innerHTML='<i class="fas fa-external-link-alt"></i>';
             actions.appendChild(liveBtn);
         }
-        
         card.appendChild(actions);
         return card;
     }
@@ -2350,8 +2369,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 return b.stargazers_count!==a.stargazers_count?b.stargazers_count-a.stargazers_count:new Date(b.updated_at)-new Date(a.updated_at);
             });
             list.innerHTML='';
-            
-            // Add Section Header for Live Sites
             if (featured.length){
                 var h1 = document.createElement('div');
                 h1.className = 'panel-section-title';
@@ -2359,8 +2376,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 list.appendChild(h1);
                 featured.forEach(function(r){ list.appendChild(makeCard(r)); });
             }
-
-            // GitHub Repos
             if (repos.length){
                 var h2 = document.createElement('div');
                 h2.className = 'panel-section-title';
@@ -2368,7 +2383,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 list.appendChild(h2);
                 repos.forEach(function (r){list.appendChild(makeCard(r));});
             }
-
             if (!repos.length && !featured.length){
                 var m=document.createElement('span');
                 m.className='repo-error';
