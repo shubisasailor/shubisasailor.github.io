@@ -420,7 +420,6 @@
             width: 22px; height: 22px; object-fit: contain;
             transition: transform 0.2s;
             border-radius: 4px;
-            image-rendering: auto;
         }
 
         .custom-badge .badge-fallback {
@@ -1273,16 +1272,21 @@
                 <div class="hero-info-col">
 
                     <div id="discord-badges" style="margin-bottom:8px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
-                        <div id="custom-badge-pill" style="display:inline-flex;align-items:center;gap:3px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:99px;padding:4px 10px;">
+                        <div id="custom-badge-pill" style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:99px;padding:4px 10px;">
                             <div class="custom-badge" data-tip="Owner" style="width:22px;height:22px;">
-                                <img draggable="false" src="media/badges/badge1.gif" alt="Owner"
-                                     style="width:22px;height:22px;display:block;border-radius:3px;"
-                                     onerror="this.style.opacity='0.3';">
+                                <img draggable="false" src="media/badges/owner.png" alt="Owner"
+                                     style="width:22px;height:22px;display:block;border-radius:3px;object-fit:contain;"
+                                     onerror="this.style.display='none';">
                             </div>
                             <div class="custom-badge" data-tip="Developer" style="width:22px;height:22px;">
-                                <img draggable="false" src="media/badges/badge2.gif" alt="Developer"
-                                     style="width:22px;height:22px;display:block;border-radius:3px;"
-                                     onerror="this.style.opacity='0.3';">
+                                <img draggable="false" src="media/badges/developer.png" alt="Developer"
+                                     style="width:22px;height:22px;display:block;border-radius:3px;object-fit:contain;"
+                                     onerror="this.style.display='none';">
+                            </div>
+                            <div class="custom-badge" data-tip="Early Supporter" style="width:22px;height:22px;">
+                                <img draggable="false" src="media/badges/early-supporter.png" alt="Early Supporter"
+                                     style="width:22px;height:22px;display:block;border-radius:3px;object-fit:contain;"
+                                     onerror="this.style.display='none';">
                             </div>
                         </div>
                     </div>
@@ -1304,7 +1308,7 @@
                 </div>
             </div>
 
-            <div class="views-row" style="display:flex;align-items:center;gap:4px;pointer-events:none;margin-top:8px;">
+            <div class="views-row" style="position:absolute;bottom:10px;left:18px;display:flex;align-items:center;gap:4px;pointer-events:none;">
                 <span style="font-size:0.60rem;opacity:0.55;">👁</span>
                 <span class="visit-count-val" style="font-size:0.60rem;font-weight:600;letter-spacing:0.5px;"></span>
                 <span style="font-size:0.52rem;letter-spacing:1.5px;text-transform:uppercase;opacity:0.65;">views</span>
@@ -1931,7 +1935,7 @@
         }
         if (s === 'offline') {
             var offlineAgo = lastSeenOnlineTs ? timeAgo(lastSeenOnlineTs) : '';
-            txt = offlineAgo ? 'offline' + (lastSeenOnlineTs ? ' · ' + timeAgo(lastSeenOnlineTs) : '') : 'offline';
+            txt = offlineAgo ? 'offline · ' + offlineAgo : 'offline';
         } else {
             for (var i = 0; i < acts.length; i++) {
                 if (acts[i].type === 4 && acts[i].state) { txt = acts[i].state; break; }
