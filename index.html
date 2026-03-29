@@ -1859,17 +1859,19 @@
     var NAMESPACE = 'francisco.is-a.dev';
     var KEY       = 'pageviews';
     var API       = 'https://api.counterapi.dev/v1';
+    var BASE      = 1100;
 
     function setViews(n){
+        var total = BASE + (n || 0);
         var els = document.querySelectorAll('.visit-count-val');
-        var display = n >= 1000 ? (n/1000).toFixed(1).replace(/\.0$/,'')+'k' : String(n);
+        var display = total >= 1000 ? (total/1000).toFixed(1).replace(/\.0$/,'')+'k' : String(total);
         els.forEach(function(el){ el.textContent = display; });
     }
 
+    setViews(0);
 
     var counted = sessionStorage.getItem('view_counted');
     if(counted){
-
         fetch(API+'/'+NAMESPACE+'/'+KEY+'/')
             .then(function(r){ return r.ok ? r.json() : null; })
             .then(function(d){ if(d&&d.count!=null) setViews(d.count); })
