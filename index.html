@@ -375,16 +375,6 @@
             border: 4px solid rgba(15,15,20,0.95);
             box-shadow: 0 0 0 1px rgba(255,255,255,0.12);
         }
-        #discord-decoration {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 108px; height: 108px;
-            pointer-events: none;
-            display: none;
-            z-index: 2;
-        }
-        #discord-decoration.show { display: block; }
 
         #discord-dot { position:absolute; bottom:1px; right:1px; z-index:4; overflow:visible; }
 
@@ -1265,7 +1255,7 @@
                     <div class="hero-pfp-skeleton" id="hero-pfp-skeleton"></div>
 
                     <img draggable="false" id="discord-pfp" alt="PFP" style="display:none;">
-                    <img draggable="false" id="discord-decoration" alt="" style="display:none;">
+                    <img draggable="false" id="discord-decoration" alt="" style="display:none;pointer-events:none;">
                     <svg id="discord-dot" width="16" height="16" viewBox="0 0 16 16" style="position:absolute;bottom:1px;right:1px;z-index:4;" xmlns="http://www.w3.org/2000/svg"></svg>
                 </div>
 
@@ -1323,7 +1313,7 @@
                 <a href="https://pinterest.com/shubflexin" target="_blank" rel="noopener noreferrer"><i class="fab fa-pinterest"></i></a>
                 <a href="https://youtube.com/@Tarnished_Shubh" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i></a>
                 <a href="https://x.com/ZetsuoNoShub" target="_blank" rel="noopener noreferrer"><i class="fab fa-x-twitter"></i></a>
-                <a href="mailto:shub.professional@gmail.com" rel="noopener noreferrer"><i class="fas fa-envelope"></i></a>
+                <a href="/cdn-cgi/l/email-protection#88fbe0fdeaa6f8fae7eeedfbfbe1e7e6e9e4c8efe5e9e1e4a6ebe7e5" rel="noopener noreferrer"><i class="fas fa-envelope"></i></a>
             </div>
 
         </div>
@@ -1382,7 +1372,7 @@
             <div class="section-label">reach me at</div>
             <div class="email-row">
                 <i class="fas fa-envelope"></i>
-                <span id="email-display">shub.professional@gmail.com</span>
+                <span id="email-display"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="06756e736428767469606375756f6968676a46616b676f6a2865696b">[email&#160;protected]</a></span>
                 <i class="fas fa-copy email-copy" id="copy-btn" title="Copy email"></i>
             </div>
             <div class="card-divider"></div>
@@ -1404,7 +1394,7 @@
 
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 (function () {
     'use strict';
 
@@ -2159,17 +2149,4 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     updatePadding();
-    window.addEventListener('resize', updatePadding, { passive: true });
-
-    if (window.ResizeObserver) {
-        new ResizeObserver(updatePadding).observe(player);
-    } else {
-
-        var polls = 0;
-        var iv =setInterval(function(){ updatePadding(); if(++polls>20) clearInterval(iv); },200);
-    }
-})();
-</script>
-
-</body>
-</html>
+    window.addEventListener('resize', updatePadding,

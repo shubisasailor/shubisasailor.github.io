@@ -42,11 +42,11 @@ function applyAvatar(user){
 function applyDecoration(user){
     if(!decoEl)return;
     var deco=user&&user.avatar_decoration_data;
-    if(!deco||!deco.asset){decoEl.style.display='none';return;}
+    if(!deco||!deco.asset){decoEl.classList.remove('show');decoEl.style.display='none';return;}
     var url='https://cdn.discordapp.com/avatar-decoration-presets/'+deco.asset+'.png?size=96&passthrough=true';
     if(decoEl.getAttribute('src')===url)return;
-    decoEl.onload=function(){decoEl.style.display='block';};
-    decoEl.onerror=function(){decoEl.style.display='none';};
+    decoEl.onload=function(){decoEl.style.display='block';decoEl.classList.add('show');};
+    decoEl.onerror=function(){decoEl.style.display='none';decoEl.classList.remove('show');};
     decoEl.src=url;
 }
 
@@ -135,6 +135,48 @@ function applyActivity(activities,spotify){
     setActivity('');
 }
 
+/* ── Discord badge flag bitmask ── */
+var BADGE_FLAGS = [
+    { flag: 1,       icon: 'https://cdn.discordapp.com/badge-icons/6de6d34650760ba5551a79732e98ed60.png', tip: 'Discord Staff' },
+    { flag: 2,       icon: 'https://cdn.discordapp.com/badge-icons/848f79194d4be5ff5f81505cbd0ce1e6.png', tip: 'Partnered Server Owner' },
+    { flag: 4,       icon: 'https://cdn.discordapp.com/badge-icons/df199d2050d3ed4ebf84d64ae83989f8.png', tip: 'HypeSquad Events' },
+    { flag: 8,       icon: 'https://cdn.discordapp.com/badge-icons/43651ad8e2a8d1f9e5a7f4a3c4e40c54.png', tip: 'Bug Hunter Level 1' },
+    { flag: 64,      icon: 'https://cdn.discordapp.com/badge-icons/8a88d63823d8a71cd5e390baa45efa02.png', tip: 'HypeSquad Bravery' },
+    { flag: 128,     icon: 'https://cdn.discordapp.com/badge-icons/011940fd013da3f7fb926e4a1cd2e618.png', tip: 'HypeSquad Brilliance' },
+    { flag: 256,     icon: 'https://cdn.discordapp.com/badge-icons/3aa41de486fa12454c3761e8e223442e.png', tip: 'HypeSquad Balance' },
+    { flag: 512,     icon: 'https://cdn.discordapp.com/badge-icons/28a406d085f0f6d2e2e5d6ad9c0ec3de.png', tip: 'Early Supporter' },
+    { flag: 16384,   icon: 'https://cdn.discordapp.com/badge-icons/2717692c7dca7289b35297368a940dd0.png', tip: 'Bug Hunter Level 2' },
+    { flag: 131072,  icon: 'https://cdn.discordapp.com/badge-icons/e4b12c334162003e4ae5c7ee0e7ef3e5.png', tip: 'Verified Bot Developer' },
+    { flag: 4194304, icon: 'https://cdn.discordapp.com/badge-icons/a7f0b8de8d64ba2c36b77fbb25f2b97e.png', tip: 'Active Developer' }
+];
+
+function applyBadges(user){
+    var badgesEl = document.getElementById('discord-badges');
+    if (!badgesEl) return;
+    var flags = (user && user.public_flags) || 0;
+    /* Build earned badges */
+    var earned = BADGE_FLAGS.filter(function(b){ return flags & b.flag; });
+    /* Keep the static custom-badge-pill but append real Discord badges after it */
+    var existing = badgesEl.querySelector('#custom-badge-pill');
+    /* Remove previously injected real badges */
+    var prev = badgesEl.querySelectorAll('.discord-real-badge');
+    prev.forEach(function(el){ el.remove(); });
+    earned.forEach(function(b){
+        var wrap = document.createElement('div');
+        wrap.className = 'custom-badge discord-real-badge';
+        wrap.setAttribute('data-tip', b.tip);
+        wrap.style.cssText = 'width:22px;height:22px;';
+        var img = document.createElement('img');
+        img.draggable = false;
+        img.src = b.icon;
+        img.alt = b.tip;
+        img.style.cssText = 'width:22px;height:22px;display:block;border-radius:3px;object-fit:contain;';
+        img.onerror = function(){ this.style.display = 'none'; };
+        wrap.appendChild(img);
+        badgesEl.appendChild(wrap);
+    });
+}
+
 function render(data){
     if(!data)return;
     var user=data.discord_user||{};
@@ -147,6 +189,7 @@ function render(data){
     applyDot(status);
     applyStatus(status);
     applyActivity(activities,spotify);
+    applyBadges(user);
     window._lastDiscordStatus=status;
     initialised=true;
 }
