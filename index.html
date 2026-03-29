@@ -27,9 +27,11 @@
     <!-- Preconnect to external asset origins -->
     <link rel="preconnect" href="https://cdn.discordapp.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://api.lanyard.rest" crossorigin>
 
     <!-- Preload critical above-the-fold assets -->
     <link rel="preload" href="media/dark.webm" as="video" type="video/webm" fetchpriority="high">
+    <link rel="preload" href="media/dark.mp4"  as="video" type="video/mp4"  fetchpriority="high">
     <link rel="preload" href="media/music-cover/cry.jpg" as="image" fetchpriority="high">
     <link rel="preload" href="media/badges/owner.png" as="image" fetchpriority="high">
     <link rel="preload" href="media/badges/developer.png" as="image" fetchpriority="high">
@@ -1012,11 +1014,13 @@
 
 <div id="bg-wrap">
     <video id="yt-dark" autoplay muted loop playsinline preload="auto" fetchpriority="high"
+           style="will-change:opacity;transform:translate(-50%,-50%) translateZ(0);backface-visibility:hidden;"
            onerror="this.style.display='none'">
         <source src="media/dark.webm" type="video/webm">
         <source src="media/dark.mp4"  type="video/mp4">
     </video>
     <video id="yt-light" autoplay muted loop playsinline preload="none"
+           style="will-change:opacity;transform:translate(-50%,-50%) translateZ(0);backface-visibility:hidden;"
            onerror="this.style.display='none'">
         <source src="media/light.webm" type="video/webm">
         <source src="media/light.mp4"  type="video/mp4">
@@ -1310,7 +1314,6 @@
             </div>
 
             <div class="views-row" style="position:absolute;bottom:10px;left:18px;display:flex;align-items:center;gap:4px;pointer-events:none;">
-                <span style="font-size:0.60rem;opacity:0.55;">👁</span>
                 <span class="visit-count-val" style="font-size:0.60rem;font-weight:600;letter-spacing:0.5px;"></span>
                 <span style="font-size:0.52rem;letter-spacing:1.5px;text-transform:uppercase;opacity:0.65;">views</span>
             </div>
@@ -1798,6 +1801,41 @@
 </script>
 
 <script src="js/discord.js"></script>
+
+<script>
+/* ── Page view counter (countapi.xyz) ── */
+(function(){
+    var NAMESPACE = 'francisco.is-a.dev';
+    var KEY       = 'pageviews';
+    var API       = 'https://api.countapi.xyz';
+
+    function setViews(n){
+        var els = document.querySelectorAll('.visit-count-val');
+        var display = n >= 1000 ? (n/1000).toFixed(1).replace(/\.0$/,'')+'k' : String(n);
+        els.forEach(function(el){ el.textContent = display; });
+    }
+
+    /* Hit = increment on every real visit, read-only on return within session */
+    var counted = sessionStorage.getItem('view_counted');
+    if(counted){
+        /* Already counted this session — just read the current value */
+        fetch(API+'/get/'+NAMESPACE+'/'+KEY)
+            .then(function(r){ return r.ok ? r.json() : null; })
+            .then(function(d){ if(d&&d.value!=null) setViews(d.value); })
+            .catch(function(){});
+    } else {
+        fetch(API+'/hit/'+NAMESPACE+'/'+KEY)
+            .then(function(r){ return r.ok ? r.json() : null; })
+            .then(function(d){
+                if(d&&d.value!=null){
+                    setViews(d.value);
+                    sessionStorage.setItem('view_counted','1');
+                }
+            })
+            .catch(function(){});
+    }
+})();
+</script>
 
 
 <script>

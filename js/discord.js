@@ -22,7 +22,8 @@ var avatarCached=null,initialised=false,elapsedTimer=null;
 /* waiting up to 5 s for the WebSocket/REST round-trip to complete.        */
 (function preRender(){
     try{
-        var cached=sessionStorage.getItem('dc_cache');
+        /* Try localStorage first (persists across sessions), fallback to sessionStorage */
+        var cached=localStorage.getItem('dc_cache')||sessionStorage.getItem('dc_cache');
         if(!cached)return;
         var d=JSON.parse(cached);
         if(d.avatar&&pfpEl){
@@ -37,7 +38,19 @@ var avatarCached=null,initialised=false,elapsedTimer=null;
     }catch(e){}
 })();
 
-var fallbackTimer=setTimeout(doRestFallback,5000);
+/* ── Fire REST immediately in parallel with WebSocket ── */
+/* First visit has no cache — this ensures Discord info appears fast (~200ms) */
+/* without waiting for the WS handshake. If WS wins, REST result is ignored.  */
+(function immediateRest(){
+    if(initialised)return;
+    fetch(REST_URL)
+        .then(function(r){return r.ok?r.json():Promise.reject();})
+        .then(function(j){if(!initialised&&j&&j.success&&j.data)render(j.data);})
+        .catch(function(){});
+})();
+
+/* Safety net: if both REST and WS fail, show offline after 5s */
+var fallbackTimer=setTimeout(function(){if(!initialised)renderOffline();},5000);
 
 /* ── Utilities ── */
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -110,15 +123,36 @@ function applyDot(status){
 }
 
 /* ── Status text ── */
+var _offlineSince=null,_offlineTimer=null;
+function _fmtOffline(ms){
+    var s=Math.floor((Date.now()-ms)/1000);
+    if(s<60)return 'offline for a moment';
+    var m=Math.floor(s/60);
+    if(m<60)return 'offline for '+m+'m';
+    var h=Math.floor(m/60);
+    if(h<24)return 'offline for '+h+'h';
+    return 'offline for '+(Math.floor(h/24))+'d';
+}
 function applyStatus(status){
     if(!statusEl)return;
     var colors={online:'#23a55a',idle:'#f0b232',dnd:'#f23f43',offline:'#80848e',streaming:'#593695'};
-    var labels={online:'Online',idle:'Idle',dnd:'Do Not Disturb',offline:'Offline',streaming:'Streaming'};
     var c=colors[status]||colors.offline;
-    statusEl.innerHTML='<span style="display:inline-flex;align-items:center;gap:5px;">'
-        +'<span style="width:8px;height:8px;border-radius:50%;background:'+c+';box-shadow:0 0 5px '+c+';display:inline-block;flex-shrink:0;"></span>'
-        +'<span style="font-size:0.70rem;color:rgba(255,255,255,0.45);">'+labels[status]+'</span>'
-        +'</span>';
+    if(_offlineTimer){clearInterval(_offlineTimer);_offlineTimer=null;}
+    function _dot(label){
+        statusEl.innerHTML='<span style="display:inline-flex;align-items:center;gap:5px;">'
+            +'<span style="width:8px;height:8px;border-radius:50%;background:'+c+';box-shadow:0 0 5px '+c+';display:inline-block;flex-shrink:0;"></span>'
+            +'<span style="font-size:0.70rem;color:rgba(255,255,255,0.45);">'+label+'</span>'
+            +'</span>';
+    }
+    if(status==='online'){_offlineSince=null;_dot('active');}
+    else if(status==='idle'){_offlineSince=null;_dot('away');}
+    else if(status==='dnd'){_offlineSince=null;_dot('busy');}
+    else if(status==='streaming'){_offlineSince=null;_dot('streaming');}
+    else{
+        if(!_offlineSince)_offlineSince=Date.now();
+        _dot(_fmtOffline(_offlineSince));
+        _offlineTimer=setInterval(function(){_dot(_fmtOffline(_offlineSince));},60000);
+    }
 }
 
 /* ── Profile badges ── */
@@ -191,21 +225,44 @@ function applyActivity(activities,spotify){
     if(elapsedTimer){clearInterval(elapsedTimer);elapsedTimer=null;}
     if(!activityEl)return;
     var acts=activities||[];
-    var spA=null,custom=null,game=null,stream=null;
+    var spA=null,custom=null,game=null,stream=null,watch=null;
     for(var i=0;i<acts.length;i++){
         var a=acts[i];
         if(a.type===2&&!spA)spA=a;
         if(a.type===4&&!custom)custom=a;
         if(a.type===1&&!stream)stream=a;
         if(a.type===0&&!game)game=a;
+        if(a.type===3&&!watch)watch=a;
     }
+    function lbl(text){return '<span style="font-size:0.58rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.28);margin-right:5px;">'+text+'</span>';}
+    function main_(text){return '<span style="font-weight:600;color:rgba(255,255,255,0.88);">'+text+'</span>';}
+    function sub_(text){return '<span style="color:rgba(255,255,255,0.45);">'+text+'</span>';}
+    function elapsed_(ms){return ms?'<span style="color:rgba(255,255,255,0.30);font-size:0.60rem;margin-left:4px;">'+fmtElapsed(ms)+'</span>':'';}
+
     if(spotify&&spotify.song){
         var ms=spotify.timestamps&&spotify.timestamps.start;
         function refreshSp(){
-            setActivity('<span>🎵</span><span style="margin-left:5px;font-weight:600;color:rgba(255,255,255,0.88);">'+esc(spotify.song)+'</span><span style="color:rgba(255,255,255,0.55);"> — '+esc(spotify.artist)+'</span>'+(ms?'<span style="color:rgba(255,255,255,0.35);font-size:0.60rem;"> · '+fmtElapsed(ms)+'</span>':''));
+            setActivity(lbl('listening')+main_(esc(spotify.song))+' '+sub_('— '+esc(spotify.artist))+elapsed_(ms));
         }
         refreshSp();
         if(ms)elapsedTimer=setInterval(refreshSp,5000);
+        return;
+    }
+    if(stream){
+        setActivity(lbl('streaming')+main_(esc(stream.name||'live')));
+        return;
+    }
+    if(spA){
+        setActivity(lbl('listening')+main_(esc(spA.details||spA.name))+' '+sub_('— '+esc(spA.state||'')));
+        return;
+    }
+    if(watch){
+        setActivity(lbl('watching')+main_(esc(watch.name))+(watch.details?' '+sub_('— '+esc(watch.details)):''));
+        return;
+    }
+    if(game){
+        var ms2=game.timestamps&&game.timestamps.start;
+        setActivity(lbl('playing')+main_(esc(game.name))+(game.details?' '+sub_('— '+esc(game.details)):'')+elapsed_(ms2));
         return;
     }
     if(custom){
@@ -214,12 +271,10 @@ function applyActivity(activities,spotify){
             if(custom.emoji.id)emoji='<img src="https://cdn.discordapp.com/emojis/'+custom.emoji.id+'.webp?size=20" style="width:15px;height:15px;vertical-align:middle;margin-right:4px;" alt="">';
             else if(custom.emoji.name)emoji=esc(custom.emoji.name)+' ';
         }
-        setActivity('<span style="color:rgba(255,255,255,0.82);font-weight:500;">'+emoji+esc(custom.state||'')+'</span>');
+        if(custom.state)setActivity('<span style="color:rgba(255,255,255,0.75);">'+emoji+esc(custom.state)+'</span>');
+        else setActivity('');
         return;
     }
-    if(spA){setActivity('<span>🎵</span><span style="margin-left:5px;font-weight:600;color:rgba(255,255,255,0.88);">'+esc(spA.details||'')+'</span><span style="color:rgba(255,255,255,0.55);"> — '+esc(spA.state||'')+'</span>');return;}
-    if(stream){setActivity('<span style="color:#a07fff;">🔴</span><span style="margin-left:5px;color:rgba(255,255,255,0.82);font-weight:500;">'+esc(stream.name||'Streaming')+'</span>');return;}
-    if(game){setActivity('<span>🎮</span><span style="margin-left:5px;color:rgba(255,255,255,0.82);font-weight:500;">'+esc(game.name)+(game.details?' — '+esc(game.details):'')+'</span>');return;}
     setActivity('');
 }
 
@@ -241,11 +296,17 @@ function render(data){
     window._lastDiscordStatus=status;
     initialised=true;
     clearTimeout(fallbackTimer);
-    /* Persist avatar + status so next page load pre-renders instantly */
-    try{sessionStorage.setItem('dc_cache',JSON.stringify({avatar:resolveAvatar(user),status:status}));}catch(e){}
+    /* Persist avatar + status to both storages:
+       sessionStorage → instant pre-render within same tab session
+       localStorage   → instant pre-render on return visits across sessions */
+    try{
+        var cacheData=JSON.stringify({avatar:resolveAvatar(user),status:status});
+        sessionStorage.setItem('dc_cache',cacheData);
+        localStorage.setItem('dc_cache',cacheData);
+    }catch(e){}
 }
 
-/* ── REST fallback ── */
+/* ── REST fallback (kept for legacy WS onclose path) ── */
 function doRestFallback(){
     if(initialised)return;
     fetch(REST_URL)
