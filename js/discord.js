@@ -6,6 +6,12 @@ var HEARTBEAT_MS=30000;
 var RECONNECT_BASE=2000;
 var RECONNECT_MAX=30000;
 
+// ── FIX: defer all DOM access and logic until the document is fully parsed ──
+// Previously all getElementById calls ran immediately when the <script> tag was
+// evaluated, which is BEFORE the Discord HTML elements exist in the DOM, so
+// every element reference was null and nothing ever rendered.
+function init(){
+
 var pfpEl=document.getElementById('discord-pfp');
 var decoEl=document.getElementById('discord-decoration');
 var skeletonEl=document.getElementById('hero-pfp-skeleton');
@@ -221,8 +227,13 @@ function applyNameplate(user){
 /* ── Activity ── */
 function setActivity(html){
     if(!activityEl)return;
-    if(html){activityEl.innerHTML=html;activityEl.style.display='block';}
-    else{activityEl.innerHTML='';activityEl.style.display='none';}
+    if(html){
+        activityEl.innerHTML=html;
+        activityEl.style.display='block';  // FIX: override inline display:none from HTML
+    } else {
+        activityEl.innerHTML='';
+        activityEl.style.display='none';
+    }
 }
 
 function applyActivity(activities,spotify){
@@ -332,4 +343,15 @@ function stopHeartbeat(){if(heartbeatTimer){clearInterval(heartbeatTimer);heartb
 function scheduleReconnect(){if(reconnectTimer)return;reconnectTimer=setTimeout(function(){reconnectTimer=null;connect();},reconnectDelay);reconnectDelay=Math.min(reconnectDelay*2,RECONNECT_MAX);}
 
 connect();
+
+} // end init()
+
+// ── Run after DOM is fully parsed ──
+if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',init);
+}else{
+    // Script loaded after DOM is ready (e.g. defer, or late dynamic load)
+    init();
+}
+
 })();
