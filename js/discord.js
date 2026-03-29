@@ -6,12 +6,6 @@ var HEARTBEAT_MS=30000;
 var RECONNECT_BASE=2000;
 var RECONNECT_MAX=30000;
 
-// ── FIX: defer all DOM access and logic until the document is fully parsed ──
-// Previously all getElementById calls ran immediately when the <script> tag was
-// evaluated, which is BEFORE the Discord HTML elements exist in the DOM, so
-// every element reference was null and nothing ever rendered.
-function init(){
-
 var pfpEl=document.getElementById('discord-pfp');
 var decoEl=document.getElementById('discord-decoration');
 var skeletonEl=document.getElementById('hero-pfp-skeleton');
@@ -48,18 +42,15 @@ function applyAvatar(user){
     pfpEl.onerror=function(){pfpEl.style.display='none';if(skeletonEl)skeletonEl.style.display='block';};
     pfpEl.style.display='none';
     pfpEl.src=url;
+    /* Handle already-cached images where 'load' fires before handler attaches */
+    if(pfpEl.complete&&pfpEl.naturalWidth){pfpEl.style.display='block';if(skeletonEl)skeletonEl.style.display='none';}
 }
 
-/* ── Avatar decoration (animated PNG overlay) ── */
+/* ── Avatar decoration ── */
 function applyDecoration(user){
     if(!decoEl)return;
     var deco=user&&user.avatar_decoration_data;
-    if(!deco||!deco.asset){
-        decoEl.style.display='none';
-        decoEl.classList.remove('show');
-        return;
-    }
-    // passthrough=true preserves animated frames
+    if(!deco||!deco.asset){decoEl.style.display='none';decoEl.classList.remove('show');return;}
     var url='https://cdn.discordapp.com/avatar-decoration-presets/'+deco.asset+'.png?size=96&passthrough=true';
     if(decoEl.getAttribute('src')===url)return;
     decoEl.onload=function(){decoEl.style.display='block';decoEl.classList.add('show');};
@@ -98,7 +89,7 @@ function applyDot(status){
     window._lastDiscordStatus=status;
 }
 
-/* ── Status text label ── */
+/* ── Status text ── */
 function applyStatus(status){
     if(!statusEl)return;
     var colors={online:'#23a55a',idle:'#f0b232',dnd:'#f23f43',offline:'#80848e',streaming:'#593695'};
@@ -110,7 +101,7 @@ function applyStatus(status){
         +'</span>';
 }
 
-/* ── Profile badges (public_flags bitmask + guild tag) ── */
+/* ── Profile badges ── */
 var BADGE_FLAGS=[
     {flag:1,       src:'6de6d34650760ba5551a79732e98ed60', tip:'Discord Staff'},
     {flag:2,       src:'848f79194d4be5ff5f81505cbd0ce1e6', tip:'Partnered Server Owner'},
@@ -128,13 +119,9 @@ var BADGE_FLAGS=[
 function applyBadges(user){
     var badgesEl=document.getElementById('discord-badges');
     if(!badgesEl)return;
-
-    // Remove previously injected real Discord badges; keep the static custom-badge-pill
     badgesEl.querySelectorAll('.dc-real-badge').forEach(function(el){el.remove();});
-
     var flags=(user&&user.public_flags)||0;
     var earned=BADGE_FLAGS.filter(function(b){return flags&b.flag;});
-
     earned.forEach(function(b){
         var wrap=document.createElement('div');
         wrap.className='custom-badge dc-real-badge';
@@ -149,91 +136,62 @@ function applyBadges(user){
         wrap.appendChild(img);
         badgesEl.appendChild(wrap);
     });
-
-    // Guild / Clan tag chip
-    var guild=user&&user.primary_guild;
-    applyGuildTag(guild, badgesEl);
+    applyGuildTag(user&&user.primary_guild, badgesEl);
 }
 
-/* ── Guild / Clan tag chip ── */
+/* ── Guild tag ── */
 function applyGuildTag(guild, badgesEl){
     var prev=document.getElementById('dc-guild-tag');
     if(prev)prev.remove();
     if(!guild||!guild.tag||!guild.identity_enabled)return;
-
     var chip=document.createElement('div');
     chip.id='dc-guild-tag';
     chip.className='custom-badge dc-real-badge';
     chip.setAttribute('data-tip','Clan · '+esc(guild.tag));
     chip.style.cssText='display:inline-flex;align-items:center;gap:4px;width:auto;height:22px;'
         +'background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.13);'
-        +'border-radius:6px;padding:0 6px;cursor:default;flex-shrink:0;'
-        +'transition:background 0.2s,border-color 0.2s;';
+        +'border-radius:6px;padding:0 6px;cursor:default;flex-shrink:0;transition:background 0.2s,border-color 0.2s;';
     chip.onmouseenter=function(){chip.style.background='rgba(255,255,255,0.13)';chip.style.borderColor='rgba(255,255,255,0.25)';};
     chip.onmouseleave=function(){chip.style.background='rgba(255,255,255,0.07)';chip.style.borderColor='rgba(255,255,255,0.13)';};
-
-    // Guild badge icon (16px)
     if(guild.badge&&guild.identity_guild_id){
         var gIcon=document.createElement('img');
-        gIcon.draggable=false;
-        gIcon.alt='';
+        gIcon.draggable=false; gIcon.alt='';
         gIcon.src='https://cdn.discordapp.com/clan-badges/'+guild.identity_guild_id+'/'+guild.badge+'.png?size=16';
         gIcon.style.cssText='width:14px;height:14px;object-fit:contain;border-radius:2px;flex-shrink:0;';
         gIcon.onerror=function(){gIcon.style.display='none';};
         chip.appendChild(gIcon);
     }
-
     var tagText=document.createElement('span');
     tagText.textContent=guild.tag;
     tagText.style.cssText='font-size:0.58rem;font-weight:700;letter-spacing:0.5px;color:rgba(255,255,255,0.65);line-height:1;';
     chip.appendChild(tagText);
-
     if(badgesEl)badgesEl.appendChild(chip);
 }
 
-/* ── Nameplate collectible ── */
+/* ── Nameplate ── */
 function applyNameplate(user){
-    // Clean up any previous nameplate
     var prev=document.getElementById('dc-nameplate-wrap');
     if(prev)prev.remove();
-
     var np=user&&user.collectibles&&user.collectibles.nameplate;
     if(!np||!np.asset)return;
-
-    // Asset path e.g. "nameplates/lunar_eclipse/moonlit_charm/"
     var url='https://cdn.discordapp.com/collectibles-assets/'+np.asset+'nameplate.png?passthrough=false&size=160';
-
     var wrap=document.createElement('div');
     wrap.id='dc-nameplate-wrap';
     wrap.style.cssText='display:inline-flex;align-items:center;gap:5px;margin-top:5px;';
-
     var plate=document.createElement('img');
-    plate.draggable=false;
-    plate.alt='';
-    plate.src=url;
-    plate.style.cssText='height:18px;width:auto;max-width:120px;object-fit:contain;'
-        +'opacity:0.70;filter:drop-shadow(0 0 4px rgba(255,255,255,0.18));pointer-events:none;'
-        +'border-radius:3px;';
+    plate.draggable=false; plate.alt=''; plate.src=url;
+    plate.style.cssText='height:18px;width:auto;max-width:120px;object-fit:contain;opacity:0.70;filter:drop-shadow(0 0 4px rgba(255,255,255,0.18));pointer-events:none;border-radius:3px;';
     plate.onerror=function(){wrap.remove();};
     wrap.appendChild(plate);
-
-    // Insert below the subtitle ".subtitle-text" line
     var subtitle=document.querySelector('.subtitle-text');
-    if(subtitle&&subtitle.parentNode){
-        subtitle.parentNode.insertBefore(wrap,subtitle.nextSibling);
-    }
+    if(subtitle&&subtitle.parentNode)subtitle.parentNode.insertBefore(wrap,subtitle.nextSibling);
 }
 
 /* ── Activity ── */
 function setActivity(html){
     if(!activityEl)return;
-    if(html){
-        activityEl.innerHTML=html;
-        activityEl.style.display='block';  // FIX: override inline display:none from HTML
-    } else {
-        activityEl.innerHTML='';
-        activityEl.style.display='none';
-    }
+    if(html){activityEl.innerHTML=html;activityEl.style.display='block';}
+    else{activityEl.innerHTML='';activityEl.style.display='none';}
 }
 
 function applyActivity(activities,spotify){
@@ -266,10 +224,7 @@ function applyActivity(activities,spotify){
         setActivity('<span style="color:rgba(255,255,255,0.82);font-weight:500;">'+emoji+esc(custom.state||'')+'</span>');
         return;
     }
-    if(spA){
-        setActivity('<span>🎵</span><span style="margin-left:5px;font-weight:600;color:rgba(255,255,255,0.88);">'+esc(spA.details||'')+'</span><span style="color:rgba(255,255,255,0.55);"> — '+esc(spA.state||'')+'</span>');
-        return;
-    }
+    if(spA){setActivity('<span>🎵</span><span style="margin-left:5px;font-weight:600;color:rgba(255,255,255,0.88);">'+esc(spA.details||'')+'</span><span style="color:rgba(255,255,255,0.55);"> — '+esc(spA.state||'')+'</span>');return;}
     if(stream){setActivity('<span style="color:#a07fff;">🔴</span><span style="margin-left:5px;color:rgba(255,255,255,0.82);font-weight:500;">'+esc(stream.name||'Streaming')+'</span>');return;}
     if(game){setActivity('<span>🎮</span><span style="margin-left:5px;color:rgba(255,255,255,0.82);font-weight:500;">'+esc(game.name)+(game.details?' — '+esc(game.details):'')+'</span>');return;}
     setActivity('');
@@ -292,20 +247,28 @@ function render(data){
     applyNameplate(user);
     window._lastDiscordStatus=status;
     initialised=true;
+    clearTimeout(fallbackTimer); // only cancel REST fallback once we have real data
 }
 
 /* ── REST fallback ── */
 function doRestFallback(){
     if(initialised)return;
     fetch(REST_URL)
-        .then(function(r){return r.ok?r.json():Promise.reject();})
-        .then(function(j){if(!initialised&&j&&j.data)render(j.data);})
+        .then(function(r){return r.ok?r.json():Promise.reject('http-error');})
+        .then(function(j){
+            if(!initialised&&j&&j.success&&j.data){render(j.data);}
+            else if(!initialised){renderOffline();}
+        })
         .catch(function(){if(!initialised)renderOffline();});
 }
 
 function renderOffline(){
     if(skeletonEl)skeletonEl.style.display='none';
-    if(pfpEl){pfpEl.onload=function(){pfpEl.style.display='block';};pfpEl.src='https://cdn.discordapp.com/embed/avatars/'+(parseInt(DISCORD_ID.slice(-4))%6)+'.png';}
+    if(pfpEl){
+        pfpEl.onload=function(){pfpEl.style.display='block';};
+        pfpEl.src='https://cdn.discordapp.com/embed/avatars/'+(parseInt(DISCORD_ID.slice(-4))%6)+'.png';
+        if(pfpEl.complete&&pfpEl.naturalWidth)pfpEl.style.display='block';
+    }
     applyDot('offline');
     applyStatus('offline');
     setActivity('');
@@ -328,9 +291,19 @@ function connect(){
                 ws.send(JSON.stringify({op:2,d:{subscribe_to_id:DISCORD_ID}}));
                 break;
             case 0:
-                clearTimeout(fallbackTimer);
-                if(msg.t==='INIT_STATE'){var p=msg.d&&msg.d[DISCORD_ID];if(p)render(p);}
-                else if(msg.t==='PRESENCE_UPDATE'){if(msg.d)render(msg.d);}
+                // KEY FIX: do NOT clearTimeout(fallbackTimer) here unconditionally.
+                // The old code killed the REST fallback the moment ANY op:0 arrived,
+                // even when INIT_STATE returned no data for this user (user not in
+                // Lanyard's server). Now clearTimeout only runs inside render(),
+                // so if p is undefined the REST fallback still fires after 5 s.
+                if(msg.t==='INIT_STATE'){
+                    var p=msg.d&&msg.d[DISCORD_ID];
+                    if(p)render(p);
+                    // no data for this user → fallbackTimer still live → REST fires
+                }
+                else if(msg.t==='PRESENCE_UPDATE'){
+                    if(msg.d)render(msg.d);
+                }
                 break;
         }
     };
@@ -343,15 +316,4 @@ function stopHeartbeat(){if(heartbeatTimer){clearInterval(heartbeatTimer);heartb
 function scheduleReconnect(){if(reconnectTimer)return;reconnectTimer=setTimeout(function(){reconnectTimer=null;connect();},reconnectDelay);reconnectDelay=Math.min(reconnectDelay*2,RECONNECT_MAX);}
 
 connect();
-
-} // end init()
-
-// ── Run after DOM is fully parsed ──
-if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',init);
-}else{
-    // Script loaded after DOM is ready (e.g. defer, or late dynamic load)
-    init();
-}
-
 })();
