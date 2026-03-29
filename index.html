@@ -1005,6 +1005,34 @@
         @media (max-width:319px) { #rope-canvas, #rope-hit { display:none!important; } }
         #rope-canvas { z-index: 210 !important; }
         #rope-hit    { z-index: 211 !important; }
+        /* PREMIUM AESTHETICS OVERRIDES */
+        .glass-card {
+            backdrop-filter: blur(34px) !important;
+            -webkit-backdrop-filter: blur(34px) !important;
+            animation: cardGlow 4s infinite alternate ease-in-out;
+            transition: transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), border-color 0.3s, background 0.4s !important;
+        }
+        @keyframes cardGlow {
+            0%   { box-shadow: 0 0 10px rgba(255, 255, 255, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.07) !important; }
+            100% { box-shadow: 0 0 40px rgba(255, 255, 255, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important; }
+        }
+        .skill-tag {
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease !important;
+            will-change: transform, box-shadow;
+        }
+        .skill-tag:hover {
+            transform: translateY(-4px) scale(1.04) !important;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4), 0 0 12px rgba(255, 255, 255, 0.14) !important;
+            z-index: 10;
+        }
+        #display-name {
+            text-shadow: 0 0 12px rgba(255, 255, 255, 0.4), 0 0 24px rgba(255, 255, 255, 0.15);
+            animation: namePulse 3s infinite alternate ease-in-out;
+        }
+        @keyframes namePulse {
+            0% { opacity: 0.95; filter: brightness(1); }
+            100% { opacity: 1; filter: brightness(1.15); text-shadow: 0 0 16px rgba(255, 255, 255, 0.6), 0 0 32px rgba(255, 255, 255, 0.25); }
+        }
     </style>
 </head>
 <body class="theme-dark">
@@ -1319,7 +1347,7 @@
                         </div>
                     </div>
 
-                    <h1 style="margin:0;font-size:clamp(1.5rem,6vw,2.1rem);">
+                    <h1 style="margin:0;font-size:clamp(1.5rem,6vw,2.1rem);min-height:1.25em;line-height:1.25em;display:flex;justify-content:center;align-items:center;">
                         <span id="display-name"></span><span id="tw-cursor"></span>
                     </h1>
 
@@ -1847,7 +1875,7 @@
             .then(function(d){ if(d&&d.count!=null) setViews(d.count); })
             .catch(function(){});
     } else {
-        fetch(API+'/'+NAMESPACE+'/'+KEY+'/up/')
+        fetch(API+'/'+NAMESPACE+'/'+KEY+'/up')
             .then(function(r){ return r.ok ? r.json() : null; })
             .then(function(d){
                 if(d&&d.count!=null){
