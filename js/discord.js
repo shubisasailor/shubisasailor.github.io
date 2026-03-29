@@ -17,37 +17,8 @@ var ws=null,heartbeatTimer=null,reconnectTimer=null;
 var reconnectDelay=RECONNECT_BASE;
 var avatarCached=null,initialised=false,elapsedTimer=null;
 
-/* ── Instant pre-render from sessionStorage cache ── */
-/* On repeat visits the avatar + status dot show immediately instead of    */
-/* waiting up to 5 s for the WebSocket/REST round-trip to complete.        */
-(function preRender(){
-    try{
-        /* Try localStorage first (persists across sessions), fallback to sessionStorage */
-        var cached=localStorage.getItem('dc_cache')||sessionStorage.getItem('dc_cache');
-        if(!cached)return;
-        var d=JSON.parse(cached);
-        if(d.avatar&&pfpEl){
-            pfpEl.onload=function(){pfpEl.style.display='block';if(skeletonEl)skeletonEl.style.display='none';};
-            pfpEl.onerror=function(){pfpEl.style.display='none';if(skeletonEl)skeletonEl.style.display='block';};
-            pfpEl.style.display='none';
-            pfpEl.src=d.avatar;
-            avatarCached=d.avatar;
-            if(pfpEl.complete&&pfpEl.naturalWidth){pfpEl.style.display='block';if(skeletonEl)skeletonEl.style.display='none';}
-        }
-        if(d.status){applyDot(d.status);applyStatus(d.status);}
-    }catch(e){}
-})();
-
 /* ── Fire REST immediately in parallel with WebSocket ── */
-/* First visit has no cache — this ensures Discord info appears fast (~200ms) */
-/* without waiting for the WS handshake. If WS wins, REST result is ignored.  */
-(function immediateRest(){
-    if(initialised)return;
-    fetch(REST_URL)
-        .then(function(r){return r.ok?r.json():Promise.reject();})
-        .then(function(j){if(!initialised&&j&&j.success&&j.data)render(j.data);})
-        .catch(function(){});
-})();
+/* Moved to bottom of file so render() is defined when called */
 
 /* Safety net: if both REST and WS fail, show offline after 5s */
 var fallbackTimer=setTimeout(function(){if(!initialised)renderOffline();},5000);
@@ -370,6 +341,33 @@ function connect(){
 function startHeartbeat(i){stopHeartbeat();heartbeatTimer=setInterval(function(){if(ws&&ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify({op:3}));},i);}
 function stopHeartbeat(){if(heartbeatTimer){clearInterval(heartbeatTimer);heartbeatTimer=null;}}
 function scheduleReconnect(){if(reconnectTimer)return;reconnectTimer=setTimeout(function(){reconnectTimer=null;connect();},reconnectDelay);reconnectDelay=Math.min(reconnectDelay*2,RECONNECT_MAX);}
+
+/* ── Instant pre-render from cache (runs after all fns defined) ── */
+(function preRender(){
+    try{
+        var cached=localStorage.getItem('dc_cache')||sessionStorage.getItem('dc_cache');
+        if(!cached)return;
+        var d=JSON.parse(cached);
+        if(d.avatar&&pfpEl){
+            pfpEl.onload=function(){pfpEl.style.display='block';if(skeletonEl)skeletonEl.style.display='none';};
+            pfpEl.onerror=function(){pfpEl.style.display='none';if(skeletonEl)skeletonEl.style.display='block';};
+            pfpEl.style.display='none';
+            pfpEl.src=d.avatar;
+            avatarCached=d.avatar;
+            if(pfpEl.complete&&pfpEl.naturalWidth){pfpEl.style.display='block';if(skeletonEl)skeletonEl.style.display='none';}
+        }
+        if(d.status){applyDot(d.status);applyStatus(d.status);}
+    }catch(e){}
+})();
+
+/* ── Fire REST immediately in parallel with WebSocket ── */
+(function immediateRest(){
+    if(initialised)return;
+    fetch(REST_URL)
+        .then(function(r){return r.ok?r.json():Promise.reject();})
+        .then(function(j){if(!initialised&&j&&j.success&&j.data)render(j.data);})
+        .catch(function(){});
+})();
 
 connect();
 })();

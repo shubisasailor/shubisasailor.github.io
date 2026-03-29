@@ -37,8 +37,7 @@
     <link rel="preload" href="media/badges/developer.png" as="image" fetchpriority="high">
     <link rel="preload" href="media/badges/early-supporter.png" as="image" fetchpriority="high">
 
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<script>window.addEventListener('load',function(){ if(typeof emailjs!=='undefined') emailjs.init('ANitUhHu4kV4-js93'); });</script>
+    <script async src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" onload="emailjs.init('ANitUhHu4kV4-js93')"></script>
 
     <script>
     if (sessionStorage.getItem('site_entered')) {
@@ -1074,6 +1073,33 @@
         <div id="enter-prompt">click to enter</div>
     </div>
 </div>
+<script>
+/* Attach overlay click instantly — no DOMContentLoaded wait needed since
+   this script runs right after the overlay element exists in the DOM.
+   enterSite() is defined later in DOMContentLoaded; we queue the intent
+   via a flag so the full enter logic still runs when ready. */
+(function(){
+    if(sessionStorage.getItem('site_entered')) return;
+    var overlay = document.getElementById('overlay');
+    var fired = false;
+    function earlyEnter(e){
+        if(fired) return; fired = true;
+        if(e && e.cancelable) e.preventDefault();
+        overlay.style.opacity = '0';
+        /* Signal DOMContentLoaded handler to finish the enter sequence */
+        window._earlyEnterFired = true;
+        if(window._enterSite) window._enterSite();
+    }
+    overlay.addEventListener('click',     earlyEnter, {once:true});
+    overlay.addEventListener('touchend',  earlyEnter, {passive:false, once:true});
+    overlay.addEventListener('pointerup', earlyEnter, {once:true});
+    /* Update prompt for touch devices */
+    if('ontouchstart' in window || navigator.maxTouchPoints > 0){
+        var ep = document.getElementById('enter-prompt');
+        if(ep) ep.textContent = 'tap to enter';
+    }
+})();
+</script>
 
 <audio id="bg-audio" preload="none"><source src="" type="audio/mpeg"></audio>
 <div id="toast"></div>
@@ -1995,9 +2021,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     window._enterSite = enterSite;
 
-    var ep=document.getElementById('enter-prompt');
-    if(ep&&('ontouchstart' in window||navigator.maxTouchPoints>0)) ep.textContent='tap to enter';
-
     if(sessionStorage.getItem('site_entered')){
         _ent=true;
         overlay.style.display='none';
@@ -2009,7 +2032,11 @@ document.addEventListener('DOMContentLoaded', function () {
             if(window._audioPlay)window._audioPlay().catch(function(){});
             if(window._syncPlayIcons)setTimeout(function(){window._syncPlayIcons(!window._audioPaused());},300);
         }
+    } else if(window._earlyEnterFired){
+        /* User already clicked before DOMContentLoaded — finish the sequence now */
+        enterSite();
     } else {
+        /* Fallback: attach listeners in case early script missed it somehow */
         var _entryFired = false;
         function _tryEnter(e){ if(_entryFired)return; _entryFired=true; if(e&&e.cancelable)e.preventDefault(); enterSite(); }
         overlay.addEventListener('click',     _tryEnter);
