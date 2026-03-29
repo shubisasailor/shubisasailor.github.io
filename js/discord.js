@@ -19,15 +19,20 @@ var avatarCached=null,initialised=false,elapsedTimer=null;
 
 var fallbackTimer=setTimeout(doRestFallback,5000);
 
+/* ── Utilities ── */
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function pad(n){return n<10?'0'+n:''+n;}
-function fmtElapsed(ms){if(!ms)return '';var s=Math.max(0,Math.floor((Date.now()-ms)/1000)),m=Math.floor(s/60),h=Math.floor(m/60);return h>0?h+':'+pad(m%60)+':'+pad(s%60)+' elapsed':m+':'+pad(s%60)+' elapsed';}
+function fmtElapsed(ms){
+    if(!ms)return '';
+    var s=Math.max(0,Math.floor((Date.now()-ms)/1000)),m=Math.floor(s/60),h=Math.floor(m/60);
+    return h>0?h+':'+pad(m%60)+':'+pad(s%60)+' elapsed':m+':'+pad(s%60)+' elapsed';
+}
 
+/* ── Avatar ── */
 function resolveAvatar(user){
     if(!user||!user.avatar)return 'https://cdn.discordapp.com/embed/avatars/'+(parseInt(DISCORD_ID.slice(-4))%6)+'.png';
     return 'https://cdn.discordapp.com/avatars/'+DISCORD_ID+'/'+user.avatar+'.'+(user.avatar.startsWith('a_')?'gif':'webp')+'?size=128';
 }
-
 function applyAvatar(user){
     var url=resolveAvatar(user);
     if(avatarCached===url)return;
@@ -39,10 +44,16 @@ function applyAvatar(user){
     pfpEl.src=url;
 }
 
+/* ── Avatar decoration (animated PNG overlay) ── */
 function applyDecoration(user){
     if(!decoEl)return;
     var deco=user&&user.avatar_decoration_data;
-    if(!deco||!deco.asset){decoEl.classList.remove('show');decoEl.style.display='none';return;}
+    if(!deco||!deco.asset){
+        decoEl.style.display='none';
+        decoEl.classList.remove('show');
+        return;
+    }
+    // passthrough=true preserves animated frames
     var url='https://cdn.discordapp.com/avatar-decoration-presets/'+deco.asset+'.png?size=96&passthrough=true';
     if(decoEl.getAttribute('src')===url)return;
     decoEl.onload=function(){decoEl.style.display='block';decoEl.classList.add('show');};
@@ -50,6 +61,7 @@ function applyDecoration(user){
     decoEl.src=url;
 }
 
+/* ── Banner ── */
 function applyBanner(user){
     var bannerEl=document.getElementById('discord-banner');
     var bannerImg=document.getElementById('discord-banner-img');
@@ -65,6 +77,7 @@ function applyBanner(user){
     }
 }
 
+/* ── Status dot (SVG) ── */
 function applyDot(status){
     if(!dotEl)return;
     var bg=getComputedStyle(document.documentElement).getPropertyValue('--dot-bg').trim()||'rgba(8,8,12,0.95)';
@@ -79,6 +92,7 @@ function applyDot(status){
     window._lastDiscordStatus=status;
 }
 
+/* ── Status text label ── */
 function applyStatus(status){
     if(!statusEl)return;
     var colors={online:'#23a55a',idle:'#f0b232',dnd:'#f23f43',offline:'#80848e',streaming:'#593695'};
@@ -90,6 +104,121 @@ function applyStatus(status){
         +'</span>';
 }
 
+/* ── Profile badges (public_flags bitmask + guild tag) ── */
+var BADGE_FLAGS=[
+    {flag:1,       src:'6de6d34650760ba5551a79732e98ed60', tip:'Discord Staff'},
+    {flag:2,       src:'848f79194d4be5ff5f81505cbd0ce1e6', tip:'Partnered Server Owner'},
+    {flag:4,       src:'df199d2050d3ed4ebf84d64ae83989f8', tip:'HypeSquad Events'},
+    {flag:8,       src:'43651ad8e2a8d1f9e5a7f4a3c4e40c54', tip:'Bug Hunter Level 1'},
+    {flag:64,      src:'8a88d63823d8a71cd5e390baa45efa02', tip:'HypeSquad Bravery'},
+    {flag:128,     src:'011940fd013da3f7fb926e4a1cd2e618', tip:'HypeSquad Brilliance'},
+    {flag:256,     src:'3aa41de486fa12454c3761e8e223442e', tip:'HypeSquad Balance'},
+    {flag:512,     src:'28a406d085f0f6d2e2e5d6ad9c0ec3de', tip:'Early Supporter'},
+    {flag:16384,   src:'2717692c7dca7289b35297368a940dd0', tip:'Bug Hunter Level 2'},
+    {flag:131072,  src:'e4b12c334162003e4ae5c7ee0e7ef3e5', tip:'Verified Bot Developer'},
+    {flag:4194304, src:'a7f0b8de8d64ba2c36b77fbb25f2b97e', tip:'Active Developer'}
+];
+
+function applyBadges(user){
+    var badgesEl=document.getElementById('discord-badges');
+    if(!badgesEl)return;
+
+    // Remove previously injected real Discord badges; keep the static custom-badge-pill
+    badgesEl.querySelectorAll('.dc-real-badge').forEach(function(el){el.remove();});
+
+    var flags=(user&&user.public_flags)||0;
+    var earned=BADGE_FLAGS.filter(function(b){return flags&b.flag;});
+
+    earned.forEach(function(b){
+        var wrap=document.createElement('div');
+        wrap.className='custom-badge dc-real-badge';
+        wrap.setAttribute('data-tip',b.tip);
+        wrap.style.cssText='width:22px;height:22px;flex-shrink:0;';
+        var img=document.createElement('img');
+        img.draggable=false;
+        img.alt=b.tip;
+        img.src='https://cdn.discordapp.com/badge-icons/'+b.src+'.png';
+        img.style.cssText='width:22px;height:22px;display:block;object-fit:contain;';
+        img.onerror=function(){wrap.style.display='none';};
+        wrap.appendChild(img);
+        badgesEl.appendChild(wrap);
+    });
+
+    // Guild / Clan tag chip
+    var guild=user&&user.primary_guild;
+    applyGuildTag(guild, badgesEl);
+}
+
+/* ── Guild / Clan tag chip ── */
+function applyGuildTag(guild, badgesEl){
+    var prev=document.getElementById('dc-guild-tag');
+    if(prev)prev.remove();
+    if(!guild||!guild.tag||!guild.identity_enabled)return;
+
+    var chip=document.createElement('div');
+    chip.id='dc-guild-tag';
+    chip.className='custom-badge dc-real-badge';
+    chip.setAttribute('data-tip','Clan · '+esc(guild.tag));
+    chip.style.cssText='display:inline-flex;align-items:center;gap:4px;width:auto;height:22px;'
+        +'background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.13);'
+        +'border-radius:6px;padding:0 6px;cursor:default;flex-shrink:0;'
+        +'transition:background 0.2s,border-color 0.2s;';
+    chip.onmouseenter=function(){chip.style.background='rgba(255,255,255,0.13)';chip.style.borderColor='rgba(255,255,255,0.25)';};
+    chip.onmouseleave=function(){chip.style.background='rgba(255,255,255,0.07)';chip.style.borderColor='rgba(255,255,255,0.13)';};
+
+    // Guild badge icon (16px)
+    if(guild.badge&&guild.identity_guild_id){
+        var gIcon=document.createElement('img');
+        gIcon.draggable=false;
+        gIcon.alt='';
+        gIcon.src='https://cdn.discordapp.com/clan-badges/'+guild.identity_guild_id+'/'+guild.badge+'.png?size=16';
+        gIcon.style.cssText='width:14px;height:14px;object-fit:contain;border-radius:2px;flex-shrink:0;';
+        gIcon.onerror=function(){gIcon.style.display='none';};
+        chip.appendChild(gIcon);
+    }
+
+    var tagText=document.createElement('span');
+    tagText.textContent=guild.tag;
+    tagText.style.cssText='font-size:0.58rem;font-weight:700;letter-spacing:0.5px;color:rgba(255,255,255,0.65);line-height:1;';
+    chip.appendChild(tagText);
+
+    if(badgesEl)badgesEl.appendChild(chip);
+}
+
+/* ── Nameplate collectible ── */
+function applyNameplate(user){
+    // Clean up any previous nameplate
+    var prev=document.getElementById('dc-nameplate-wrap');
+    if(prev)prev.remove();
+
+    var np=user&&user.collectibles&&user.collectibles.nameplate;
+    if(!np||!np.asset)return;
+
+    // Asset path e.g. "nameplates/lunar_eclipse/moonlit_charm/"
+    var url='https://cdn.discordapp.com/collectibles-assets/'+np.asset+'nameplate.png?passthrough=false&size=160';
+
+    var wrap=document.createElement('div');
+    wrap.id='dc-nameplate-wrap';
+    wrap.style.cssText='display:inline-flex;align-items:center;gap:5px;margin-top:5px;';
+
+    var plate=document.createElement('img');
+    plate.draggable=false;
+    plate.alt='';
+    plate.src=url;
+    plate.style.cssText='height:18px;width:auto;max-width:120px;object-fit:contain;'
+        +'opacity:0.70;filter:drop-shadow(0 0 4px rgba(255,255,255,0.18));pointer-events:none;'
+        +'border-radius:3px;';
+    plate.onerror=function(){wrap.remove();};
+    wrap.appendChild(plate);
+
+    // Insert below the subtitle ".subtitle-text" line
+    var subtitle=document.querySelector('.subtitle-text');
+    if(subtitle&&subtitle.parentNode){
+        subtitle.parentNode.insertBefore(wrap,subtitle.nextSibling);
+    }
+}
+
+/* ── Activity ── */
 function setActivity(html){
     if(!activityEl)return;
     if(html){activityEl.innerHTML=html;activityEl.style.display='block';}
@@ -135,48 +264,7 @@ function applyActivity(activities,spotify){
     setActivity('');
 }
 
-/* ── Discord badge flag bitmask ── */
-var BADGE_FLAGS = [
-    { flag: 1,       icon: 'https://cdn.discordapp.com/badge-icons/6de6d34650760ba5551a79732e98ed60.png', tip: 'Discord Staff' },
-    { flag: 2,       icon: 'https://cdn.discordapp.com/badge-icons/848f79194d4be5ff5f81505cbd0ce1e6.png', tip: 'Partnered Server Owner' },
-    { flag: 4,       icon: 'https://cdn.discordapp.com/badge-icons/df199d2050d3ed4ebf84d64ae83989f8.png', tip: 'HypeSquad Events' },
-    { flag: 8,       icon: 'https://cdn.discordapp.com/badge-icons/43651ad8e2a8d1f9e5a7f4a3c4e40c54.png', tip: 'Bug Hunter Level 1' },
-    { flag: 64,      icon: 'https://cdn.discordapp.com/badge-icons/8a88d63823d8a71cd5e390baa45efa02.png', tip: 'HypeSquad Bravery' },
-    { flag: 128,     icon: 'https://cdn.discordapp.com/badge-icons/011940fd013da3f7fb926e4a1cd2e618.png', tip: 'HypeSquad Brilliance' },
-    { flag: 256,     icon: 'https://cdn.discordapp.com/badge-icons/3aa41de486fa12454c3761e8e223442e.png', tip: 'HypeSquad Balance' },
-    { flag: 512,     icon: 'https://cdn.discordapp.com/badge-icons/28a406d085f0f6d2e2e5d6ad9c0ec3de.png', tip: 'Early Supporter' },
-    { flag: 16384,   icon: 'https://cdn.discordapp.com/badge-icons/2717692c7dca7289b35297368a940dd0.png', tip: 'Bug Hunter Level 2' },
-    { flag: 131072,  icon: 'https://cdn.discordapp.com/badge-icons/e4b12c334162003e4ae5c7ee0e7ef3e5.png', tip: 'Verified Bot Developer' },
-    { flag: 4194304, icon: 'https://cdn.discordapp.com/badge-icons/a7f0b8de8d64ba2c36b77fbb25f2b97e.png', tip: 'Active Developer' }
-];
-
-function applyBadges(user){
-    var badgesEl = document.getElementById('discord-badges');
-    if (!badgesEl) return;
-    var flags = (user && user.public_flags) || 0;
-    /* Build earned badges */
-    var earned = BADGE_FLAGS.filter(function(b){ return flags & b.flag; });
-    /* Keep the static custom-badge-pill but append real Discord badges after it */
-    var existing = badgesEl.querySelector('#custom-badge-pill');
-    /* Remove previously injected real badges */
-    var prev = badgesEl.querySelectorAll('.discord-real-badge');
-    prev.forEach(function(el){ el.remove(); });
-    earned.forEach(function(b){
-        var wrap = document.createElement('div');
-        wrap.className = 'custom-badge discord-real-badge';
-        wrap.setAttribute('data-tip', b.tip);
-        wrap.style.cssText = 'width:22px;height:22px;';
-        var img = document.createElement('img');
-        img.draggable = false;
-        img.src = b.icon;
-        img.alt = b.tip;
-        img.style.cssText = 'width:22px;height:22px;display:block;border-radius:3px;object-fit:contain;';
-        img.onerror = function(){ this.style.display = 'none'; };
-        wrap.appendChild(img);
-        badgesEl.appendChild(wrap);
-    });
-}
-
+/* ── Master render ── */
 function render(data){
     if(!data)return;
     var user=data.discord_user||{};
@@ -190,10 +278,12 @@ function render(data){
     applyStatus(status);
     applyActivity(activities,spotify);
     applyBadges(user);
+    applyNameplate(user);
     window._lastDiscordStatus=status;
     initialised=true;
 }
 
+/* ── REST fallback ── */
 function doRestFallback(){
     if(initialised)return;
     fetch(REST_URL)
@@ -213,6 +303,7 @@ function renderOffline(){
 
 window._refreshDiscordDot=function(){applyDot(window._lastDiscordStatus||'offline');};
 
+/* ── WebSocket ── */
 function connect(){
     if(reconnectTimer){clearTimeout(reconnectTimer);reconnectTimer=null;}
     try{ws=new WebSocket(WS_URL);}catch(e){scheduleReconnect();return;}
