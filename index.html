@@ -24,12 +24,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="css/main.css">
 
-    <!-- Preconnect to external asset origins -->
+
     <link rel="preconnect" href="https://cdn.discordapp.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="preconnect" href="https://api.lanyard.rest" crossorigin>
 
-    <!-- Preload critical above-the-fold assets -->
+
     <link rel="preload" href="media/dark.webm" as="video" type="video/webm" fetchpriority="high">
     <link rel="preload" href="media/dark.mp4"  as="video" type="video/mp4"  fetchpriority="high">
     <link rel="preload" href="media/music-cover/cry.jpg" as="image" fetchpriority="high">
@@ -1074,10 +1074,7 @@
     </div>
 </div>
 <script>
-/* Attach overlay click instantly — no DOMContentLoaded wait needed since
-   this script runs right after the overlay element exists in the DOM.
-   enterSite() is defined later in DOMContentLoaded; we queue the intent
-   via a flag so the full enter logic still runs when ready. */
+
 (function(){
     if(sessionStorage.getItem('site_entered')) return;
     var overlay = document.getElementById('overlay');
@@ -1086,14 +1083,14 @@
         if(fired) return; fired = true;
         if(e && e.cancelable) e.preventDefault();
         overlay.style.opacity = '0';
-        /* Signal DOMContentLoaded handler to finish the enter sequence */
+
         window._earlyEnterFired = true;
         if(window._enterSite) window._enterSite();
     }
     overlay.addEventListener('click',     earlyEnter, {once:true});
     overlay.addEventListener('touchend',  earlyEnter, {passive:false, once:true});
     overlay.addEventListener('pointerup', earlyEnter, {once:true});
-    /* Update prompt for touch devices */
+
     if('ontouchstart' in window || navigator.maxTouchPoints > 0){
         var ep = document.getElementById('enter-prompt');
         if(ep) ep.textContent = 'tap to enter';
@@ -1829,7 +1826,7 @@
 <script src="js/discord.js"></script>
 
 <script>
-/* ── Page view counter (counterapi.dev) ── */
+
 (function(){
     var NAMESPACE = 'francisco.is-a.dev';
     var KEY       = 'pageviews';
@@ -1841,16 +1838,16 @@
         els.forEach(function(el){ el.textContent = display; });
     }
 
-    /* Hit = increment on every real visit, read-only on return within session */
+
     var counted = sessionStorage.getItem('view_counted');
     if(counted){
-        /* Already counted this session — just read the current value */
-        fetch(API+'/'+NAMESPACE+'/'+KEY)
+
+        fetch(API+'/'+NAMESPACE+'/'+KEY+'/')
             .then(function(r){ return r.ok ? r.json() : null; })
             .then(function(d){ if(d&&d.count!=null) setViews(d.count); })
             .catch(function(){});
     } else {
-        fetch(API+'/'+NAMESPACE+'/'+KEY+'/up')
+        fetch(API+'/'+NAMESPACE+'/'+KEY+'/up/')
             .then(function(r){ return r.ok ? r.json() : null; })
             .then(function(d){
                 if(d&&d.count!=null){
@@ -2033,10 +2030,10 @@ document.addEventListener('DOMContentLoaded', function () {
             if(window._syncPlayIcons)setTimeout(function(){window._syncPlayIcons(!window._audioPaused());},300);
         }
     } else if(window._earlyEnterFired){
-        /* User already clicked before DOMContentLoaded — finish the sequence now */
+
         enterSite();
     } else {
-        /* Fallback: attach listeners in case early script missed it somehow */
+
         var _entryFired = false;
         function _tryEnter(e){ if(_entryFired)return; _entryFired=true; if(e&&e.cancelable)e.preventDefault(); enterSite(); }
         overlay.addEventListener('click',     _tryEnter);
@@ -2225,4 +2222,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     updatePadding();
-    window.addEventListener('resize', updatePadding,
+    window.addEventListener('resize', updatePadding, { passive: true });
+})();
+</script>
+</body>
+</html>
