@@ -24,6 +24,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="css/main.css">
 
+    <!-- Preconnect to external asset origins -->
+    <link rel="preconnect" href="https://cdn.discordapp.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+
+    <!-- Preload critical above-the-fold assets -->
+    <link rel="preload" href="media/dark.webm" as="video" type="video/webm" fetchpriority="high">
+    <link rel="preload" href="media/music-cover/cry.jpg" as="image" fetchpriority="high">
+    <link rel="preload" href="media/badges/owner.png" as="image" fetchpriority="high">
+    <link rel="preload" href="media/badges/developer.png" as="image" fetchpriority="high">
+    <link rel="preload" href="media/badges/early-supporter.png" as="image" fetchpriority="high">
+
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>window.addEventListener('load',function(){ if(typeof emailjs!=='undefined') emailjs.init('ANitUhHu4kV4-js93'); });</script>
 
@@ -1000,13 +1011,13 @@
 <canvas id="touch-fx"></canvas>
 
 <div id="bg-wrap">
-    <video id="yt-dark" autoplay muted loop playsinline preload="auto"
-           onerror="this.style.display='none'" oncanplaythrough="this.style.display=''">
+    <video id="yt-dark" autoplay muted loop playsinline preload="auto" fetchpriority="high"
+           onerror="this.style.display='none'">
         <source src="media/dark.webm" type="video/webm">
         <source src="media/dark.mp4"  type="video/mp4">
     </video>
-    <video id="yt-light" autoplay muted loop playsinline preload="auto"
-           onerror="this.style.display='none'" oncanplaythrough="this.style.display=''">
+    <video id="yt-light" autoplay muted loop playsinline preload="none"
+           onerror="this.style.display='none'">
         <source src="media/light.webm" type="video/webm">
         <source src="media/light.mp4"  type="video/mp4">
     </video>
@@ -1073,7 +1084,7 @@
             <div class="ov-bar"></div><div class="ov-bar"></div><div class="ov-bar"></div>
             <div class="ov-bar"></div>
         </div>
-        <img draggable="false" id="ov-cover" src="media/music-cover/cry.jpg"
+        <img draggable="false" id="ov-cover" src="media/music-cover/cry.jpg" fetchpriority="high"
              onerror="this.style.display='none';document.getElementById('ov-cover-fb').style.display='flex';" alt="">
         <div id="ov-cover-fb">&#9834;</div>
         <div id="ov-title">&#8212;</div>
@@ -1149,7 +1160,7 @@
     <div id="pc-player-bar">
 
         <div id="sp-left">
-            <img draggable="false" id="sp-cover" src="media/music-cover/cry.jpg" alt=""
+            <img draggable="false" id="sp-cover" src="media/music-cover/cry.jpg" alt="" fetchpriority="high"
                  onerror="this.style.display='none'">
             <div style="min-width:0;">
                 <div id="sp-title">—</div>
@@ -1200,7 +1211,7 @@
                 <div id="player-expand-hint" style="text-align:center;font-size:0.44rem;letter-spacing:2px;color:rgba(255,255,255,0.14);margin-bottom:4px;pointer-events:none;">DOUBLE-CLICK TO EXPAND</div>
                 <div style="display:flex;align-items:center;gap:12px;">
                     <div class="music-cover-wrap" id="mobile-cover-wrap">
-                        <img draggable="false" id="music-cover" src="media/music-cover/cry.jpg" alt="Cover"
+                        <img draggable="false" id="music-cover" src="media/music-cover/cry.jpg" alt="Cover" fetchpriority="high"
                              onerror="this.style.display='none';document.getElementById('cover-fallback').style.display='flex';">
                         <div id="cover-fallback">&#9834;</div>
                     </div>
@@ -1264,17 +1275,17 @@
                     <div id="discord-badges" style="margin-bottom:8px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
                         <div id="custom-badge-pill" style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:99px;padding:4px 10px;">
                             <div class="custom-badge" data-tip="Owner" style="width:22px;height:22px;">
-                                <img draggable="false" src="media/badges/owner.png" alt="Owner"
+                                <img draggable="false" src="media/badges/owner.png" alt="Owner" fetchpriority="high"
                                      style="width:22px;height:22px;display:block;border-radius:3px;object-fit:contain;"
                                      onerror="this.style.display='none';">
                             </div>
                             <div class="custom-badge" data-tip="Developer" style="width:22px;height:22px;">
-                                <img draggable="false" src="media/badges/developer.png" alt="Developer"
+                                <img draggable="false" src="media/badges/developer.png" alt="Developer" fetchpriority="high"
                                      style="width:22px;height:22px;display:block;border-radius:3px;object-fit:contain;"
                                      onerror="this.style.display='none';">
                             </div>
                             <div class="custom-badge" data-tip="Early Supporter" style="width:22px;height:22px;">
-                                <img draggable="false" src="media/badges/early-supporter.png" alt="Early Supporter"
+                                <img draggable="false" src="media/badges/early-supporter.png" alt="Early Supporter" fetchpriority="high"
                                      style="width:22px;height:22px;display:block;border-radius:3px;object-fit:contain;"
                                      onerror="this.style.display='none';">
                             </div>

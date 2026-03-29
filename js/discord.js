@@ -17,6 +17,26 @@ var ws=null,heartbeatTimer=null,reconnectTimer=null;
 var reconnectDelay=RECONNECT_BASE;
 var avatarCached=null,initialised=false,elapsedTimer=null;
 
+/* ── Instant pre-render from sessionStorage cache ── */
+/* On repeat visits the avatar + status dot show immediately instead of    */
+/* waiting up to 5 s for the WebSocket/REST round-trip to complete.        */
+(function preRender(){
+    try{
+        var cached=sessionStorage.getItem('dc_cache');
+        if(!cached)return;
+        var d=JSON.parse(cached);
+        if(d.avatar&&pfpEl){
+            pfpEl.onload=function(){pfpEl.style.display='block';if(skeletonEl)skeletonEl.style.display='none';};
+            pfpEl.onerror=function(){pfpEl.style.display='none';if(skeletonEl)skeletonEl.style.display='block';};
+            pfpEl.style.display='none';
+            pfpEl.src=d.avatar;
+            avatarCached=d.avatar;
+            if(pfpEl.complete&&pfpEl.naturalWidth){pfpEl.style.display='block';if(skeletonEl)skeletonEl.style.display='none';}
+        }
+        if(d.status){applyDot(d.status);applyStatus(d.status);}
+    }catch(e){}
+})();
+
 var fallbackTimer=setTimeout(doRestFallback,5000);
 
 /* ── Utilities ── */
@@ -220,7 +240,9 @@ function render(data){
     applyNameplate(user);
     window._lastDiscordStatus=status;
     initialised=true;
-    clearTimeout(fallbackTimer); // only cancel REST fallback once we have real data
+    clearTimeout(fallbackTimer);
+    /* Persist avatar + status so next page load pre-renders instantly */
+    try{sessionStorage.setItem('dc_cache',JSON.stringify({avatar:resolveAvatar(user),status:status}));}catch(e){}
 }
 
 /* ── REST fallback ── */
