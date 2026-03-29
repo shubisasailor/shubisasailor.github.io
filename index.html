@@ -1993,7 +1993,7 @@ document.addEventListener('DOMContentLoaded', function () {
         np.classList.add('tab-animate');
         main.scrollTop = 0;
         document.title = 'Francisco | ' + (SUFFIX[tab] || tab);
-        history.pushState({tab:tab}, '', tab==='overview' ? './' : tab+'.html');
+        history.pushState({tab:tab}, '', tab==='overview' ? './' : tab);
         cur = tab;
     };
 
@@ -2253,6 +2253,118 @@ document.addEventListener('DOMContentLoaded', function () {
 
     updatePadding();
     window.addEventListener('resize', updatePadding, { passive: true });
+})();
+</script>
+<script>
+(function (){
+    var GH ='ZetsuoNoShub';
+    var list =document.getElementById('repo-list');
+    var fetched =false;
+    var LC ={'JavaScript':'#f1e05a','TypeScript':'#3178c6','Python':'#3572A5','HTML':'#e34c26','CSS':'#563d7c','Java':'#b07219','C++':'#f34b7d','C':'#555555','C#':'#178600','Shell':'#89e051','Rust':'#dea584','Go':'#00ADD8','Ruby':'#701516','PHP':'#4F5D95','Swift':'#F05138','Kotlin':'#A97BFF','Dart':'#00B4AB'};
+    function makeCard(r){
+        var a=document.createElement('a');
+        a.className='repo-card';
+        a.href=r.html_url;
+        a.target='_blank';
+        a.rel='noopener noreferrer';
+        a.title=r.description||r.name;
+        var l=document.createElement('div');
+        l.className='repo-left';
+        var ic=document.createElement('i');
+        ic.className='fab fa-github repo-icon';
+        var nm=document.createElement('span');
+        nm.className='repo-name';
+        nm.textContent=r.name;
+        l.appendChild(ic);
+        l.appendChild(nm);
+        a.appendChild(l);
+        if (r.homepage){
+            var liveLink=document.createElement('a');
+            liveLink.className='repo-live-link';
+            liveLink.href=r.homepage;
+            liveLink.target='_blank';
+            liveLink.rel='noopener noreferrer';
+            liveLink.innerHTML='<i class="fas fa-external-link-alt"></i>';
+            liveLink.onclick=function (e){e.stopPropagation();};
+            a.appendChild(liveLink);
+        }
+        if (r.language){
+            var d=document.createElement('span');
+            d.className='repo-lang-dot';
+            d.style.background=LC[r.language]||'rgba(255,255,255,0.28)';
+            d.title=r.language;
+            a.appendChild(d);
+        }
+        var ar=document.createElement('i');
+        ar.className='fas fa-arrow-up-right-from-square repo-arrow';
+        a.appendChild(ar);
+        return a;
+    }
+    window._fetchRepos =function (){
+        if (fetched)return ;
+        fetched =true;
+        fetch('https://api.github.com/users/'+GH+'/repos?per_page=100&sort=updated').then(function (r){
+            if (!r.ok)throw r;
+            return r.json();
+        }).then(function (repos){
+            repos=repos.filter(function (r){return !r.fork;}).sort(function (a,b){
+                return b.stargazers_count!==a.stargazers_count?b.stargazers_count-a.stargazers_count:new Date(b.updated_at)-new Date(a.updated_at);
+            });
+            list.innerHTML='';
+            if (!repos.length){
+                var m=document.createElement('span');
+                m.className='repo-error';
+                m.textContent='No public repositories yet.';
+                list.appendChild(m);
+                return ;
+            }
+            repos.forEach(function (r){list.appendChild(makeCard(r));});
+        }).catch (function (){
+            list.innerHTML='';
+            var fb=document.createElement('a');
+            fb.className='repo-card';
+            fb.href='https://github.com/'+GH;
+            fb.target='_blank';
+            fb.rel='noopener noreferrer';
+            fb.innerHTML='<div class="repo-left"><i class="fab fa-github repo-icon"></i><span class="repo-name">View GitHub profile</span></div><i class="fas fa-arrow-up-right-from-square repo-arrow"></i>';
+            list.appendChild(fb);
+        });
+    };
+})();
+</script>
+<script>
+(function (){
+    var btn=document.getElementById('projects-btn');
+    var panel=document.getElementById('projects-panel');
+    var cBtn=document.getElementById('panel-close-btn');
+    var bd=document.getElementById('panel-backdrop');
+    var open=false;
+    function openPanel(){
+        open=true;
+        panel.classList.add('open');
+        btn.classList.add('open');
+        if (bd)bd.classList.add('open');
+        window._fetchRepos&&window._fetchRepos();
+    }
+    function closePanel(){
+        open=false;
+        panel.classList.remove('open');
+        btn.classList.remove('open');
+        if (bd)bd.classList.remove('open');
+    }
+    if (btn)btn.addEventListener('click',function (){
+        open?closePanel():openPanel();
+    });
+    if (cBtn)cBtn.addEventListener('click',closePanel);
+    if (bd)bd.addEventListener('click',closePanel);
+    document.addEventListener('keydown',function (e){
+        if (e.key==='Escape'&&open)closePanel();
+    });
+    var sy=0;
+    if (panel){
+        panel.addEventListener('touchstart',function (e){sy=e.touches[0].clientY;},{passive:true});
+        panel.addEventListener('touchend',function (e){if (e.changedTouches[0].clientY-sy>55)closePanel();},{passive:true});
+    }
 })();
 </script>
 </body>
