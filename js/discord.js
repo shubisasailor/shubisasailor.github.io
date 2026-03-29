@@ -117,9 +117,11 @@ var BADGE_FLAGS=[
 ];
 
 function applyBadges(user){
-    var badgesEl=document.getElementById('discord-badges');
-    if(!badgesEl)return;
-    badgesEl.querySelectorAll('.dc-real-badge').forEach(function(el){el.remove();});
+    // Target the pill element so Discord badges sit alongside the static ones
+    var pillEl=document.getElementById('custom-badge-pill');
+    if(!pillEl)return;
+    // Remove any previously injected Discord badges from the pill
+    pillEl.querySelectorAll('.dc-real-badge').forEach(function(el){el.remove();});
     var flags=(user&&user.public_flags)||0;
     var earned=BADGE_FLAGS.filter(function(b){return flags&b.flag;});
     earned.forEach(function(b){
@@ -134,38 +136,9 @@ function applyBadges(user){
         img.style.cssText='width:22px;height:22px;display:block;object-fit:contain;';
         img.onerror=function(){wrap.style.display='none';};
         wrap.appendChild(img);
-        badgesEl.appendChild(wrap);
+        pillEl.appendChild(wrap);
     });
-    applyGuildTag(user&&user.primary_guild, badgesEl);
-}
-
-/* ── Guild tag ── */
-function applyGuildTag(guild, badgesEl){
-    var prev=document.getElementById('dc-guild-tag');
-    if(prev)prev.remove();
-    if(!guild||!guild.tag||!guild.identity_enabled)return;
-    var chip=document.createElement('div');
-    chip.id='dc-guild-tag';
-    chip.className='custom-badge dc-real-badge';
-    chip.setAttribute('data-tip','Clan · '+esc(guild.tag));
-    chip.style.cssText='display:inline-flex;align-items:center;gap:4px;width:auto;height:22px;'
-        +'background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.13);'
-        +'border-radius:6px;padding:0 6px;cursor:default;flex-shrink:0;transition:background 0.2s,border-color 0.2s;';
-    chip.onmouseenter=function(){chip.style.background='rgba(255,255,255,0.13)';chip.style.borderColor='rgba(255,255,255,0.25)';};
-    chip.onmouseleave=function(){chip.style.background='rgba(255,255,255,0.07)';chip.style.borderColor='rgba(255,255,255,0.13)';};
-    if(guild.badge&&guild.identity_guild_id){
-        var gIcon=document.createElement('img');
-        gIcon.draggable=false; gIcon.alt='';
-        gIcon.src='https://cdn.discordapp.com/clan-badges/'+guild.identity_guild_id+'/'+guild.badge+'.png?size=16';
-        gIcon.style.cssText='width:14px;height:14px;object-fit:contain;border-radius:2px;flex-shrink:0;';
-        gIcon.onerror=function(){gIcon.style.display='none';};
-        chip.appendChild(gIcon);
-    }
-    var tagText=document.createElement('span');
-    tagText.textContent=guild.tag;
-    tagText.style.cssText='font-size:0.58rem;font-weight:700;letter-spacing:0.5px;color:rgba(255,255,255,0.65);line-height:1;';
-    chip.appendChild(tagText);
-    if(badgesEl)badgesEl.appendChild(chip);
+    // Clan tag intentionally not shown
 }
 
 /* ── Nameplate ── */
