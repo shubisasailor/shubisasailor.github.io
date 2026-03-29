@@ -1884,17 +1884,7 @@
         }
         var u = d && d.discord_user;
 
-        if (!avatarSet && u && u.avatar) {
-            avatarSet = true;
-            var ext = u.avatar.startsWith('a_') ? 'gif' : 'webp';
-            avatarUrl = 'https://cdn.discordapp.com/avatars/' + ID + '/' + u.avatar + '.' + ext + '?size=128';
-            var heroSkel = document.getElementById('hero-pfp-skeleton');
-            if (pfp) {
-                pfp.onerror = function(){ pfp.style.display='none'; if(heroSkel) heroSkel.style.display='block'; };
-                pfp.onload  = function(){ pfp.style.display='block'; if(heroSkel) heroSkel.style.display='none'; };
-                pfp.src = avatarUrl;
-            }
-        }
+        // Avatar is handled exclusively by discord.js to avoid conflicts
 
         if (u && u.banner && bannerImg && !bannerImg.src.includes('cdn.discordapp.com/banners')) {
             var bext = u.banner.startsWith('a_') ? 'gif' : 'webp';
