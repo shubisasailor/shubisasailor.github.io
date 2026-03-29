@@ -1323,7 +1323,7 @@
                 <a href="https://pinterest.com/shubflexin" target="_blank" rel="noopener noreferrer"><i class="fab fa-pinterest"></i></a>
                 <a href="https://youtube.com/@Tarnished_Shubh" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i></a>
                 <a href="https://x.com/ZetsuoNoShub" target="_blank" rel="noopener noreferrer"><i class="fab fa-x-twitter"></i></a>
-                <a href="/cdn-cgi/l/email-protection#f3809b8691dd83819c959680809a9c9d929fb3949e929a9fdd909c9e" rel="noopener noreferrer"><i class="fas fa-envelope"></i></a>
+                <a href="mailto:shub.professional@gmail.com" rel="noopener noreferrer"><i class="fas fa-envelope"></i></a>
             </div>
 
         </div>
@@ -1382,7 +1382,7 @@
             <div class="section-label">reach me at</div>
             <div class="email-row">
                 <i class="fas fa-envelope"></i>
-                <span id="email-display"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="cdbea5b8afe3bdbfa2aba8bebea4a2a3aca18daaa0aca4a1e3aea2a0">[email&#160;protected]</a></span>
+                <span id="email-display">shub.professional@gmail.com</span>
                 <i class="fas fa-copy email-copy" id="copy-btn" title="Copy email"></i>
             </div>
             <div class="card-divider"></div>
@@ -1404,7 +1404,7 @@
 
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 (function () {
     'use strict';
 
@@ -1796,6 +1796,7 @@
 })();
 </script>
 
+<script src="js/discord.js"></script>
 <script>
 (function () {
     var ID   = '748831508776878110';
@@ -1968,59 +1969,7 @@
         dot.innerHTML = DOT[window._lastDiscordStatus || lastKnownStatus] || DOT.offline;
     };
 
-    var ws, hbInterval, reconnectTimer;
-
-    function connect() {
-        ws = new WebSocket('wss://api.lanyard.rest/socket');
-
-        ws.onopen = function() {
-            clearTimeout(reconnectTimer);
-        };
-
-        ws.onmessage = function(e) {
-            var msg;
-            try { msg = JSON.parse(e.data); } catch(err) { return; }
-
-            switch (msg.op) {
-                case 1:
-                    hbInterval = setInterval(function() {
-                        if (ws.readyState === 1) ws.send(JSON.stringify({op:3}));
-                    }, msg.d.heartbeat_interval);
-                    ws.send(JSON.stringify({op:2, d:{subscribe_to_id: ID}}));
-                    break;
-
-                case 0:
-                    if (msg.t === 'INIT_STATE') {
-                        _wsReady = true;
-                        applyData(msg.d && msg.d[ID]);
-                    } else if (msg.t === 'PRESENCE_UPDATE') {
-                        _wsReady = true;
-                        applyData(msg.d);
-                    }
-                    break;
-            }
-        };
-
-        ws.onclose = function() {
-            clearInterval(hbInterval);
-
-            reconnectTimer = setTimeout(connect, 3000);
-        };
-
-        ws.onerror = function() {
-            ws.close();
-        };
-    }
-
-    setTimeout(function() {
-        if (_wsReady) return;
-        fetch('https://api.lanyard.rest/v1/users/748831508776878110')
-            .then(function(r){ return r.ok ? r.json() : Promise.reject(); })
-            .then(function(j){ if (!_wsReady) { _wsReady = true; applyData(j && j.data); } })
-            .catch(function(){});
-    }, 2000);
-
-    connect();
+    window._applyDiscordData = applyData;
 
 })();
 </script>
@@ -2696,4 +2645,10 @@ document.addEventListener('DOMContentLoaded', function () {
     } else {
 
         var polls = 0;
-        var iv =
+        var iv =setInterval(function(){ updatePadding(); if(++polls>20) clearInterval(iv); },200);
+    }
+})();
+</script>
+
+</body>
+</html>
