@@ -535,20 +535,20 @@
             border:1px solid rgba(255,255,255,0.06); border-radius:10px; margin-bottom:10px; transition:all 0.18s; 
         }
         .repo-card:last-child { margin-bottom:0; }
-        .repo-info { display:flex; align-items:center; gap:8px; min-width:0; }
-        .repo-icon { font-size:0.70rem; color:rgba(255,255,255,0.18); flex-shrink:0; }
-        .repo-name { font-size:0.72rem; font-weight:600; color:rgba(255,255,255,0.70); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; }
-        .repo-lang-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+        .repo-info { display:flex; align-items:center; gap:8px; min-width:0; margin-bottom:2px; }
+        .repo-icon { font-size:0.68rem; color:rgba(255,255,255,0.25); flex-shrink:0; }
+        .repo-name { font-size:0.75rem; font-weight:700; color:rgba(255,255,255,0.85); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; letter-spacing:-0.2px; }
+        .repo-lang-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; margin-left:auto; box-shadow:0 0 8px currentColor; }
         
-        .repo-actions { display:flex; gap:6px; margin-top:2px; }
+        .repo-actions { display:flex; gap:8px; margin-top:4px; }
         .repo-btn { 
-            width:32px; height:32px; display:flex; align-items:center; justify-content:center; 
-            border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.10);
-            font-size:0.85rem; text-decoration:none; color:rgba(255,255,255,0.45); transition:all 0.2s;
+            width:30px; height:30px; display:flex; align-items:center; justify-content:center; 
+            border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);
+            font-size:0.8rem; text-decoration:none; color:rgba(255,255,255,0.40); transition:all 0.2s cubic-bezier(0.23,1,0.32,1);
         }
-        .repo-btn:hover { background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.25); color:white; transform:translateY(-2px); }
-        .repo-btn.live { color:rgba(255,255,255,0.65); }
-        .repo-btn:active { transform:scale(0.92); }
+        .repo-btn:hover { background:rgba(255,255,255,0.10); border-color:rgba(255,255,255,0.20); color:white; transform:translateY(-2px); }
+        .repo-btn.live { border-color:rgba(255,255,255,0.15); color:rgba(255,255,255,0.70); }
+        .repo-btn:active { transform:scale(0.90); }
         
         .repo-skeleton { height:64px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:10px; margin-bottom:10px; animation:skPulse 1.6s ease-in-out infinite; }
         #panel-backdrop { display:none; position:fixed; inset:0; z-index:299; background:rgba(0,0,0,0.50); opacity:0; visibility:hidden; transition:opacity 0.26s, visibility 0.26s; }
@@ -2420,38 +2420,37 @@ document.addEventListener('DOMContentLoaded', function () {
         var isDrg = false, startPos = {x:0, y:0};
         
         hdr.onmousedown = function(e){
-            // Don't drag if clicking close button
             if (e.target.closest('#panel-close-btn')) return;
-            if (window.innerWidth <= 700) return;
+            if (window.innerWidth <= 600) return; // Allow dragging on slightly smaller screens
             
             isDrg = true;
             var rect = panel.getBoundingClientRect();
             startPos.x = e.clientX - rect.left;
             startPos.y = e.clientY - rect.top;
             
-            // Set position to current visual position before removing transform
             panel.style.top = rect.top + 'px';
             panel.style.left = rect.left + 'px';
             panel.style.transform = 'none';
             panel.style.transition = 'none';
-            
             document.body.style.cursor = 'grabbing';
             e.preventDefault();
         };
-        
-        document.onmousemove = function(e){
+
+        var handleMove = function(e){
             if (!isDrg) return;
             panel.style.top = (e.clientY - startPos.y) + 'px';
             panel.style.left = (e.clientX - startPos.x) + 'px';
-            panel.style.transform = 'none';
         };
-        
-        document.onmouseup = function(){
+
+        var handleUp = function(){
             if (!isDrg) return;
             isDrg = false;
             document.body.style.cursor = '';
             panel.style.transition = 'opacity 0.28s ease, visibility 0.28s, transform 0.36s cubic-bezier(0.34,1.56,0.64,1)';
         };
+
+        document.addEventListener('mousemove', handleMove);
+        document.addEventListener('mouseup', handleUp);
     }
 })();
 </script>
