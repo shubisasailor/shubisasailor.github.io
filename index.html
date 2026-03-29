@@ -512,29 +512,44 @@
         }
         #projects-panel.open { opacity:1; visibility:visible; transform:translateY(-50%) translateX(0); pointer-events:auto; }
         .panel-drag-handle { 
-            display:block; width:34px; height:4px; background:rgba(255,255,255,0.16); 
-            border-radius:10px; margin:10px auto 0; flex-shrink:0; 
-            cursor:grab; -webkit-user-drag:none;
+            width:30px; height:4px; background:rgba(255,255,255,0.12); 
+            border-radius:10px; margin:8px auto 0; flex-shrink:0; pointer-events:none;
         }
-        .panel-drag-handle:active { cursor:grabbing; }
-        .panel-header { display:flex; align-items:center; justify-content:space-between; padding:13px 15px 10px; border-bottom:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
-        .panel-title { font-size:0.56rem; letter-spacing:3px; font-weight:700; text-transform:uppercase; color:rgba(255,255,255,0.38); }
+        .panel-header { 
+            display:flex; flex-direction:column; padding:0 15px 10px; border-bottom:1px solid rgba(255,255,255,0.06); flex-shrink:0; 
+            cursor:grab; -webkit-user-select:none; user-select:none;
+        }
+        .panel-header:active { cursor:grabbing; }
+        .panel-header-top { display:flex; align-items:center; justify-content:space-between; margin-top:6px; }
+        .panel-title { font-size:0.56rem; letter-spacing:3px; font-weight:700; text-transform:uppercase; color:rgba(255,255,255,0.30); }
         .panel-close { font-size:0.68rem; color:rgba(255,255,255,0.20); cursor:pointer; padding:4px 6px; border-radius:4px; transition:color 0.2s, background 0.2s; }
         .panel-close:hover { color:rgba(255,255,255,0.75); background:rgba(255,255,255,0.07); }
-        .panel-body { overflow-y:auto; flex:1; padding:10px 10px 12px; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.08) transparent; }
+
+        .panel-section-title { font-size:0.50rem; letter-spacing:2px; font-weight:700; text-transform:uppercase; color:rgba(255,255,255,0.22); margin:15px 4px 8px; padding-bottom:5px; border-bottom:1px solid rgba(255,255,255,0.04); }
+        .panel-body { overflow-y:auto; flex:1; padding:2px 10px 12px; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.08) transparent; }
         .panel-body::-webkit-scrollbar { width:3px; }
         .panel-body::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.10); border-radius:10px; }
-        .repo-card { display:flex; align-items:center; gap:9px; padding:9px 11px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; text-decoration:none; color:inherit; margin-bottom:6px; transition:all 0.18s; }
+
+        .repo-card { 
+            display:flex; flex-direction:column; gap:8px; padding:10px 11px; background:rgba(255,255,255,0.03); 
+            border:1px solid rgba(255,255,255,0.06); border-radius:10px; margin-bottom:10px; transition:all 0.18s; 
+        }
         .repo-card:last-child { margin-bottom:0; }
-        .repo-card:hover { background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.14); transform:translateX(2px); box-shadow:0 0 18px rgba(255,255,255,0.06); }
-        .repo-left { display:flex; align-items:center; gap:8px; min-width:0; flex:1; }
-        .repo-icon { font-size:0.70rem; color:rgba(255,255,255,0.20); flex-shrink:0; }
-        .repo-name { font-size:0.72rem; font-weight:600; color:rgba(255,255,255,0.75); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .repo-info { display:flex; align-items:center; gap:8px; min-width:0; }
+        .repo-icon { font-size:0.70rem; color:rgba(255,255,255,0.18); flex-shrink:0; }
+        .repo-name { font-size:0.72rem; font-weight:600; color:rgba(255,255,255,0.70); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; }
         .repo-lang-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
-        .repo-arrow { font-size:0.52rem; color:rgba(255,255,255,0.14); transition:color 0.18s; flex-shrink:0; }
-        .repo-card:hover .repo-arrow { color:rgba(255,255,255,0.50); }
-        .repo-skeleton { height:36px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:8px; margin-bottom:6px; animation:skPulse 1.6s ease-in-out infinite; }
-        .repo-error { font-size:0.68rem; color:rgba(255,255,255,0.26); padding:8px 0; }
+        
+        .repo-actions { display:flex; gap:6px; margin-top:2px; }
+        .repo-btn { 
+            flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:6px 0; 
+            border-radius:6px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06);
+            font-size:0.62rem; font-weight:600; text-decoration:none; color:rgba(255,255,255,0.45); transition:all 0.15s;
+        }
+        .repo-btn:hover { background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.16); color:rgba(255,255,255,0.85); transform:translateY(-1px); }
+        .repo-btn.live { border-color:rgba(255,255,255,0.14); color:rgba(255,255,255,0.65); }
+        
+        .repo-skeleton { height:64px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:10px; margin-bottom:10px; animation:skPulse 1.6s ease-in-out infinite; }
         #panel-backdrop { display:none; position:fixed; inset:0; z-index:299; background:rgba(0,0,0,0.50); opacity:0; visibility:hidden; transition:opacity 0.26s, visibility 0.26s; }
         #panel-backdrop.open { opacity:1; visibility:visible; }
         @media (max-width:700px) {
@@ -1170,8 +1185,10 @@
 <div id="projects-panel">
     <div class="panel-drag-handle"></div>
     <div class="panel-header">
-        <span class="panel-title">public repos</span>
-        <i class="fas fa-times panel-close" id="panel-close-btn"></i>
+        <div class="panel-header-top">
+            <span class="panel-title">projects</span>
+            <i class="fas fa-times panel-close" id="panel-close-btn"></i>
+        </div>
     </div>
     <div class="panel-body" id="repo-list">
         <div class="repo-skeleton"></div>
@@ -2266,52 +2283,61 @@ document.addEventListener('DOMContentLoaded', function () {
     var fetched =false;
     var LC ={'JavaScript':'#f1e05a','TypeScript':'#3178c6','Python':'#3572A5','HTML':'#e34c26','CSS':'#563d7c','Java':'#b07219','C++':'#f34b7d','C':'#555555','C#':'#178600','Shell':'#89e051','Rust':'#dea584','Go':'#00ADD8','Ruby':'#701516','PHP':'#4F5D95','Swift':'#F05138','Kotlin':'#A97BFF','Dart':'#00B4AB'};
     function makeCard(r){
-        var a=document.createElement('a');
-        a.className='repo-card';
-        if (r.featured) a.classList.add('featured-repo');
-        a.href=r.html_url;
-        a.target='_blank';
-        a.rel='noopener noreferrer';
-        a.title=r.description||r.name;
-        var l=document.createElement('div');
-        l.className='repo-left';
+        var card=document.createElement('div');
+        card.className='repo-card';
+        if (r.featured) card.classList.add('featured-repo');
+        
+        var info=document.createElement('div');
+        info.className='repo-info';
         var ic=document.createElement('i');
-        ic.className=(r.featured ? 'fas fa-star' : 'fab fa-github') + ' repo-icon';
-        if (r.featured) ic.style.color = '#f1c40f';
+        ic.className='fab fa-github repo-icon';
         var nm=document.createElement('span');
         nm.className='repo-name';
         nm.textContent=r.name;
-        l.appendChild(ic);
-        l.appendChild(nm);
-        a.appendChild(l);
-        if (r.homepage || r.featured){
-            var liveLink=document.createElement('a');
-            liveLink.className='repo-live-link';
-            liveLink.href=r.homepage || r.html_url;
-            liveLink.target='_blank';
-            liveLink.rel='noopener noreferrer';
-            liveLink.innerHTML='<i class="fas fa-external-link-alt"></i>';
-            liveLink.onclick=function (e){e.stopPropagation();};
-            a.appendChild(liveLink);
-        }
+        info.appendChild(ic);
+        info.appendChild(nm);
+        
         if (r.language){
             var d=document.createElement('span');
             d.className='repo-lang-dot';
             d.style.background=LC[r.language]||'rgba(255,255,255,0.28)';
             d.title=r.language;
-            a.appendChild(d);
+            info.appendChild(d);
         }
-        var ar=document.createElement('i');
-        ar.className='fas fa-arrow-up-right-from-square repo-arrow';
-        a.appendChild(ar);
-        return a;
+        card.appendChild(info);
+
+        var actions=document.createElement('div');
+        actions.className='repo-actions';
+        
+        // GH Repo Button (for all projects)
+        if (r.html_url && !r.featured){
+            var ghBtn=document.createElement('a');
+            ghBtn.className='repo-btn';
+            ghBtn.href=r.html_url;
+            ghBtn.target='_blank';
+            ghBtn.innerHTML='<i class="fab fa-github"></i> Source';
+            actions.appendChild(ghBtn);
+        }
+
+        // Live Button (if has homepage or is featured)
+        if (r.homepage || r.featured){
+            var liveBtn=document.createElement('a');
+            liveBtn.className='repo-btn live';
+            liveBtn.href=r.homepage || r.html_url;
+            liveBtn.target='_blank';
+            liveBtn.innerHTML='<i class="fas fa-external-link-alt"></i> Visit';
+            actions.appendChild(liveBtn);
+        }
+        
+        card.appendChild(actions);
+        return card;
     }
     window._fetchRepos =function (){
         if (fetched)return ;
         fetched =true;
         var featured = [
-            { name: 'CheapMandu', html_url: 'https://cheapmandu.shop', description: 'Resell of account market', featured: true, language: 'Resell' },
-            { name: 'CSWithMe', html_url: 'https://cswith.me', description: 'Current portfolio site', featured: true, language: 'Portfolio' }
+            { name: 'CheapMandu', html_url: 'https://cheapmandu.shop', description: 'Resell of account market', featured: true, language: 'Live Store' },
+            { name: 'Portfolio SITE', html_url: 'https://cswith.me', description: 'Current portfolio site', featured: true, language: 'Personal' }
         ];
         fetch('https://api.github.com/users/'+GH+'/repos?per_page=100&sort=updated').then(function (r){
             if (!r.ok)throw r;
@@ -2321,7 +2347,25 @@ document.addEventListener('DOMContentLoaded', function () {
                 return b.stargazers_count!==a.stargazers_count?b.stargazers_count-a.stargazers_count:new Date(b.updated_at)-new Date(a.updated_at);
             });
             list.innerHTML='';
-            featured.forEach(function(r){ list.appendChild(makeCard(r)); });
+            
+            // Add Section Header for Live Sites
+            if (featured.length){
+                var h1 = document.createElement('div');
+                h1.className = 'panel-section-title';
+                h1.textContent = 'Live Sites';
+                list.appendChild(h1);
+                featured.forEach(function(r){ list.appendChild(makeCard(r)); });
+            }
+
+            // GitHub Repos
+            if (repos.length){
+                var h2 = document.createElement('div');
+                h2.className = 'panel-section-title';
+                h2.textContent = 'GitHub Repositories';
+                list.appendChild(h2);
+                repos.forEach(function (r){list.appendChild(makeCard(r));});
+            }
+
             if (!repos.length && !featured.length){
                 var m=document.createElement('span');
                 m.className='repo-error';
@@ -2329,17 +2373,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 list.appendChild(m);
                 return ;
             }
-            repos.forEach(function (r){list.appendChild(makeCard(r));});
         }).catch (function (){
             list.innerHTML='';
             featured.forEach(function(r){ list.appendChild(makeCard(r)); });
-            var fb=document.createElement('a');
-            fb.className='repo-card';
-            fb.href='https://github.com/'+GH;
-            fb.target='_blank';
-            fb.rel='noopener noreferrer';
-            fb.innerHTML='<div class="repo-left"><i class="fab fa-github repo-icon"></i><span class="repo-name">View GitHub profile</span></div><i class="fas fa-arrow-up-right-from-square repo-arrow"></i>';
-            list.appendChild(fb);
         });
     };
 })();
@@ -2376,11 +2412,15 @@ document.addEventListener('DOMContentLoaded', function () {
         panel.addEventListener('touchstart',function (e){sy=e.touches[0].clientY;},{passive:true});
         panel.addEventListener('touchend',function (e){if (e.changedTouches[0].clientY-sy>55)closePanel();},{passive:true});
         
-        // PC Dragging
-        var handle = panel.querySelector('.panel-drag-handle');
+        // Header Dragging
+        var hdr = panel.querySelector('.panel-header');
         var isDrg = false, startPos = {x:0, y:0};
-        handle.onmousedown = function(e){
+        
+        hdr.onmousedown = function(e){
+            // Don't drag if clicking close button
+            if (e.target.closest('#panel-close-btn')) return;
             if (window.innerWidth <= 700) return;
+            
             isDrg = true;
             startPos.x = e.clientX - panel.offsetLeft;
             startPos.y = e.clientY - panel.offsetTop;
@@ -2388,17 +2428,19 @@ document.addEventListener('DOMContentLoaded', function () {
             document.body.style.cursor = 'grabbing';
             e.preventDefault();
         };
+        
         document.onmousemove = function(e){
             if (!isDrg) return;
             panel.style.top = (e.clientY - startPos.y) + 'px';
             panel.style.left = (e.clientX - startPos.x) + 'px';
             panel.style.transform = 'none';
         };
+        
         document.onmouseup = function(){
             if (!isDrg) return;
             isDrg = false;
             document.body.style.cursor = '';
-            panel.style.transition = 'opacity 0.26s ease, visibility 0.26s, transform 0.34s cubic-bezier(0.34,1.56,0.64,1)';
+            panel.style.transition = 'opacity 0.28s ease, visibility 0.28s, transform 0.36s cubic-bezier(0.34,1.56,0.64,1)';
         };
     }
 })();
