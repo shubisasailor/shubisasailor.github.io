@@ -420,6 +420,7 @@
             width: 22px; height: 22px; object-fit: contain;
             transition: transform 0.2s;
             border-radius: 4px;
+            image-rendering: auto;
         }
 
         .custom-badge .badge-fallback {
@@ -1272,26 +1273,17 @@
                 <div class="hero-info-col">
 
                     <div id="discord-badges" style="margin-bottom:8px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
-                        <div style="display:inline-flex;align-items:center;gap:3px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:99px;padding:4px 10px;">
-                            <div class="custom-badge" data-tip="Owner" style="width:18px;height:18px;">
-                                <img draggable="false" src="media/badges/owner.png" alt="" style="display:none;width:18px;height:18px;"
-                                     onload="this.style.display='block';this.nextElementSibling.style.display='none';"
-                                     onerror="this.style.display='none';">
-                                <span class="badge-fallback" style="font-size:13px;">👑</span>
+                        <div id="custom-badge-pill" style="display:inline-flex;align-items:center;gap:3px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:99px;padding:4px 10px;">
+                            <div class="custom-badge" data-tip="Owner" style="width:22px;height:22px;">
+                                <img draggable="false" src="media/badges/badge1.gif" alt="Owner"
+                                     style="width:22px;height:22px;display:block;border-radius:3px;"
+                                     onerror="this.style.opacity='0.3';">
                             </div>
-                            <div class="custom-badge" data-tip="Developer" style="width:18px;height:18px;">
-                                <img draggable="false" src="media/badges/developer.png" alt="" style="display:none;width:18px;height:18px;"
-                                     onload="this.style.display='block';this.nextElementSibling.style.display='none';"
-                                     onerror="this.style.display='none';">
-                                <span class="badge-fallback" style="font-size:13px;">⚙️</span>
+                            <div class="custom-badge" data-tip="Developer" style="width:22px;height:22px;">
+                                <img draggable="false" src="media/badges/badge2.gif" alt="Developer"
+                                     style="width:22px;height:22px;display:block;border-radius:3px;"
+                                     onerror="this.style.opacity='0.3';">
                             </div>
-                            <div class="custom-badge" data-tip="Early Supporter" style="width:18px;height:18px;">
-                                <img draggable="false" src="media/badges/early-supporter.png" alt="" style="display:none;width:18px;height:18px;"
-                                     onload="this.style.display='block';this.nextElementSibling.style.display='none';"
-                                     onerror="this.style.display='none';">
-                                <span class="badge-fallback" style="font-size:13px;">🌟</span>
-                            </div>
-
                         </div>
                     </div>
 
@@ -1312,7 +1304,7 @@
                 </div>
             </div>
 
-            <div class="views-row" style="position:absolute;bottom:10px;left:18px;display:flex;align-items:center;gap:4px;pointer-events:none;">
+            <div class="views-row" style="display:flex;align-items:center;gap:4px;pointer-events:none;margin-top:8px;">
                 <span style="font-size:0.60rem;opacity:0.55;">👁</span>
                 <span class="visit-count-val" style="font-size:0.60rem;font-weight:600;letter-spacing:0.5px;"></span>
                 <span style="font-size:0.52rem;letter-spacing:1.5px;text-transform:uppercase;opacity:0.65;">views</span>
@@ -1879,6 +1871,7 @@
     var avatarSet = false;
     var lastSeenOnlineTs = parseInt(sessionStorage.getItem('_dsLastSeen')) || null;
     var lastKnownStatus = 'offline';
+    var _wsReady = false;
 
     function applyData(d) {
         if (!d) {
@@ -1930,9 +1923,15 @@
 
         var txt = '';
 
+        if (s === 'offline' && !_wsReady) {
+            if (acEl) { acEl.textContent = ''; acEl.style.display = 'none'; }
+            if (skEl) skEl.style.display = 'none';
+            if (cEl)  cEl.classList.add('loaded');
+            return;
+        }
         if (s === 'offline') {
             var offlineAgo = lastSeenOnlineTs ? timeAgo(lastSeenOnlineTs) : '';
-            txt = offlineAgo ? '🕐 offline · ' + offlineAgo : '🕐 offline';
+            txt = offlineAgo ? 'offline' + (lastSeenOnlineTs ? ' · ' + timeAgo(lastSeenOnlineTs) : '') : 'offline';
         } else {
             for (var i = 0; i < acts.length; i++) {
                 if (acts[i].type === 4 && acts[i].state) { txt = acts[i].state; break; }
@@ -1940,10 +1939,11 @@
             if (!txt) {
                 for (var j = 0; j < acts.length; j++) {
                     if (acts[j].type === 2 && acts[j].details) {
-                        txt = '🎵 ' + acts[j].details + (acts[j].state ? ' — ' + acts[j].state : '');
+                        txt = 'listening to ' + acts[j].details + (acts[j].state ? ' by ' + acts[j].state : '');
                         break;
                     }
-                    if (acts[j].type === 0 && acts[j].name) { txt = '🎮 ' + acts[j].name; break; }
+                    if (acts[j].type === 1 && acts[j].name) { txt = 'streaming ' + acts[j].name; break; }
+                    if (acts[j].type === 0 && acts[j].name) { txt = 'playing ' + acts[j].name; break; }
                 }
             }
         }
@@ -1997,8 +1997,10 @@
 
                 case 0:
                     if (msg.t === 'INIT_STATE') {
+                        _wsReady = true;
                         applyData(msg.d && msg.d[ID]);
                     } else if (msg.t === 'PRESENCE_UPDATE') {
+                        _wsReady = true;
                         applyData(msg.d);
                     }
                     break;
@@ -2016,13 +2018,13 @@
         };
     }
 
-    fetch('https://api.lanyard.rest/v1/users/748831508776878110')
-        .then(function(r){ return r.ok ? r.json() : Promise.reject(); })
-        .then(function(j){ applyData(j && j.data); })
-        .catch(function(){
-
-            applyData(null);
-        });
+    setTimeout(function() {
+        if (_wsReady) return;
+        fetch('https://api.lanyard.rest/v1/users/748831508776878110')
+            .then(function(r){ return r.ok ? r.json() : Promise.reject(); })
+            .then(function(j){ if (!_wsReady) { _wsReady = true; applyData(j && j.data); } })
+            .catch(function(){});
+    }, 2000);
 
     connect();
 
