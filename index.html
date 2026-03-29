@@ -1829,11 +1829,11 @@
 <script src="js/discord.js"></script>
 
 <script>
-/* ── Page view counter (countapi.xyz) ── */
+/* ── Page view counter (counterapi.dev) ── */
 (function(){
     var NAMESPACE = 'francisco.is-a.dev';
     var KEY       = 'pageviews';
-    var API       = 'https://api.countapi.xyz';
+    var API       = 'https://api.counterapi.dev/v1';
 
     function setViews(n){
         var els = document.querySelectorAll('.visit-count-val');
@@ -1845,16 +1845,16 @@
     var counted = sessionStorage.getItem('view_counted');
     if(counted){
         /* Already counted this session — just read the current value */
-        fetch(API+'/get/'+NAMESPACE+'/'+KEY)
+        fetch(API+'/'+NAMESPACE+'/'+KEY)
             .then(function(r){ return r.ok ? r.json() : null; })
-            .then(function(d){ if(d&&d.value!=null) setViews(d.value); })
+            .then(function(d){ if(d&&d.count!=null) setViews(d.count); })
             .catch(function(){});
     } else {
-        fetch(API+'/hit/'+NAMESPACE+'/'+KEY)
+        fetch(API+'/'+NAMESPACE+'/'+KEY+'/up')
             .then(function(r){ return r.ok ? r.json() : null; })
             .then(function(d){
-                if(d&&d.value!=null){
-                    setViews(d.value);
+                if(d&&d.count!=null){
+                    setViews(d.count);
                     sessionStorage.setItem('view_counted','1');
                 }
             })
