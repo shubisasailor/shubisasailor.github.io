@@ -9,20 +9,21 @@
     <meta property="og:url"         content="https://francisco.is-a.dev/">
     <meta property="og:title"       content="Francisco | Portfolio">
     <meta property="og:description" content="High school student · Software & game developer · Open to work">
-    <meta property="og:image"       content="https://francisco.is-a.dev/media/og.png">
+    <meta property="og:image"       content="https://francisco.is-a.dev/media/preview.png">
     <meta property="og:image:width"  content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card"        content="summary_large_image">
     <meta name="twitter:site"        content="@ZetsuoNoShub">
     <meta name="twitter:title"       content="Francisco | Portfolio">
     <meta name="twitter:description" content="High school student · Software & game developer · Open to work">
-    <meta name="twitter:image"       content="https://francisco.is-a.dev/media/og.png">
+    <meta name="twitter:image"       content="https://francisco.is-a.dev/media/preview.png">
     <meta name="theme-color"         content="#000000">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/projects.css">
 
 
     <link rel="preconnect" href="https://cdn.discordapp.com" crossorigin>
@@ -132,6 +133,10 @@
             cursor: pointer;
             touch-action: manipulation;
         }
+        #bg-wrap { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; background:#000; }
+        #bg-wrap video { position:absolute; width:100vw; height:56.25vw; min-height:100vh; min-width:177.78vh; top:50%; left:50%; transform:translate(-50%,-50%); object-fit:cover; pointer-events:none; }
+        #yt-dark { opacity:1; z-index:1; transition:opacity 0.65s ease; }
+        #yt-light { opacity:0; z-index:2; transition:opacity 0.65s ease; }
         #overlay-bg {
             position: absolute; inset: 0;
             background: rgba(0,0,0,0.90);
@@ -494,91 +499,9 @@
         #projects-btn .btn-chevron { font-size:0.56rem; color:rgba(255,255,255,0.28); transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1), color 0.2s; }
         #projects-btn.open .btn-chevron { transform:rotate(180deg); color:rgba(255,255,255,0.55); }
 
-        #projects-panel {
-            position:fixed; top:50%; left:calc(50% + 254px);
-            transform:translateY(-50%) translateX(20px);
-            width:250px; max-height:calc(100vh - 160px);
-            background:rgba(6,6,12,0.96);
-            border:1px solid rgba(255,255,255,0.10); border-radius:16px;
-            box-shadow:0 28px 56px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.06);
-            z-index:300; opacity:0; visibility:hidden;
-            display:flex; flex-direction:column;
-            transition:opacity 0.26s ease, visibility 0.26s, transform 0.34s cubic-bezier(0.34,1.56,0.64,1);
-            pointer-events:none;
-        }
-        #projects-panel.open { opacity:1; visibility:visible; transform:translateY(-50%) translateX(0); pointer-events:auto; }
-        .panel-drag-handle { 
-            width:30px; height:4px; background:rgba(255,255,255,0.12); 
-            border-radius:10px; margin:8px auto 0; flex-shrink:0; pointer-events:none;
-        }
-        .panel-header { 
-            display:flex; flex-direction:column; padding:0 15px 10px; border-bottom:1px solid rgba(255,255,255,0.06); flex-shrink:0; 
-            cursor:grab; -webkit-user-select:none; user-select:none;
-        }
-        .panel-header:active { cursor:grabbing; }
-        .panel-header-top { display:flex; align-items:center; justify-content:space-between; margin-top:6px; }
-        .panel-title { font-size:0.56rem; letter-spacing:3px; font-weight:700; text-transform:uppercase; color:rgba(255,255,255,0.30); }
-        .panel-close { font-size:0.68rem; color:rgba(255,255,255,0.20); cursor:pointer; padding:4px 6px; border-radius:4px; transition:color 0.2s, background 0.2s; }
-        .panel-close:hover { color:rgba(255,255,255,0.75); background:rgba(255,255,255,0.07); }
-
-        .panel-section-title { font-size:0.50rem; letter-spacing:2px; font-weight:700; text-transform:uppercase; color:rgba(255,255,255,0.22); margin:15px 4px 8px; padding-bottom:5px; border-bottom:1px solid rgba(255,255,255,0.04); }
-        .panel-body { overflow-y:auto; flex:1; padding:2px 10px 12px; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.08) transparent; }
-        .panel-body::-webkit-scrollbar { width:3px; }
-        .panel-body::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.10); border-radius:10px; }
-
-        .repo-card { 
-            display:flex; flex-direction:row; align-items:center; gap:12px; padding:10px 14px; 
-            background:rgba(255,255,255,0.03); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
-            border:1px solid rgba(255,255,255,0.07); border-radius:12px; margin-bottom:8px; 
-            transition:all 0.28s cubic-bezier(0.23,1,0.32,1); 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
-        }
-        .repo-card:hover { 
-            background:rgba(255,255,255,0.08); transform:translateX(4px); 
-            border-color:rgba(255,255,255,0.18);
-            box-shadow: 0 12px 28px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.10);
-        }
-        .repo-card:last-child { margin-bottom:0; }
-        .repo-info { display:flex; align-items:center; gap:10px; min-width:0; flex:1; }
-        .repo-name { 
-            font-size:0.78rem; font-weight:600; color:rgba(255,255,255,0.85); 
-            white-space:nowrap; overflow:hidden; text-overflow:ellipsis; 
-            letter-spacing:-0.1px; text-shadow: 0 0 12px rgba(255,255,255,0.05);
-        }
-        .repo-lang-dot { 
-            width:5px; height:5px; border-radius:50%; flex-shrink:0; margin-left:6px;
-            box-shadow:0 0 10px currentColor; animation: dotPulse 2s infinite ease-in-out;
-        }
-        @keyframes dotPulse { 
-            0%,100% { transform:scale(1); opacity:0.8; filter:brightness(1); }
-            50% { transform:scale(1.3); opacity:1; filter:brightness(1.5); }
-        }
-        
-        .repo-actions { display:flex; gap:6px; flex-shrink:0; order:-1; }
-        .repo-btn { 
-            width:28px; height:28px; display:flex; align-items:center; justify-content:center; 
-            border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.10);
-            font-size:0.75rem; text-decoration:none; color:rgba(255,255,255,0.35); 
-            transition:all 0.25s cubic-bezier(0.23,1,0.32,1);
-        }
-        .repo-btn:hover { background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.22); color:white; transform:scale(1.1) translateY(-1px); }
-        .repo-btn.live { color:rgba(255,255,255,0.75); background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.14); }
-        .repo-btn:active { transform:scale(0.92); }
-        
-        .repo-skeleton { height:64px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); border-radius:10px; margin-bottom:10px; animation:skPulse 1.6s ease-in-out infinite; }
         #panel-backdrop { display:none; position:fixed; inset:0; z-index:299; background:rgba(0,0,0,0.50); opacity:0; visibility:hidden; transition:opacity 0.26s, visibility 0.26s; }
         #panel-backdrop.open { opacity:1; visibility:visible; }
-        @media (max-width:700px) {
-            #projects-panel {
-                top:auto!important; left:50%!important; width:calc(100% - 28px)!important;
-                max-width:480px!important; max-height:55vh!important;
-                bottom:calc(var(--player-h-mob) + var(--player-pad-mob) + var(--safe-bottom) + 8px);
-                transform:translateX(-50%) translateY(108%)!important;
-                transition:opacity 0.26s ease, visibility 0.26s, transform 0.36s cubic-bezier(0.25,1.4,0.5,1)!important;
-            }
-            #projects-panel.open { transform:translateX(-50%) translateY(0)!important; }
-            #panel-backdrop { display:block; }
-        }
+        @media (max-width:700px) { #panel-backdrop { display:block; } }
 
         .social-links { display:flex; justify-content:center; flex-wrap:wrap; gap:20px; margin-top:20px; }
         .social-links a { display:flex; align-items:center; justify-content:center; width:22px; height:22px; text-decoration:none; transition:0.25s; -webkit-tap-highlight-color:transparent; color:rgba(255,255,255,0.50); }
@@ -1075,17 +998,11 @@
 <canvas id="touch-fx"></canvas>
 
 <div id="bg-wrap">
-    <video id="yt-dark" autoplay muted loop playsinline preload="auto" fetchpriority="high"
-           style="will-change:opacity;transform:translate(-50%,-50%) translateZ(0);backface-visibility:hidden;"
-           onerror="this.style.display='none'">
+    <video id="yt-dark" autoplay muted loop playsinline preload="auto" fetchpriority="high">
         <source src="media/dark.webm" type="video/webm">
-        <source src="media/dark.mp4"  type="video/mp4">
     </video>
-    <video id="yt-light" autoplay muted loop playsinline preload="none"
-           style="will-change:opacity;transform:translate(-50%,-50%) translateZ(0);backface-visibility:hidden;"
-           onerror="this.style.display='none'">
+    <video id="yt-light" autoplay muted loop playsinline preload="none">
         <source src="media/light.webm" type="video/webm">
-        <source src="media/light.mp4"  type="video/mp4">
     </video>
 </div>
 <div id="bg-vignette"></div>
@@ -2313,22 +2230,27 @@ document.addEventListener('DOMContentLoaded', function () {
         var card=document.createElement('div');
         card.className='repo-card';
         if (r.featured) card.classList.add('featured-repo');
+
         var info=document.createElement('div');
         info.className='repo-info';
+
         var nm=document.createElement('span');
         nm.className='repo-name';
         nm.textContent=r.name;
-        info.appendChild(nm);
+
         if (r.language){
             var d=document.createElement('span');
             d.className='repo-lang-dot';
-            d.style.background=LC[r.language]||'rgba(255,255,255,0.28)';
             d.style.color=LC[r.language]||'rgba(255,255,255,0.28)';
+            d.style.background=LC[r.language]||'rgba(255,255,255,0.28)';
             d.title=r.language;
             info.appendChild(d);
         }
+        info.appendChild(nm);
+
         var actions=document.createElement('div');
         actions.className='repo-actions';
+
         if (r.html_url && !r.featured){
             var ghBtn=document.createElement('a');
             ghBtn.className='repo-btn';
@@ -2338,6 +2260,7 @@ document.addEventListener('DOMContentLoaded', function () {
             ghBtn.innerHTML='<i class="fab fa-github"></i>';
             actions.appendChild(ghBtn);
         }
+
         if (r.homepage || r.featured){
             var liveBtn=document.createElement('a');
             liveBtn.className='repo-btn live';
@@ -2347,8 +2270,9 @@ document.addEventListener('DOMContentLoaded', function () {
             liveBtn.innerHTML='<i class="fas fa-external-link-alt"></i>';
             actions.appendChild(liveBtn);
         }
-        card.appendChild(actions); // Icons on Left
+
         card.appendChild(info);
+        card.appendChild(actions);
         return card;
     }
     window._fetchRepos =function (){

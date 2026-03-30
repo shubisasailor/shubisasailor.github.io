@@ -4,19 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Francisco | Contact</title>
+    <meta property="og:type"        content="website">
+    <meta property="og:url"         content="https://francisco.is-a.dev/contact">
+    <meta property="og:title"       content="Francisco | Contact">
+    <meta property="og:description" content="Get in touch. Open to work.">
+    <meta property="og:image"       content="https://francisco.is-a.dev/media/preview.png">
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:title"       content="Francisco | Contact">
+    <meta name="twitter:description" content="Get in touch. Open to work.">
+    <meta name="twitter:image"       content="https://francisco.is-a.dev/media/preview.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/projects.css">
     <script src="../js/title-typer.js"></script>
     <script>
         if (sessionStorage.getItem('site_entered')) {
             document.addEventListener('DOMContentLoaded', function () {
                 var ov = document.getElementById('overlay');
-                if (ov) {
-                    ov.style.transition = 'none';
-                    ov.style.display = 'none';
-                }
+                if (ov) { ov.style.transition = 'none'; ov.style.display = 'none'; }
             });
         }
     </script>
@@ -82,70 +89,25 @@
         .song-title { font-size: clamp(0.72rem, 2vw, 0.78rem); font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: rgba(255, 255, 255, 0.60) !important }
         #music-time { font-size: clamp(0.58rem, 1.6vw, 0.65rem); color: rgba(255, 255, 255, 0.35) !important; white-space: nowrap; min-width: 30px; text-align: right }
         #music-progress { background: rgba(255, 255, 255, 0.55) !important; box-shadow: 0 0 7px rgba(255, 255, 255, 0.18) !important }
-        #projects-btn { width: 100%; padding: 11px 16px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 10px; color: rgba(255, 255, 255, 0.55); font-family: 'Inter', sans-serif; font-size: clamp(0.62rem, 1.8vw, 0.68rem); letter-spacing: 2.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 9px; transition: all 0.2s; position: relative; overflow: hidden; -webkit-tap-highlight-color: transparent }
-        #projects-btn:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.18); color: rgba(255, 255, 255, 0.88) }
-        #projects-btn:active { transform: scale(0.98) }
-        #projects-btn .btn-chevron { font-size: 0.56rem; color: rgba(255, 255, 255, 0.28); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s }
-        #projects-btn.open .btn-chevron { transform: rotate(180deg); color: rgba(255, 255, 255, 0.55) }
-        #projects-panel { position: fixed; top: 50%; left: calc(50% + 254px); transform: translateY(-50%) translateX(20px); width: 250px; max-height: calc(100vh - 160px); background: rgba(6, 6, 12, 0.96); border: 1px solid rgba(255, 255, 255, 0.10); border-radius: 16px; box-shadow: 0 28px 56px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.06); z-index: 300; opacity: 0; visibility: hidden; display: flex; flex-direction: column; transition: opacity 0.26s ease, visibility 0.26s, transform 0.34s cubic-bezier(0.34, 1.56, 0.64, 1); pointer-events: none }
-        #projects-panel.open { opacity: 1; visibility: visible; transform: translateY(-50%) translateX(0); pointer-events: auto }
-        .panel-drag-handle { width: 30px; height: 4px; background: rgba(255, 255, 255, 0.12); border-radius: 10px; margin: 8px auto 0; flex-shrink: 0; pointer-events: none }
-        .panel-header { display: flex; flex-direction: column; padding: 0 15px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); flex-shrink: 0; cursor: grab; -webkit-user-select: none; user-select: none }
-        .panel-header:active { cursor: grabbing }
-        .panel-header-top { display: flex; align-items: center; justify-content: space-between; margin-top: 6px }
-        .panel-title { font-size: 0.56rem; letter-spacing: 3px; font-weight: 700; text-transform: uppercase; color: rgba(255, 255, 255, 0.30) }
-        .panel-close { font-size: 0.68rem; color: rgba(255, 255, 255, 0.20); cursor: pointer; padding: 4px 6px; border-radius: 4px; transition: color 0.2s, background 0.2s }
-        .panel-close:hover { color: rgba(255, 255, 255, 0.75); background: rgba(255, 255, 255, 0.07) }
-        .panel-section-title { font-size: 0.50rem; letter-spacing: 2px; font-weight: 700; text-transform: uppercase; color: rgba(255, 255, 255, 0.22); margin: 15px 4px 8px; padding-bottom: 5px; border-bottom: 1px solid rgba(255, 255, 255, 0.04) }
-        .panel-body { overflow-y: auto; flex: 1; padding: 2px 10px 12px; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.08) transparent }
-        .panel-body::-webkit-scrollbar { width: 3px }
-        .panel-body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.10); border-radius: 10px }
         
-        .repo-card { 
-            display:flex; flex-direction:column; gap:12px; padding:12px 14px; 
-            background:rgba(255, 255, 255, 0.04); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
-            border:1px solid rgba(255, 255, 255, 0.08); border-radius:14px; margin-bottom:12px; 
-            transition:all 0.28s cubic-bezier(0.23, 1, 0.32, 1); 
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        #projects-btn {
+            width:100%; padding:11px 16px;
+            background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.09);
+            border-radius:10px; color:rgba(255,255,255,0.55);
+            font-family:'Inter',sans-serif; font-size:clamp(0.62rem,1.8vw,0.68rem); letter-spacing:2.5px;
+            cursor:pointer; display:flex; align-items:center; justify-content:center; gap:9px;
+            transition:all 0.2s; position:relative; overflow:hidden;
+            -webkit-tap-highlight-color:transparent;
         }
-        .repo-card:hover { 
-            background:rgba(255, 255, 255, 0.07); transform:translateY(-4px); 
-            border-color:rgba(255, 255, 255, 0.18);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
-        }
-        .repo-card:last-child { margin-bottom: 0 }
-        .repo-info { display: flex; align-items: center; gap: 10px; min-width: 0 }
-        .repo-name { 
-            font-size: 0.82rem; font-weight: 700; color: rgba(255, 255, 255, 0.92); 
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; 
-            letter-spacing: -0.2px; text-shadow: 0 0 12px rgba(255, 255, 255, 0.05);
-        }
-        .repo-lang-dot { 
-            width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-left: auto; 
-            box-shadow: 0 0 10px currentColor; animation: dotPulse 2s infinite ease-in-out;
-        }
-        @keyframes dotPulse { 
-            0%, 100% { transform: scale(1); opacity: 0.85; filter: brightness(1); }
-            50% { transform: scale(1.2); opacity: 1; filter: brightness(1.5); }
-        }
-        .repo-actions { display: flex; gap: 8px; margin-top: 2px }
-        .repo-btn { 
-            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; 
-            border-radius: 50%; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.10);
-            font-size: 0.85rem; text-decoration: none; color: rgba(255, 255, 255, 0.45); 
-            transition: all 0.25s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-        .repo-btn:hover { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.22); color: white; transform: scale(1.1) }
-        .repo-btn.live { color: rgba(255, 255, 255, 0.85); background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.15) }
-        .repo-btn:active { transform: scale(0.92) }
-        .repo-skeleton { height: 64px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 10px; margin-bottom: 10px; animation: skPulse 1.6s ease-in-out infinite }
-        #panel-backdrop { display: none; position: fixed; inset: 0; z-index: 299; background: rgba(0, 0, 0, 0.50); opacity: 0; visibility: hidden; transition: opacity 0.26s, visibility 0.26s }
-        #panel-backdrop.open { opacity: 1; visibility: visible }
-        @media (max-width: 700px) {
-            #projects-panel { top: auto !important; left: 50% !important; width: calc(100% - 28px) !important; max-width: 480px !important; max-height: 55vh !important; bottom: calc(var(--player-h-mob, 190px) + var(--player-pad-mob, 14px) + var(--safe-bottom, 16px) + 8px); transform: translateX(-50%) translateY(108%) !important; transition: opacity 0.26s ease, visibility 0.26s, transform 0.36s cubic-bezier(0.25, 1.4, 0.5, 1) !important }
-            #projects-panel.open { transform: translateX(-50%) translateY(0) !important }
-            #panel-backdrop { display: block }
-        }
+        #projects-btn:hover { background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.18); color:rgba(255,255,255,0.88); }
+        #projects-btn:active { transform:scale(0.98); }
+        #projects-btn .btn-chevron { font-size:0.56rem; color:rgba(255,255,255,0.28); transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1), color 0.2s; }
+        #projects-btn.open .btn-chevron { transform:rotate(180deg); color:rgba(255,255,255,0.55); }
+
+        #panel-backdrop { display:none; position:fixed; inset:0; z-index:299; background:rgba(0,0,0,0.50); opacity:0; visibility:hidden; transition:opacity 0.26s, visibility 0.26s; }
+        #panel-backdrop.open { opacity:1; visibility:visible; }
+        @media (max-width:700px) { #panel-backdrop { display:block; } }
+
         .nav-tabs span { font-size: clamp(0.6rem, 2vw, 0.7rem); letter-spacing: 2px; font-weight: bold; opacity: 0.40; transition: opacity 0.2s; color: var(--text, white); cursor: pointer; padding: 4px 8px }
         .nav-tabs span.active { opacity: 1; text-shadow: 0 0 14px rgba(255, 255, 255, 0.55), 0 0 32px rgba(255, 255, 255, 0.18) }
         .nav-tabs span:hover { opacity: 0.72 }
@@ -168,8 +130,8 @@
         })();
     </script>
     <div id="bg-wrap">
-        <video id="yt-dark" autoplay muted loop playsinline><source src="../media/dark.webm" type="video/webm"></video>
-        <video id="yt-light" autoplay muted loop playsinline><source src="../media/light.webm" type="video/webm"></video>
+        <video id="yt-dark" autoplay muted loop playsinline preload="auto"><source src="../media/dark.webm" type="video/webm"></video>
+        <video id="yt-light" autoplay muted loop playsinline preload="none"><source src="../media/light.webm" type="video/webm"></video>
     </div>
     <div id="bg-vignette"></div>
     <div id="overlay"><div class="overlay-blur"></div><div class="enter-button">tap to enter</div></div>
@@ -406,16 +368,15 @@
                 var nm = document.createElement('span');
                 nm.className = 'repo-name';
                 nm.textContent = r.name;
-                info.appendChild(nm);
                 if (r.language) {
                     var d = document.createElement('span');
                     d.className = 'repo-lang-dot';
-                    d.style.background = LC[r.language] || 'rgba(255,255,255,0.28)';
                     d.style.color = LC[r.language] || 'rgba(255,255,255,0.28)';
+                    d.style.background = LC[r.language] || 'rgba(255,255,255,0.28)';
                     d.title = r.language;
                     info.appendChild(d);
                 }
-                card.appendChild(info);
+                info.appendChild(nm);
                 var actions = document.createElement('div');
                 actions.className = 'repo-actions';
                 if (r.html_url && !r.featured) {
@@ -436,6 +397,7 @@
                     liveBtn.innerHTML = '<i class="fas fa-external-link-alt"></i>';
                     actions.appendChild(liveBtn);
                 }
+                card.appendChild(info);
                 card.appendChild(actions);
                 return card;
             }
