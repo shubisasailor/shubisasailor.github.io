@@ -223,7 +223,7 @@
         }
 
         .glass-card.hero-card { overflow: visible; }
-        .glass-card:hover {
+        .glass-card:hover, .glass-card:active {
             border-color: rgba(255,255,255,0.15);
             box-shadow: 0 0 0 1px rgba(255,255,255,0.06),
                         0 12px 40px rgba(0,0,0,0.5),
@@ -256,7 +256,7 @@
             cursor: pointer; padding: 5px 10px; white-space: nowrap;
             -webkit-tap-highlight-color: transparent;
         }
-        .nav-tab:hover { opacity: 0.70; }
+        .nav-tab:hover, .nav-tab:active { opacity: 0.70; }
         .nav-tab.active {
             opacity: 1;
             text-shadow: 0 0 14px rgba(255,255,255,0.55), 0 0 32px rgba(255,255,255,0.18);
@@ -440,7 +440,9 @@
             user-select: none;
         }
         .custom-badge:hover img,
-        .custom-badge:hover .badge-fallback {
+        .custom-badge:active img,
+        .custom-badge:hover .badge-fallback,
+        .custom-badge:active .badge-fallback {
             transform: scale(1.28) translateY(-2px);
         }
 
@@ -463,7 +465,7 @@
             transition: opacity 0.18s, transform 0.18s;
             z-index: 99;
         }
-        .custom-badge:hover::after {
+        .custom-badge:hover::after, .custom-badge:active::after {
             opacity: 1;
             transform: translateX(-50%) scale(1);
         }
@@ -485,7 +487,7 @@
             transform:translateX(-100%); transition:transform 0.45s ease; pointer-events:none;
         }
         .skill-tag:hover::after { transform:translateX(100%); }
-        .skill-tag:hover { background:rgba(255,255,255,0.09); border-color:rgba(255,255,255,0.20); color:rgba(255,255,255,0.82); transform:translateY(-2px); }
+        .skill-tag:hover, .skill-tag:active { background:rgba(255,255,255,0.09); border-color:rgba(255,255,255,0.20); color:rgba(255,255,255,0.82); transform:translateY(-2px); }
         .skill-tag:active { transform:scale(0.94); }
 
         #projects-btn {
@@ -513,7 +515,7 @@
         .social-links a:hover { transform:scale(1.22); color:white; }
         .social-links a:hover i { color:white; }
         .social-links:hover a { opacity:0.38; transform:scale(0.95); }
-        .social-links a:hover { opacity:1!important; transform:scale(1.22)!important; }
+        .social-links a:hover, .social-links a:active { opacity:1!important; transform:scale(1.22)!important; }
 
         .now-playing-badge {
             display:inline-flex; align-items:center; gap:6px;
@@ -981,7 +983,7 @@
             transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease !important;
             will-change: transform, box-shadow;
         }
-        .skill-tag:hover {
+        .skill-tag:hover, .skill-tag:active {
             transform: translateY(-4px) scale(1.04) !important;
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4), 0 0 12px rgba(255, 255, 255, 0.14) !important;
             z-index: 10;
@@ -2081,7 +2083,8 @@ document.addEventListener('DOMContentLoaded', function () {
 <script>
 (function() {
 
-    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    // Enable for both mouse and touch
+    // if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
     var MAX_TILT    = 15;
     var PERSPECTIVE = 900;
@@ -2110,7 +2113,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 + ' rotateY(' + curY.toFixed(4) + 'deg)'
                 + ' scale('   + curScale.toFixed(5) + ')';
             el.style.boxShadow =
-                (curY * 0.6).toFixed(2) + 'px ' + (curX * 0.6).toFixed(2) + 'px 40px rgba(0,0,0,0.45),'
+                (curY * 0.4).toFixed(2) + 'px ' + (curX * 0.4).toFixed(2) + 'px 40px rgba(0,0,0,0.45),'
                 + '0 0 0 1px rgba(255,255,255,0.07)';
             if (shine) {
                 shine.style.opacity    = curAlpha.toFixed(4);
@@ -2184,6 +2187,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
             startLoop();
         });
+
+        // Touch Support
+        el.addEventListener('touchstart', function(e) {
+            rect     = el.getBoundingClientRect();
+            tgtScale = 1.015;
+            tgtAlpha = 1;
+            var touch = e.touches[0];
+            setTarget(touch.clientX, touch.clientY);
+            startLoop();
+        }, { passive: true });
+
+        el.addEventListener('touchmove', function(e) {
+            if (!rect) rect = el.getBoundingClientRect();
+            var touch = e.touches[0];
+            setTarget(touch.clientX, touch.clientY);
+            startLoop();
+        }, { passive: true });
+
+        el.addEventListener('touchend', function() {
+            rect     = null;
+            tgtScale = 1.0;
+            tgtAlpha = 0;
+            startLoop();
+        }, { passive: true });
     }
 
     function applyAll() {
