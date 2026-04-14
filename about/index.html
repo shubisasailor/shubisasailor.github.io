@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Francisco | About</title>
+    <title>Shub | About</title>
     <link rel="icon" type="image/png" sizes="16x16" href="../media/favicon-16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="../media/favicon-32.png">
     <link rel="apple-touch-icon" sizes="180x180" href="../media/apple-touch-icon.png">
     <meta property="og:type"        content="website">
-    <meta property="og:url"         content="https://francisco.is-a.dev/about">
-    <meta property="og:title"       content="Francisco | About">
+    <meta property="og:url"         content="https://cswith.me/about">
+    <meta property="og:title"       content="Shub | About">
     <meta property="og:description" content="Software & game developer. CS student.">
-    <meta property="og:image"       content="https://francisco.is-a.dev/media/preview.png">
+    <meta property="og:image"       content="https://cswith.me/media/preview.png">
     <meta name="twitter:card"        content="summary_large_image">
-    <meta name="twitter:title"       content="Francisco | About">
+    <meta name="twitter:title"       content="Shub | About">
     <meta name="twitter:description" content="Software & game developer. CS student.">
-    <meta name="twitter:image"       content="https://francisco.is-a.dev/media/preview.png">
+    <meta name="twitter:image"       content="https://cswith.me/media/preview.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="../css/main.css">
@@ -32,7 +32,7 @@
         #yt-light{opacity:0;z-index:2;transition:opacity 0.65s ease}
         #bg-vignette{position:fixed;inset:0;z-index:3;background:radial-gradient(ellipse at center,transparent 25%,rgba(0,0,0,0.22) 100%);pointer-events:none}
         #overlay{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;justify-content:center;align-items:center;transition:opacity 0.9s ease}
-        .overlay-blur{position:absolute;inset:0;background:rgba(0,0,0,0.88);backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px)}
+        .overlay-blur{position:absolute;inset:0;background:rgba(0,0,0,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);transition:backdrop-filter 0.15s ease,-webkit-backdrop-filter 0.15s ease}
         .enter-button{position:relative;z-index:10;pointer-events:none;font-size:clamp(0.78rem,2.5vw,0.92rem);letter-spacing:3.5px;color:rgba(255,255,255,0.48);cursor:pointer;animation:pulse 2s infinite ease-in-out}
         @keyframes pulse{0%,100%{opacity:0.4}50%{opacity:0.85}}
         .top-left-wrapper{position:fixed;top:max(18px,env(safe-area-inset-top,18px));left:max(18px,env(safe-area-inset-left,18px));z-index:10}
@@ -156,7 +156,7 @@ setInterval(_chk,800);
     <div class="glass-card">
         <div class="section-label">who i am</div>
         <p class="bio-text">
-            Hey, I'm Francisco &#8212; a CS student with a passion for building things that feel
+            Hey, I'm Shub &#8212; a CS student with a passion for building things that feel
             alive. I gravitate toward dark aesthetics, atmospheric design, and code that
             has personality. When I'm not writing software, I'm probably listening to music
             and working on some project.
@@ -391,8 +391,14 @@ document.addEventListener('DOMContentLoaded',function (){
             if (_ent)return ;_ent =true;
             sessionStorage.setItem('site_entered','1');
             playAudio();
-            overlay.style.opacity ='0';
-            setTimeout(function (){overlay.style.display ='none';showContent();},800);
+            var ovBg = overlay.querySelector('.overlay-blur');
+            if (ovBg) { ovBg.style.backdropFilter = 'none'; ovBg.style.webkitBackdropFilter = 'none'; }
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                    overlay.style.opacity = '0';
+                    setTimeout(function () { overlay.style.display = 'none'; showContent(); }, 800);
+                });
+            });
         }
         var _entFired=false;
         function _tryEnter(e){if(_entFired)return;_entFired=true;if(e&&e.cancelable)e.preventDefault();enterSite();}

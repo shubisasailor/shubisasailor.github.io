@@ -3,23 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Francisco | Portfolio</title>
+    <title>Shub | Portfolio</title>
     <link rel="icon" type="image/png" sizes="16x16" href="media/favicon-16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="media/favicon-32.png">
     <link rel="apple-touch-icon" sizes="180x180" href="media/apple-touch-icon.png">
 
     <meta property="og:type"        content="website">
-    <meta property="og:url"         content="https://francisco.is-a.dev/">
-    <meta property="og:title"       content="Francisco | Portfolio">
+    <meta property="og:url"         content="https://cswith.me/">
+    <meta property="og:title"       content="Shub | Portfolio">
     <meta property="og:description" content="High school student · Software & game developer · Open to work">
-    <meta property="og:image"       content="https://francisco.is-a.dev/media/preview.png">
+    <meta property="og:image"       content="https://cswith.me/media/preview.png">
     <meta property="og:image:width"  content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card"        content="summary_large_image">
     <meta name="twitter:site"        content="@ZetsuoNoShub">
-    <meta name="twitter:title"       content="Francisco | Portfolio">
+    <meta name="twitter:title"       content="Shub | Portfolio">
     <meta name="twitter:description" content="High school student · Software & game developer · Open to work">
-    <meta name="twitter:image"       content="https://francisco.is-a.dev/media/preview.png">
+    <meta name="twitter:image"       content="https://cswith.me/media/preview.png">
     <meta name="theme-color"         content="#000000">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -110,14 +110,14 @@
             width: 100vw; height: 56.25vw;
             min-height: 100vh; min-width: 177.78vh;
             top: 50%; left: 50%;
-            transform: translate(-50%,-50%);
             object-fit: cover; pointer-events: none;
             transition: opacity 0.65s ease;
-            will-change: opacity;
-            -webkit-transform: translate(-50%,-50%) translateZ(0);
+            will-change: transform, opacity;
             transform: translate(-50%,-50%) translateZ(0);
+            -webkit-transform: translate(-50%,-50%) translateZ(0);
             backface-visibility: hidden;
             -webkit-backface-visibility: hidden;
+            -webkit-font-smoothing: antialiased;
         }
         #yt-dark  { opacity: 1; z-index: 1; }
         #yt-light { opacity: 0; z-index: 2; }
@@ -136,14 +136,11 @@
             cursor: pointer;
             touch-action: manipulation;
         }
-        #bg-wrap { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; background:#000; }
-        #bg-wrap video { position:absolute; width:100vw; height:56.25vw; min-height:100vh; min-width:177.78vh; top:50%; left:50%; transform:translate(-50%,-50%); object-fit:cover; pointer-events:none; }
-        #yt-dark { opacity:1; z-index:1; transition:opacity 0.65s ease; }
-        #yt-light { opacity:0; z-index:2; transition:opacity 0.65s ease; }
         #overlay-bg {
             position: absolute; inset: 0;
             background: rgba(0,0,0,0.90);
-            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+            transition: backdrop-filter 0.15s ease, -webkit-backdrop-filter 0.15s ease;
         }
         #loader-card {
             position: relative; z-index: 10;
@@ -174,10 +171,8 @@
 
         .card-container {
             position: fixed;
-
             top: calc(16px + var(--nav-h) + 4px);
             left: 0; right: 0;
-
             bottom: 0;
             z-index: 5;
             display: flex;
@@ -187,10 +182,11 @@
             overflow-x: hidden;
             padding: 10px 14px;
             opacity: 0; visibility: hidden;
-            transition: opacity 1.2s cubic-bezier(0.19,1,0.22,1),
-                        visibility 1.2s cubic-bezier(0.19,1,0.22,1);
+            transition: opacity 0.9s cubic-bezier(0.19,1,0.22,1) 0.35s,
+                        visibility 0.9s cubic-bezier(0.19,1,0.22,1) 0.35s;
             scrollbar-width: none; -ms-overflow-style: none;
             -webkit-overflow-scrolling: touch;
+            contain: layout style;
         }
         .card-container::-webkit-scrollbar { display: none; }
         .card-container.visible { opacity: 1; visibility: visible; }
@@ -211,15 +207,16 @@
 
         .glass-card {
             width: 100%; max-width: 480px;
-            background: rgba(0,0,0,0.32);
+            background: rgba(0,0,0,0.35);
             border: 1px solid rgba(255,255,255,0.09);
             border-radius: 16px; padding: 22px;
-            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             box-shadow: 0 0 0 1px rgba(255,255,255,0.03),
                         0 8px 32px rgba(0,0,0,0.4),
                         inset 0 1px 0 rgba(255,255,255,0.07);
             transition: border-color 0.3s, box-shadow 0.3s;
             position: relative; overflow: hidden;
+            transform: translateZ(0);
         }
 
         .glass-card.hero-card { overflow: visible; }
@@ -328,7 +325,7 @@
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 116px; height: 116px;
+            width: 109px; height: 109px;
             pointer-events: none; z-index: 2;
             display: none;
         }
@@ -970,18 +967,13 @@
         #rope-hit    { z-index: 211 !important; }
         /* PREMIUM AESTHETICS OVERRIDES */
         .glass-card {
-            backdrop-filter: blur(34px) !important;
-            -webkit-backdrop-filter: blur(34px) !important;
-            animation: cardGlow 4s infinite alternate ease-in-out;
-            transition: transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), border-color 0.3s, background 0.4s !important;
-        }
-        @keyframes cardGlow {
-            0%   { box-shadow: 0 0 10px rgba(255, 255, 255, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.07) !important; }
-            100% { box-shadow: 0 0 40px rgba(255, 255, 255, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important; }
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            transform: translateZ(0);
+            transition: transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), border-color 0.3s, box-shadow 0.3s !important;
         }
         .skill-tag {
             transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease !important;
-            will-change: transform, box-shadow;
         }
         .skill-tag:hover, .skill-tag:active {
             transform: translateY(-4px) scale(1.04) !important;
@@ -989,12 +981,7 @@
             z-index: 10;
         }
         #display-name {
-            text-shadow: 0 0 12px rgba(255, 255, 255, 0.4), 0 0 24px rgba(255, 255, 255, 0.15);
-            animation: namePulse 3s infinite alternate ease-in-out;
-        }
-        @keyframes namePulse {
-            0% { opacity: 0.95; filter: brightness(1); }
-            100% { opacity: 1; filter: brightness(1.15); text-shadow: 0 0 16px rgba(255, 255, 255, 0.6), 0 0 32px rgba(255, 255, 255, 0.25); }
+            text-shadow: 0 0 14px rgba(255, 255, 255, 0.5), 0 0 28px rgba(255, 255, 255, 0.18);
         }
     </style>
 </head>
@@ -1003,10 +990,10 @@
 <canvas id="touch-fx"></canvas>
 
 <div id="bg-wrap">
-    <video id="yt-dark" autoplay muted loop playsinline preload="auto" fetchpriority="high">
+    <video id="yt-dark" autoplay muted loop playsinline preload="auto" fetchpriority="high" decoding="async">
         <source src="media/dark.webm" type="video/webm">
     </video>
-    <video id="yt-light" autoplay muted loop playsinline preload="none">
+    <video id="yt-light" autoplay muted loop playsinline preload="none" decoding="async">
         <source src="media/light.webm" type="video/webm">
     </video>
 </div>
@@ -1347,7 +1334,7 @@
         <div class="glass-card">
             <div class="section-label">who i am</div>
             <p class="bio-text">
-                Hey, I'm Francisco — a CS student with a passion for building things that feel alive.
+                Hey, I'm Shub — a CS student with a passion for building things that feel alive.
                 I gravitate toward dark aesthetics, atmospheric design, and code that has personality.
                 When I'm not writing software, I'm probably listening to music nobody else has heard of.
             </p>
@@ -1815,7 +1802,7 @@
 <script>
 
 (function(){
-    var NAMESPACE = 'francisco.is-a.dev';
+    var NAMESPACE = 'cswith.me';
     var KEY       = 'pageviews';
     var API       = 'https://api.counterapi.dev/v1';
     var BASE      = 1100;
@@ -1952,7 +1939,7 @@ document.addEventListener('DOMContentLoaded', function () {
         void np.offsetWidth;
         np.classList.add('tab-animate');
         main.scrollTop = 0;
-        document.title = 'Francisco | ' + (SUFFIX[tab] || tab);
+        document.title = 'Shub | ' + (SUFFIX[tab] || tab);
         history.pushState({tab:tab}, '', tab==='overview' ? './' : tab);
         cur = tab;
     };
@@ -1985,7 +1972,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var nmEl = document.getElementById('display-name');
     var twCursor = document.getElementById('tw-cursor');
-    var twN = 'Francisco', twI = 0, twT = null;
+    var twN = 'Shub', twI = 0, twT = null;
     function twTick(){ nmEl.textContent=twN.slice(0,++twI); if(twI<twN.length)twT=setTimeout(twTick,100); }
     window._startNameTypewriter = function(){ clearTimeout(twT); twI=0; nmEl.textContent=''; if(twCursor)twCursor.style.display='inline-block'; setTimeout(twTick,600); };
 
@@ -2017,8 +2004,16 @@ document.addEventListener('DOMContentLoaded', function () {
         sessionStorage.setItem('site_entered','1');
         updatePlayerState();
         if(window._audioPlay && sessionStorage.getItem('music_active')) window._audioPlay().catch(function(){});
-        overlay.style.opacity='0';
-        setTimeout(function(){ overlay.style.display='none'; show(); }, 850);
+        /* Strip the overlay blur FIRST so it can't compete with card blur during fade */
+        var ovBg = document.getElementById('overlay-bg');
+        if(ovBg){ ovBg.style.backdropFilter='none'; ovBg.style.webkitBackdropFilter='none'; }
+        /* Short pause so backdrop-filter removal propagates, then fade overlay out */
+        requestAnimationFrame(function(){
+            requestAnimationFrame(function(){
+                overlay.style.opacity='0';
+                setTimeout(function(){ overlay.style.display='none'; show(); }, 950);
+            });
+        });
     }
     window._enterSite = enterSite;
 
@@ -2377,8 +2372,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (e.key==='Escape'&&open)closePanel();
     });
     if (panel){
+        var sy=0;
         panel.addEventListener('touchstart',function (e){sy=e.touches[0].clientY;},{passive:true});
-        panel.addEventListener('touchend',function (e){if (e.changedTouches[0].clientY-sy>55)closePanel();},{passive:true});
+        panel.addEventListener('touchend',function (e){if(e.changedTouches[0].clientY-sy>55)closePanel();},{passive:true});
         
         // Header Dragging
         var hdr = panel.querySelector('.panel-header');

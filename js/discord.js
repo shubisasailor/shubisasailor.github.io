@@ -55,7 +55,7 @@ function applyDecoration(user){
     if(!decoEl)return;
     var deco=user&&user.avatar_decoration_data;
     if(!deco||!deco.asset){decoEl.style.display='none';decoEl.classList.remove('show');return;}
-    var url='https://cdn.discordapp.com/avatar-decoration-presets/'+deco.asset+'.png?size=96&passthrough=true';
+    var url='https://cdn.discordapp.com/avatar-decoration-presets/'+deco.asset+'.png?size=128&passthrough=true';
     if(decoEl.getAttribute('src')===url)return;
     decoEl.onload=function(){decoEl.style.display='block';decoEl.classList.add('show');};
     decoEl.onerror=function(){decoEl.style.display='none';decoEl.classList.remove('show');};

@@ -19,7 +19,7 @@
         var nextBg=document.getElementById(BG_MAP[tab]);
         if(prevBg)prevBg.style.opacity='0';
         if(nextBg)nextBg.style.opacity='1';
-        document.title='Francisco | '+(SUFFIX_MAP[tab]||tab);
+        document.title='Shub | '+(SUFFIX_MAP[tab]||tab);
         var url=tab==='overview'?'./':tab+'.html';
         history.pushState({tab:tab},'',url);
         currentTab=tab;
@@ -53,5 +53,5 @@
         });
     });
 
-    document.title='Francisco | Portfolio';
+    document.title='Shub | Portfolio';
 })();

@@ -3,7 +3,7 @@
         var el=document.getElementById('display-name');
         var cursor=document.getElementById('tw-cursor');
         if(!el)return function(){};
-        var name='Francisco';
+        var name='Shub';
         var idx=0;
         var timer=null;
         function tick(){
@@ -33,7 +33,7 @@
         setTimeout(function(){
             overlay.style.display='none';
             mainContent.classList.add('visible');
-            document.title='Francisco | Portfolio';
+            document.title='Shub | Portfolio';
             window._startNameTypewriter();
         },800);
     }
@@ -41,7 +41,7 @@
     if(sessionStorage.getItem('site_entered')){
         overlay.style.display='none';
         mainContent.classList.add('visible');
-        document.title='Francisco | Portfolio';
+        document.title='Shub | Portfolio';
         window._startNameTypewriter();
     }else{
         overlay.addEventListener('click',onEnter,{once:true});
