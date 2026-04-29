@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Francisco | Portfolio</title>
+    <title>shub is a sailor | Portfolio</title>
     <link rel="icon" type="image/png" sizes="16x16" href="media/favicon-16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="media/favicon-32.png">
     <link rel="apple-touch-icon" sizes="180x180" href="media/apple-touch-icon.png">
 
     <meta property="og:type"        content="website">
     <meta property="og:url"         content="https://cswith.me/">
-    <meta property="og:title"       content="Francisco | Portfolio">
+    <meta property="og:title"       content="shub is a sailor | Portfolio">
     <meta property="og:description" content="High school student · Software & game developer · Open to work">
     <meta property="og:image"       content="https://cswith.me/media/preview.png">
     <meta property="og:image:width"  content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card"        content="summary_large_image">
-    <meta name="twitter:site"        content="@ZetsuoNoFrancisco">
-    <meta name="twitter:title"       content="Francisco | Portfolio">
+    <meta name="twitter:site"        content="@ZetsuoNoshub is a sailor">
+    <meta name="twitter:title"       content="shub is a sailor | Portfolio">
     <meta name="twitter:description" content="High school student · Software & game developer · Open to work">
     <meta name="twitter:image"       content="https://cswith.me/media/preview.png">
     <meta name="theme-color"         content="#000000">
@@ -1318,12 +1318,12 @@
             <div class="card-divider" style="margin:16px 0 14px;"></div>
 
             <div class="social-links" style="margin-top:0;padding-bottom:18px;">
-                <a href="https://github.com/ZetsuoNoFrancisco" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
+                <a href="https://github.com/ZetsuoNoshub is a sailor" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
                 <a href="https://linkedin.com/in/c3o" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i></a>
-                <a href="https://instagram.com/Francisco.is.a.sailor/" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>
-                <a href="https://pinterest.com/Franciscoflexin" target="_blank" rel="noopener noreferrer"><i class="fab fa-pinterest"></i></a>
-                <a href="https://youtube.com/@Tarnished_Franciscoh" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i></a>
-                <a href="https://x.com/ZetsuoNoFrancisco" target="_blank" rel="noopener noreferrer"><i class="fab fa-x-twitter"></i></a>
+                <a href="https://instagram.com/shub is a sailor.is.a.sailor/" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>
+                <a href="https://pinterest.com/shub is a sailorflexin" target="_blank" rel="noopener noreferrer"><i class="fab fa-pinterest"></i></a>
+                <a href="https://youtube.com/@Tarnished_shub is a sailorh" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i></a>
+                <a href="https://x.com/ZetsuoNoshub is a sailor" target="_blank" rel="noopener noreferrer"><i class="fab fa-x-twitter"></i></a>
                 <a href="/cdn-cgi/l/email-protection#88fbe0fdeaa6f8fae7eeedfbfbe1e7e6e9e4c8efe5e9e1e4a6ebe7e5" rel="noopener noreferrer"><i class="fas fa-envelope"></i></a>
             </div>
 
@@ -1334,7 +1334,7 @@
         <div class="glass-card">
             <div class="section-label">who i am</div>
             <p class="bio-text">
-                Hey, I'm Francisco — a CS student with a passion for building things that feel alive.
+                Hey, I'm shub is a sailor — a CS student with a passion for building things that feel alive.
                 I gravitate toward dark aesthetics, atmospheric design, and code that has personality.
                 When I'm not writing software, I'm probably listening to music nobody else has heard of.
             </p>
@@ -1360,7 +1360,7 @@
                     PUBLIC REPOS
                     <i class="fas fa-chevron-down btn-chevron"></i>
                 </button>
-                <a href="media/francisco.pdf" download style="
+                <a href="media/shub is a sailor.pdf" download style="
                     display:flex; align-items:center; justify-content:center; gap:7px;
                     padding:11px 14px;
                     background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.09);
@@ -1939,7 +1939,7 @@ document.addEventListener('DOMContentLoaded', function () {
         void np.offsetWidth;
         np.classList.add('tab-animate');
         main.scrollTop = 0;
-        document.title = 'Francisco | ' + (SUFFIX[tab] || tab);
+        document.title = 'shub is a sailor | ' + (SUFFIX[tab] || tab);
         history.pushState({tab:tab}, '', tab==='overview' ? './' : tab);
         cur = tab;
     };
@@ -1972,7 +1972,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var nmEl = document.getElementById('display-name');
     var twCursor = document.getElementById('tw-cursor');
-    var twN = 'Francisco', twI = 0, twT = null;
+    var twN = 'shub is a sailor', twI = 0, twT = null;
     function twTick(){ nmEl.textContent=twN.slice(0,++twI); if(twI<twN.length)twT=setTimeout(twTick,100); }
     window._startNameTypewriter = function(){ clearTimeout(twT); twI=0; nmEl.textContent=''; if(twCursor)twCursor.style.display='inline-block'; setTimeout(twTick,600); };
 
@@ -2040,7 +2040,7 @@ document.addEventListener('DOMContentLoaded', function () {
     window.showToast=function(msg,type){ var t=document.getElementById('toast'); clearTimeout(_tt); t.textContent=msg; t.className=type||''; t.style.opacity='1'; _tt=setTimeout(function(){t.style.opacity='0';},3000); };
 
     var cb=document.getElementById('copy-btn');
-    if(cb) cb.addEventListener('click',function(){ navigator.clipboard.writeText('Francisco.professional@gmail.com').then(function(){window.showToast('Email copied!','success');}).catch(function(){window.showToast('Could not copy.','error');}); });
+    if(cb) cb.addEventListener('click',function(){ navigator.clipboard.writeText('shub is a sailor.professional@gmail.com').then(function(){window.showToast('Email copied!','success');}).catch(function(){window.showToast('Could not copy.','error');}); });
 
     var sb=document.getElementById('send-btn');
     if(sb) sb.addEventListener('click',function(){
@@ -2247,7 +2247,7 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 <script>
 (function (){
-    var GH ='ZetsuoNoFrancisco';
+    var GH ='ZetsuoNoshub is a sailor';
     var list =document.getElementById('repo-list');
     var fetched =false;
     var LC ={'JavaScript':'#f1e05a','TypeScript':'#3178c6','Python':'#3572A5','HTML':'#e34c26','CSS':'#563d7c','Java':'#b07219','C++':'#f34b7d','C':'#555555','C#':'#178600','Shell':'#89e051','Rust':'#dea584','Go':'#00ADD8','Ruby':'#701516','PHP':'#4F5D95','Swift':'#F05138','Kotlin':'#A97BFF','Dart':'#00B4AB'};
