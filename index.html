@@ -28,11 +28,9 @@
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/projects.css">
 
-
     <link rel="preconnect" href="https://cdn.discordapp.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="preconnect" href="https://api.lanyard.rest" crossorigin>
-
 
     <link rel="preload" href="media/dark.webm" as="video" type="video/webm" fetchpriority="high">
     <link rel="preload" href="media/dark.mp4"  as="video" type="video/mp4"  fetchpriority="high">
@@ -64,7 +62,6 @@
     <script src="js/rope-theme.js" defer></script>
 
     <style>
-
         *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
@@ -226,7 +223,6 @@
                         0 12px 40px rgba(0,0,0,0.5),
                         inset 0 1px 0 rgba(255,255,255,0.09);
         }
-        /* Cleaned up empty hover ruleset */
 
         .tab-panel { display: none; width: 100%; max-width: 480px; }
         .tab-panel.active {
@@ -468,7 +464,6 @@
         }
 
         #discord-divider { height:1px; background:rgba(255,255,255,0.06); margin:10px 0; }
-
 
         .skills-grid { display:flex; flex-wrap:wrap; gap:7px; margin-top:4px; }
         .skill-tag {
@@ -965,6 +960,7 @@
         @media (max-width:319px) { #rope-canvas, #rope-hit { display:none!important; } }
         #rope-canvas { z-index: 210 !important; }
         #rope-hit    { z-index: 211 !important; }
+
         /* PREMIUM AESTHETICS OVERRIDES */
         .glass-card {
             backdrop-filter: blur(20px) !important;
@@ -1000,34 +996,27 @@
 <div id="bg-vignette"></div>
 
 <script>
-
 (function(){
     var ids = ['yt-dark','yt-light'];
     ids.forEach(function(id){
         var v = document.getElementById(id);
         if (!v) return;
-
         v.style.transform = 'translate(-50%,-50%) translateZ(0)';
-
         function tryPlay(){
             if (v.paused) {
                 var p = v.play();
                 if (p && p.catch) p.catch(function(){});
             }
         }
-
-        v.addEventListener('canplay',   tryPlay);
+        v.addEventListener('canplay',        tryPlay);
         v.addEventListener('canplaythrough', tryPlay);
-
         v.addEventListener('stalled',   function(){ setTimeout(tryPlay, 300); });
         v.addEventListener('suspend',   function(){ setTimeout(tryPlay, 300); });
         v.addEventListener('waiting',   function(){ setTimeout(tryPlay, 300); });
         v.addEventListener('emptied',   function(){ setTimeout(tryPlay, 600); });
-
         document.addEventListener('visibilitychange', function(){
             if (!document.hidden) setTimeout(tryPlay, 100);
         });
-
         var userEvt = function(){
             tryPlay();
             document.removeEventListener('touchstart', userEvt);
@@ -1046,7 +1035,6 @@
     </div>
 </div>
 <script>
-
 (function(){
     if(sessionStorage.getItem('site_entered')) return;
     var overlay = document.getElementById('overlay');
@@ -1055,14 +1043,12 @@
         if(fired) return; fired = true;
         if(e && e.cancelable) e.preventDefault();
         overlay.style.opacity = '0';
-
         window._earlyEnterFired = true;
         if(window._enterSite) window._enterSite();
     }
     overlay.addEventListener('click',     earlyEnter, {once:true});
     overlay.addEventListener('touchend',  earlyEnter, {passive:false, once:true});
     overlay.addEventListener('pointerup', earlyEnter, {once:true});
-
     if('ontouchstart' in window || navigator.maxTouchPoints > 0){
         var ep = document.getElementById('enter-prompt');
         if(ep) ep.textContent = 'tap to enter';
@@ -1159,7 +1145,6 @@
 <div id="fixed-player">
 
     <div id="pc-player-bar">
-
         <div id="sp-left">
             <img draggable="false" id="sp-cover" src="media/music-cover/cry.jpg" alt="" fetchpriority="high"
                  onerror="this.style.display='none'">
@@ -1168,7 +1153,6 @@
                 <div id="sp-artist">—</div>
             </div>
         </div>
-
         <div id="sp-center">
             <div id="sp-controls">
                 <i class="fas fa-backward-step sp-ctrl" id="sp-prev"></i>
@@ -1183,7 +1167,6 @@
                 <span id="sp-time-total">0:00</span>
             </div>
         </div>
-
         <div id="sp-right">
             <i class="fas fa-volume-high" id="sp-vol-icon"></i>
             <div id="sp-vol-wrap">
@@ -1263,9 +1246,7 @@
             <div class="hero-profile-row">
 
                 <div class="hero-pfp-wrap" id="discord-skeleton-pfp">
-
                     <div class="hero-pfp-skeleton" id="hero-pfp-skeleton"></div>
-
                     <img draggable="false" id="discord-pfp" alt="PFP" style="display:none;">
                     <img draggable="false" id="discord-decoration" alt="" style="display:none;pointer-events:none;">
                     <svg id="discord-dot" width="16" height="16" viewBox="0 0 16 16" style="position:absolute;bottom:1px;right:1px;z-index:4;" xmlns="http://www.w3.org/2000/svg"></svg>
@@ -1324,7 +1305,7 @@
                 <a href="https://pinterest.com/shubflexin" target="_blank" rel="noopener noreferrer"><i class="fab fa-pinterest"></i></a>
                 <a href="https://youtube.com/@Tarnished_Shub" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i></a>
                 <a href="https://x.com/ZetsuoNoShub" target="_blank" rel="noopener noreferrer"><i class="fab fa-x-twitter"></i></a>
-                <a href="/cdn-cgi/l/email-protection#88fbe0fdeaa6f8fae7eeedfbfbe1e7e6e9e4c8efe5e9e1e4a6ebe7e5" rel="noopener noreferrer"><i class="fas fa-envelope"></i></a>
+                <a href="mailto:shub.professional@gmail.com" rel="noopener noreferrer"><i class="fas fa-envelope"></i></a>
             </div>
 
         </div>
@@ -1360,7 +1341,7 @@
                     PUBLIC REPOS
                     <i class="fas fa-chevron-down btn-chevron"></i>
                 </button>
-                <a href="media/shub is a sailor.pdf" download style="
+                <a href="media/francisco-cv.pdf" download style="
                     display:flex; align-items:center; justify-content:center; gap:7px;
                     padding:11px 14px;
                     background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.09);
@@ -1383,7 +1364,7 @@
             <div class="section-label">reach me at</div>
             <div class="email-row">
                 <i class="fas fa-envelope"></i>
-                <span id="email-display"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="06756e736428767469606375756f6968676a46616b676f6a2865696b">[email&#160;protected]</a></span>
+                <span id="email-display">shub.professional@gmail.com</span>
                 <i class="fas fa-copy email-copy" id="copy-btn" title="Copy email"></i>
             </div>
             <div class="card-divider"></div>
@@ -1405,7 +1386,7 @@
 
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 (function () {
     'use strict';
 
@@ -1479,18 +1460,14 @@
 
     function syncMeta() {
         var s = SONGS[idx];
-
         if (coverImg) { coverImg.style.display = ''; coverImg.src = s.cover; }
         if (coverFb)  { coverFb.style.display = 'none'; }
         if (titleEl)  titleEl.textContent  = s.title;
         if (artistEl) artistEl.textContent = s.artist;
-
         if (spCover)  { spCover.style.display = ''; spCover.src = s.cover; }
         if (spTitle)  spTitle.textContent  = s.title;
         if (spArtist) spArtist.textContent = s.artist;
-
         if (badgeNm) badgeNm.textContent = s.title + ' — ' + s.artist;
-
         var ovCover  = document.getElementById('ov-cover');
         var ovTitle  = document.getElementById('ov-title');
         var ovArtist = document.getElementById('ov-artist');
@@ -1506,7 +1483,6 @@
         audio.src = SONGS[idx].src;
         audio.load();
         syncMeta();
-
         if (progBarM)   progBarM.style.width  = '0%';
         if (spProgFill) spProgFill.style.width = '0%';
         if (timeElM)    timeElM.textContent    = '0:00';
@@ -1553,11 +1529,8 @@
     }
 
     function syncPlayIcons(playing) {
-
         if (ppBtn) { ppBtn.classList.toggle('fa-play', !playing); ppBtn.classList.toggle('fa-pause', playing); }
-
         if (spPlayIcon) { spPlayIcon.className = 'fas ' + (playing ? 'fa-pause' : 'fa-play'); spPlayIcon.style.marginLeft = playing ? '0' : '2px'; }
-
         if (badgeEl) {
             if (playing) {
                 badgeEl.style.display = '';
@@ -1566,10 +1539,8 @@
                 badgeEl.classList.add('paused');
             }
         }
-
         if (coverImg) coverImg.classList.toggle('spinning', playing);
         if (spCover)  spCover.classList.toggle('spinning', playing);
-
         var ovPlayIcon = document.getElementById('ov-play-icon');
         var ovBars     = document.getElementById('ov-bars');
         var ovCover    = document.getElementById('ov-cover');
@@ -1603,7 +1574,6 @@
         if (timeElM)    timeElM.textContent    = cur + ' / ' + tot;
         if (spTimeCur)  spTimeCur.textContent  = cur;
         if (spTimeTotal) spTimeTotal.textContent = tot;
-
         var ovFill = document.getElementById('ov-prog-fill');
         var ovCur  = document.getElementById('ov-time-cur');
         var ovTot  = document.getElementById('ov-time-total');
@@ -1800,7 +1770,6 @@
 <script src="js/discord.js"></script>
 
 <script>
-
 (function(){
     var NAMESPACE = 'cswith.me';
     var KEY       = 'pageviews';
@@ -1835,7 +1804,6 @@
     }
 })();
 </script>
-
 
 <script>
 (function () {
@@ -1879,6 +1847,7 @@
     }
 })();
 </script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -1939,7 +1908,8 @@ document.addEventListener('DOMContentLoaded', function () {
         void np.offsetWidth;
         np.classList.add('tab-animate');
         main.scrollTop = 0;
-        document.title = 'shub is a sailor | ' + (SUFFIX[tab] || tab);
+        /* FIX: was 'shub is a sailor | ...' */
+        document.title = 'Francisco | ' + (SUFFIX[tab] || tab);
         history.pushState({tab:tab}, '', tab==='overview' ? './' : tab);
         cur = tab;
     };
@@ -1972,7 +1942,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var nmEl = document.getElementById('display-name');
     var twCursor = document.getElementById('tw-cursor');
-    var twN = 'shub is a sailor', twI = 0, twT = null;
+    /* FIX: was 'shub is a sailor' */
+    var twN = 'Francisco', twI = 0, twT = null;
     function twTick(){ nmEl.textContent=twN.slice(0,++twI); if(twI<twN.length)twT=setTimeout(twTick,100); }
     window._startNameTypewriter = function(){ clearTimeout(twT); twI=0; nmEl.textContent=''; if(twCursor)twCursor.style.display='inline-block'; setTimeout(twTick,600); };
 
@@ -2004,10 +1975,8 @@ document.addEventListener('DOMContentLoaded', function () {
         sessionStorage.setItem('site_entered','1');
         updatePlayerState();
         if(window._audioPlay && sessionStorage.getItem('music_active')) window._audioPlay().catch(function(){});
-        /* Strip the overlay blur FIRST so it can't compete with card blur during fade */
         var ovBg = document.getElementById('overlay-bg');
         if(ovBg){ ovBg.style.backdropFilter='none'; ovBg.style.webkitBackdropFilter='none'; }
-        /* Short pause so backdrop-filter removal propagates, then fade overlay out */
         requestAnimationFrame(function(){
             requestAnimationFrame(function(){
                 overlay.style.opacity='0';
@@ -2040,7 +2009,7 @@ document.addEventListener('DOMContentLoaded', function () {
     window.showToast=function(msg,type){ var t=document.getElementById('toast'); clearTimeout(_tt); t.textContent=msg; t.className=type||''; t.style.opacity='1'; _tt=setTimeout(function(){t.style.opacity='0';},3000); };
 
     var cb=document.getElementById('copy-btn');
-    if(cb) cb.addEventListener('click',function(){ navigator.clipboard.writeText('shub is a sailor.professional@gmail.com').then(function(){window.showToast('Email copied!','success');}).catch(function(){window.showToast('Could not copy.','error');}); });
+    if(cb) cb.addEventListener('click',function(){ navigator.clipboard.writeText('shub.professional@gmail.com').then(function(){window.showToast('Email copied!','success');}).catch(function(){window.showToast('Could not copy.','error');}); });
 
     var sb=document.getElementById('send-btn');
     if(sb) sb.addEventListener('click',function(){
@@ -2074,13 +2043,8 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-
 <script>
 (function() {
-
-    // Enable for both mouse and touch
-    // if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-
     var MAX_TILT    = 15;
     var PERSPECTIVE = 900;
     var STIFFNESS   = 0.04;
@@ -2088,15 +2052,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function initTilt(el) {
         var shine = el.querySelector('.tilt-shine');
-
         var curX = 0, curY = 0, velX = 0, velY = 0;
         var curScale = 1, curAlpha = 0;
         var shineX = 50, shineY = 50;
-
         var tgtX = 0, tgtY = 0;
         var tgtScale = 1, tgtAlpha = 0;
         var tgtShineX = 50, tgtShineY = 50;
-
         var rafId = null;
         var rect  = null;
 
@@ -2119,26 +2080,21 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         function tick() {
-
             var dX = tgtX - curX, dY = tgtY - curY;
             velX = (velX + dX * STIFFNESS) * DAMPING;
             velY = (velY + dY * STIFFNESS) * DAMPING;
             curX += velX;
             curY += velY;
-
             curScale += (tgtScale - curScale) * 0.05;
             curAlpha += (tgtAlpha - curAlpha) * 0.05;
             shineX   += (tgtShineX - shineX)  * 0.06;
             shineY   += (tgtShineY - shineY)  * 0.06;
-
             applyDOM();
-
             var settled =
                 Math.abs(dX) < 0.002 && Math.abs(dY) < 0.002 &&
                 Math.abs(velX) < 0.002 && Math.abs(velY) < 0.002 &&
                 Math.abs(tgtScale - curScale) < 0.0002 &&
                 Math.abs(tgtAlpha - curAlpha) < 0.002;
-
             if (settled) {
                 curX = tgtX; curY = tgtY; velX = 0; velY = 0;
                 applyDOM();
@@ -2168,22 +2124,17 @@ document.addEventListener('DOMContentLoaded', function () {
             setTarget(e.clientX, e.clientY);
             startLoop();
         });
-
         el.addEventListener('mousemove', function(e) {
             if (!rect) rect = el.getBoundingClientRect();
             setTarget(e.clientX, e.clientY);
             startLoop();
         });
-
         el.addEventListener('mouseleave', function() {
             rect     = null;
             tgtScale = 1.0;
             tgtAlpha = 0;
-
             startLoop();
         });
-
-        // Touch Support
         el.addEventListener('touchstart', function(e) {
             rect     = el.getBoundingClientRect();
             tgtScale = 1.015;
@@ -2192,14 +2143,12 @@ document.addEventListener('DOMContentLoaded', function () {
             setTarget(touch.clientX, touch.clientY);
             startLoop();
         }, { passive: true });
-
         el.addEventListener('touchmove', function(e) {
             if (!rect) rect = el.getBoundingClientRect();
             var touch = e.touches[0];
             setTarget(touch.clientX, touch.clientY);
             startLoop();
         }, { passive: true });
-
         el.addEventListener('touchend', function() {
             rect     = null;
             tgtScale = 1.0;
@@ -2220,9 +2169,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.addEventListener('DOMContentLoaded', applyAll);
     applyAll();
-
-    new MutationObserver(applyAll)
-        .observe(document.body, { childList: true, subtree: true });
+    new MutationObserver(applyAll).observe(document.body, { childList: true, subtree: true });
 })();
 </script>
 
@@ -2231,90 +2178,84 @@ document.addEventListener('DOMContentLoaded', function () {
     var content = document.getElementById('main-content');
     var player  = document.getElementById('fixed-player');
     if (!content || !player) return;
-
     function updatePadding() {
         var ph = player.offsetHeight;
         if (!ph || ph < 10) return;
-
         var safeBottom = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-bottom')) || 16;
         var pad = ph + safeBottom + 16;
         content.style.paddingBottom = pad + 'px';
     }
-
     updatePadding();
     window.addEventListener('resize', updatePadding, { passive: true });
 })();
 </script>
+
 <script>
-(function (){
-    var GH ='ZetsuoNoshub is a sailor';
-    var list =document.getElementById('repo-list');
-    var fetched =false;
-    var LC ={'JavaScript':'#f1e05a','TypeScript':'#3178c6','Python':'#3572A5','HTML':'#e34c26','CSS':'#563d7c','Java':'#b07219','C++':'#f34b7d','C':'#555555','C#':'#178600','Shell':'#89e051','Rust':'#dea584','Go':'#00ADD8','Ruby':'#701516','PHP':'#4F5D95','Swift':'#F05138','Kotlin':'#A97BFF','Dart':'#00B4AB'};
+(function(){
+    /* FIX: was 'ZetsuoNoshub is a sailor' — broken username */
+    var GH   = 'ZetsuoNoShub';
+    var list = document.getElementById('repo-list');
+    var fetched = false;
+    var LC = {'JavaScript':'#f1e05a','TypeScript':'#3178c6','Python':'#3572A5','HTML':'#e34c26','CSS':'#563d7c','Java':'#b07219','C++':'#f34b7d','C':'#555555','C#':'#178600','Shell':'#89e051','Rust':'#dea584','Go':'#00ADD8','Ruby':'#701516','PHP':'#4F5D95','Swift':'#F05138','Kotlin':'#A97BFF','Dart':'#00B4AB'};
+
     function makeCard(r){
-        var card=document.createElement('div');
-        card.className='repo-card';
+        var card = document.createElement('div');
+        card.className = 'repo-card';
         if (r.featured) card.classList.add('featured-repo');
-
-        var info=document.createElement('div');
-        info.className='repo-info';
-
-        var nm=document.createElement('span');
-        nm.className='repo-name';
-        nm.textContent=r.name;
-
+        var info = document.createElement('div');
+        info.className = 'repo-info';
+        var nm = document.createElement('span');
+        nm.className = 'repo-name';
+        nm.textContent = r.name;
         if (r.language){
-            var d=document.createElement('span');
-            d.className='repo-lang-dot';
-            d.style.color=LC[r.language]||'rgba(255,255,255,0.28)';
-            d.style.background=LC[r.language]||'rgba(255,255,255,0.28)';
-            d.title=r.language;
+            var d = document.createElement('span');
+            d.className = 'repo-lang-dot';
+            d.style.color = LC[r.language] || 'rgba(255,255,255,0.28)';
+            d.style.background = LC[r.language] || 'rgba(255,255,255,0.28)';
+            d.title = r.language;
             info.appendChild(d);
         }
         info.appendChild(nm);
-
-        var actions=document.createElement('div');
-        actions.className='repo-actions';
-
+        var actions = document.createElement('div');
+        actions.className = 'repo-actions';
         if (r.html_url && !r.featured){
-            var ghBtn=document.createElement('a');
-            ghBtn.className='repo-btn';
-            ghBtn.href=r.html_url;
-            ghBtn.target='_blank';
-            ghBtn.title='Source Code';
-            ghBtn.innerHTML='<i class="fab fa-github"></i>';
+            var ghBtn = document.createElement('a');
+            ghBtn.className = 'repo-btn';
+            ghBtn.href = r.html_url;
+            ghBtn.target = '_blank';
+            ghBtn.title = 'Source Code';
+            ghBtn.innerHTML = '<i class="fab fa-github"></i>';
             actions.appendChild(ghBtn);
         }
-
         if (r.homepage || r.featured){
-            var liveBtn=document.createElement('a');
-            liveBtn.className='repo-btn live';
-            liveBtn.href=r.homepage || r.html_url;
-            liveBtn.target='_blank';
-            liveBtn.title='Live Preview';
-            liveBtn.innerHTML='<i class="fas fa-external-link-alt"></i>';
+            var liveBtn = document.createElement('a');
+            liveBtn.className = 'repo-btn live';
+            liveBtn.href = r.homepage || r.html_url;
+            liveBtn.target = '_blank';
+            liveBtn.title = 'Live Preview';
+            liveBtn.innerHTML = '<i class="fas fa-external-link-alt"></i>';
             actions.appendChild(liveBtn);
         }
-
         card.appendChild(info);
         card.appendChild(actions);
         return card;
     }
-    window._fetchRepos =function (){
-        if (fetched)return ;
-        fetched =true;
+
+    window._fetchRepos = function(){
+        if (fetched) return;
+        fetched = true;
         var featured = [
             { name: 'CheapMandu', html_url: 'https://cheapmandu.shop', description: 'Resell of account market', featured: true, language: 'Live Store' },
-            { name: 'Portfolio SITE', html_url: 'https://cswith.me', description: 'Current portfolio site', featured: true, language: 'Personal' }
+            { name: 'Portfolio Site', html_url: 'https://cswith.me', description: 'Current portfolio site', featured: true, language: 'Personal' }
         ];
-        fetch('https://api.github.com/users/'+GH+'/repos?per_page=100&sort=updated').then(function (r){
-            if (!r.ok)throw r;
+        fetch('https://api.github.com/users/' + GH + '/repos?per_page=100&sort=updated').then(function(r){
+            if (!r.ok) throw r;
             return r.json();
-        }).then(function (repos){
-            repos=repos.filter(function (r){return !r.fork;}).sort(function (a,b){
-                return b.stargazers_count!==a.stargazers_count?b.stargazers_count-a.stargazers_count:new Date(b.updated_at)-new Date(a.updated_at);
+        }).then(function(repos){
+            repos = repos.filter(function(r){ return !r.fork; }).sort(function(a,b){
+                return b.stargazers_count !== a.stargazers_count ? b.stargazers_count - a.stargazers_count : new Date(b.updated_at) - new Date(a.updated_at);
             });
-            list.innerHTML='';
+            list.innerHTML = '';
             if (featured.length){
                 var h1 = document.createElement('div');
                 h1.className = 'panel-section-title';
@@ -2327,93 +2268,86 @@ document.addEventListener('DOMContentLoaded', function () {
                 h2.className = 'panel-section-title';
                 h2.textContent = 'GitHub Repositories';
                 list.appendChild(h2);
-                repos.forEach(function (r){list.appendChild(makeCard(r));});
+                repos.forEach(function(r){ list.appendChild(makeCard(r)); });
             }
             if (!repos.length && !featured.length){
-                var m=document.createElement('span');
-                m.className='repo-error';
-                m.textContent='No public repositories yet.';
+                var m = document.createElement('span');
+                m.className = 'repo-error';
+                m.textContent = 'No public repositories yet.';
                 list.appendChild(m);
-                return ;
             }
-        }).catch (function (){
-            list.innerHTML='';
+        }).catch(function(){
+            list.innerHTML = '';
             featured.forEach(function(r){ list.appendChild(makeCard(r)); });
         });
     };
 })();
 </script>
+
 <script>
-(function (){
-    var btn=document.getElementById('projects-btn');
-    var panel=document.getElementById('projects-panel');
-    var cBtn=document.getElementById('panel-close-btn');
-    var bd=document.getElementById('panel-backdrop');
-    var open=false;
+(function(){
+    var btn   = document.getElementById('projects-btn');
+    var panel = document.getElementById('projects-panel');
+    var cBtn  = document.getElementById('panel-close-btn');
+    var bd    = document.getElementById('panel-backdrop');
+    var open  = false;
+
     function openPanel(){
-        open=true;
+        open = true;
         panel.classList.add('open');
         btn.classList.add('open');
-        if (bd)bd.classList.add('open');
-        window._fetchRepos&&window._fetchRepos();
+        if (bd) bd.classList.add('open');
+        window._fetchRepos && window._fetchRepos();
     }
     function closePanel(){
-        open=false;
+        open = false;
         panel.classList.remove('open');
         btn.classList.remove('open');
-        if (bd)bd.classList.remove('open');
+        if (bd) bd.classList.remove('open');
     }
-    if (btn)btn.addEventListener('click',function (){
-        open?closePanel():openPanel();
-    });
-    if (cBtn)cBtn.addEventListener('click',closePanel);
-    if (bd)bd.addEventListener('click',closePanel);
-    document.addEventListener('keydown',function (e){
-        if (e.key==='Escape'&&open)closePanel();
-    });
+
+    if (btn) btn.addEventListener('click', function(){ open ? closePanel() : openPanel(); });
+    if (cBtn) cBtn.addEventListener('click', closePanel);
+    if (bd)   bd.addEventListener('click', closePanel);
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && open) closePanel(); });
+
     if (panel){
-        var sy=0;
-        panel.addEventListener('touchstart',function (e){sy=e.touches[0].clientY;},{passive:true});
-        panel.addEventListener('touchend',function (e){if(e.changedTouches[0].clientY-sy>55)closePanel();},{passive:true});
-        
-        // Header Dragging
-        var hdr = panel.querySelector('.panel-header');
-        var isDrg = false, startPos = {x:0, y:0};
-        
+        var sy = 0;
+        panel.addEventListener('touchstart', function(e){ sy = e.touches[0].clientY; }, {passive:true});
+        panel.addEventListener('touchend',   function(e){ if(e.changedTouches[0].clientY - sy > 55) closePanel(); }, {passive:true});
+
+        var hdr    = panel.querySelector('.panel-header');
+        var isDrg  = false, startPos = {x:0, y:0};
+
         hdr.onmousedown = function(e){
             if (e.target.closest('#panel-close-btn')) return;
-            if (window.innerWidth <= 600) return; // Allow dragging on slightly smaller screens
-            
+            if (window.innerWidth <= 600) return;
             isDrg = true;
             var rect = panel.getBoundingClientRect();
             startPos.x = e.clientX - rect.left;
             startPos.y = e.clientY - rect.top;
-            
-            panel.style.top = rect.top + 'px';
-            panel.style.left = rect.left + 'px';
-            panel.style.transform = 'none';
+            panel.style.top        = rect.top  + 'px';
+            panel.style.left       = rect.left + 'px';
+            panel.style.transform  = 'none';
             panel.style.transition = 'none';
             document.body.style.cursor = 'grabbing';
             e.preventDefault();
         };
 
-        var handleMove = function(e){
+        document.addEventListener('mousemove', function(e){
             if (!isDrg) return;
-            panel.style.top = (e.clientY - startPos.y) + 'px';
+            panel.style.top  = (e.clientY - startPos.y) + 'px';
             panel.style.left = (e.clientX - startPos.x) + 'px';
-        };
-
-        var handleUp = function(){
+        });
+        document.addEventListener('mouseup', function(){
             if (!isDrg) return;
             isDrg = false;
             document.body.style.cursor = '';
             panel.style.transition = 'opacity 0.28s ease, visibility 0.28s, transform 0.36s cubic-bezier(0.34,1.56,0.64,1)';
-        };
-
-        document.addEventListener('mousemove', handleMove);
-        document.addEventListener('mouseup', handleUp);
+        });
     }
 })();
 </script>
+
 </body>
 </html>
